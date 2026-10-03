@@ -69,3 +69,46 @@ def test_chess_execution_with_auto_enter():
     assert success is True
     assert inj.sent_texts == ["bj"]
     assert "ENTER" in inj.sent_keys
+
+
+def test_chess_buttons_no_duplicate_characters():
+    """Verify that chess buttons don't have duplicate piece characters (e.g. 车车rc)."""
+    import sys
+    from PyQt5 import QtWidgets
+    from domain.button import Button, format_button_display_text
+    from ui.floating_panel import ActionButtonWidget
+
+    app = QtWidgets.QApplication.instance() or QtWidgets.QApplication(sys.argv)
+
+    base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    chess_pack_dir = os.path.join(base_dir, "packs", "chess")
+    ok, _, data = PackStore.import_pack(chess_pack_dir)
+    assert ok is True
+
+    # 1. Verify buttons in pack do not have duplicate piece characters in icon
+    for btn in data["buttons"]:
+        widget = ActionButtonWidget(btn)
+        first_line = btn.label.split("\n")[0].strip()
+        # The piece name should appear exactly once in widget text
+        assert widget.text().count(first_line) == 1, f"Duplicate character in button {btn.id}: {widget.text()}"
+
+    # 2. Verify red_che specifically
+    che_btn = next(b for b in data["buttons"] if b.id == "red_che")
+    assert che_btn.label == "车\nrc"
+    w_che = ActionButtonWidget(che_btn)
+    assert w_che.text() == "车\nrc"
+    assert w_che.text().count("车") == 1
+    assert "rc" in w_che.text()
+
+    # 3. Defensive deduplication against legacy config containing icon="车" and label="车\nrc"
+    legacy_data = {"id": "legacy_che", "label": "车\nrc", "action_id": "act_rc", "icon": "车"}
+    legacy_btn = Button.from_dict(legacy_data)
+    assert legacy_btn.icon == ""  # Automatically sanitized
+    assert legacy_btn.display_text == "车\nrc"
+
+    # 4. format_button_display_text handles raw duplicate strings
+    assert format_button_display_text("车", "车\nrc") == "车\nrc"
+    assert format_button_display_text("兵", "兵\nrb") == "兵\nrb"
+    assert format_button_display_text("💾", "保存") == "💾 保存"
+    assert format_button_display_text("", "普通按钮") == "普通按钮"
+

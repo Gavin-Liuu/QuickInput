@@ -5,7 +5,7 @@ from typing import Optional, Dict, Tuple
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from domain.action import Action, ActionStep
-from domain.button import Button
+from domain.button import Button, format_button_display_text
 from domain.layout import Layout
 from domain.profile import Profile
 from application.layout_manager import LayoutManager
@@ -33,13 +33,44 @@ class NewLayoutDialog(QtWidgets.QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("新建布局")
-        self.setMinimumWidth(360)
+        self.setMinimumWidth(380)
         self.setStyleSheet("""
-            QDialog { background:#1E1E28; color:#FFFFFF; }
-            QLabel { color:#FFFFFF; font-size:12px; }
-            QLineEdit, QComboBox, QSpinBox { background:#2A2A38; color:#FFFFFF; border:1px solid #555566; padding:5px; border-radius:4px; }
-            QPushButton { background:#2D2D3D; color:#FFFFFF; border:1px solid #555566; padding:6px 14px; border-radius:4px; }
-            QPushButton:hover { background:#3D3D52; }
+            QDialog {
+                background-color: #1E1E20;
+                color: #F5F5F7;
+                font-family: -apple-system, "SF Pro Text", "PingFang SC", "Segoe UI Variable Text", "Segoe UI", sans-serif;
+            }
+            QLabel {
+                color: #F5F5F7;
+                font-size: 12px;
+            }
+            QLineEdit, QComboBox, QSpinBox {
+                background-color: #1C1C1E;
+                color: #FFFFFF;
+                border: 1px solid rgba(255, 255, 255, 0.12);
+                padding: 6px 10px;
+                border-radius: 6px;
+                font-size: 12px;
+            }
+            QLineEdit:focus, QComboBox:focus, QSpinBox:focus {
+                border: 1.5px solid #0A84FF;
+            }
+            QPushButton {
+                background-color: rgba(255, 255, 255, 0.08);
+                color: #F5F5F7;
+                border: 1px solid rgba(255, 255, 255, 0.10);
+                padding: 6px 16px;
+                border-radius: 6px;
+                font-size: 12px;
+                font-weight: 500;
+            }
+            QPushButton:hover {
+                background-color: rgba(255, 255, 255, 0.14);
+                border-color: rgba(255, 255, 255, 0.20);
+            }
+            QPushButton:pressed {
+                background-color: rgba(255, 255, 255, 0.05);
+            }
         """)
 
         layout = QtWidgets.QFormLayout(self)
@@ -179,19 +210,149 @@ class SettingsDialog(QtWidgets.QDialog):
         self.resize(target_w, target_h)
 
         self.setStyleSheet("""
-            QDialog, QWidget { background:#14141E; color:#FFFFFF; font-family:"Segoe UI","Microsoft YaHei"; }
-            QGroupBox { border:1px solid #36364A; border-radius:6px; margin-top:8px; padding:10px; color:#FFFFFF; }
-            QGroupBox::title { subcontrol-origin:margin; left:10px; padding:0 4px; color:#60A5FA; font-weight:bold; }
-            QLabel { color:#ECECF0; }
-            QLineEdit, QComboBox, QSpinBox, QTextEdit { background:#20202E; color:#FFFFFF; border:1px solid #4A4A60; border-radius:4px; padding:5px; }
-            QComboBox QAbstractItemView { background:#20202E; color:#FFFFFF; selection-background-color:#2563EB; }
-            QTableWidget { background:#1A1A26; color:#FFFFFF; border:1px solid #36364A; gridline-color:#2A2A3A; }
-            QTableWidget::item:selected { background:#2563EB; color:#FFFFFF; }
-            QHeaderView::section { background:#222232; color:#A0A0B0; border:1px solid #36364A; padding:4px; }
-            QPushButton { background:#252536; color:#FFFFFF; border:1px solid #4A4A60; border-radius:4px; padding:6px 12px; }
-            QPushButton:hover { background:#333348; border-color:#60A5FA; }
-            QPushButton:pressed { background:#1E1E2E; }
-            QCheckBox { color:#FFFFFF; }
+            QDialog {
+                background-color: #1E1E20;
+                color: #F5F5F7;
+                font-family: -apple-system, "SF Pro Text", "PingFang SC", "Segoe UI Variable Text", "Segoe UI", "Microsoft YaHei UI", sans-serif;
+            }
+            QWidget {
+                font-family: -apple-system, "SF Pro Text", "PingFang SC", "Segoe UI Variable Text", "Segoe UI", "Microsoft YaHei UI", sans-serif;
+                color: #F5F5F7;
+            }
+            QGroupBox {
+                background-color: #252528;
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                border-radius: 10px;
+                margin-top: 12px;
+                padding: 12px 14px 14px 14px;
+                color: #F5F5F7;
+            }
+            QGroupBox::title {
+                subcontrol-origin: margin;
+                left: 12px;
+                padding: 0 4px;
+                color: #F5F5F7;
+                font-weight: 600;
+                font-size: 12px;
+            }
+            QLabel {
+                color: #F5F5F7;
+                font-size: 12px;
+            }
+            QLineEdit, QComboBox, QSpinBox, QTextEdit {
+                background-color: #1C1C1E;
+                color: #FFFFFF;
+                border: 1px solid rgba(255, 255, 255, 0.12);
+                border-radius: 6px;
+                padding: 5px 8px;
+                font-size: 12px;
+            }
+            QLineEdit:hover, QComboBox:hover, QSpinBox:hover, QTextEdit:hover {
+                border-color: rgba(255, 255, 255, 0.22);
+            }
+            QLineEdit:focus, QComboBox:focus, QSpinBox:focus, QTextEdit:focus {
+                border: 1.5px solid #0A84FF;
+                background-color: #202023;
+            }
+            QComboBox::drop-down {
+                subcontrol-origin: padding;
+                subcontrol-position: top right;
+                width: 18px;
+                border-left-width: 0px;
+            }
+            QComboBox QAbstractItemView {
+                background-color: #252528;
+                color: #F5F5F7;
+                border: 1px solid rgba(255, 255, 255, 0.14);
+                border-radius: 8px;
+                padding: 4px;
+                selection-background-color: #0A84FF;
+                selection-color: #FFFFFF;
+                outline: none;
+            }
+            QTableWidget {
+                background-color: #18181A;
+                color: #F5F5F7;
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                border-radius: 8px;
+                gridline-color: rgba(255, 255, 255, 0.04);
+                outline: none;
+            }
+            QTableWidget::item {
+                padding: 4px 6px;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            }
+            QTableWidget::item:selected {
+                background-color: #0A84FF;
+                color: #FFFFFF;
+            }
+            QHeaderView::section {
+                background-color: #222225;
+                color: #8E8E93;
+                border: none;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+                padding: 6px;
+                font-size: 11px;
+                font-weight: 600;
+            }
+            QPushButton {
+                background-color: rgba(255, 255, 255, 0.08);
+                color: #F5F5F7;
+                border: 1px solid rgba(255, 255, 255, 0.10);
+                border-radius: 6px;
+                padding: 5px 12px;
+                font-size: 12px;
+                font-weight: 500;
+            }
+            QPushButton:hover {
+                background-color: rgba(255, 255, 255, 0.14);
+                border-color: rgba(255, 255, 255, 0.20);
+            }
+            QPushButton:pressed {
+                background-color: rgba(255, 255, 255, 0.05);
+            }
+            QPushButton:disabled {
+                background-color: rgba(255, 255, 255, 0.03);
+                color: #636366;
+                border-color: rgba(255, 255, 255, 0.05);
+            }
+            QCheckBox {
+                color: #F5F5F7;
+                font-size: 12px;
+                spacing: 6px;
+            }
+            QScrollBar:vertical {
+                background: transparent;
+                width: 8px;
+                margin: 0px;
+            }
+            QScrollBar::handle:vertical {
+                background: rgba(255, 255, 255, 0.18);
+                border-radius: 4px;
+                min-height: 24px;
+            }
+            QScrollBar::handle:vertical:hover {
+                background: rgba(255, 255, 255, 0.32);
+            }
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+                height: 0px;
+            }
+            QScrollBar:horizontal {
+                background: transparent;
+                height: 8px;
+                margin: 0px;
+            }
+            QScrollBar::handle:horizontal {
+                background: rgba(255, 255, 255, 0.18);
+                border-radius: 4px;
+                min-width: 24px;
+            }
+            QScrollBar::handle:horizontal:hover {
+                background: rgba(255, 255, 255, 0.32);
+            }
+            QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
+                width: 0px;
+            }
         """)
 
         self._build_ui()
@@ -223,9 +384,32 @@ class SettingsDialog(QtWidgets.QDialog):
         # Tab widget with only 2 top-level tabs
         self.tabs = QtWidgets.QTabWidget(self)
         self.tabs.setStyleSheet("""
-            QTabWidget::pane { border: 1px solid #36364A; border-radius: 6px; background: #161622; }
-            QTabBar::tab { background: #20202E; color: #A0A0B0; padding: 8px 18px; border-top-left-radius: 4px; border-top-right-radius: 4px; margin-right: 2px; }
-            QTabBar::tab:selected { background: #2563EB; color: #FFFFFF; font-weight: bold; }
+            QTabWidget::pane {
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                border-radius: 10px;
+                background-color: #202023;
+            }
+            QTabBar::tab {
+                background-color: rgba(255, 255, 255, 0.05);
+                color: #8E8E93;
+                padding: 7px 20px;
+                border-top-left-radius: 6px;
+                border-top-right-radius: 6px;
+                margin-right: 4px;
+                font-size: 12px;
+                font-weight: 500;
+            }
+            QTabBar::tab:selected {
+                background-color: #202023;
+                color: #FFFFFF;
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                border-bottom: none;
+                font-weight: 600;
+            }
+            QTabBar::tab:hover:!selected {
+                background-color: rgba(255, 255, 255, 0.09);
+                color: #F5F5F7;
+            }
         """)
         root.addWidget(self.tabs, 1)
 
@@ -239,13 +423,41 @@ class SettingsDialog(QtWidgets.QDialog):
         bottom = QtWidgets.QHBoxLayout()
         bottom.addStretch()
         save = QtWidgets.QPushButton("保存并应用", self)
-        save.setStyleSheet(
-            "QPushButton { background:#2563EB; color:#FFFFFF; font-weight:bold; padding:8px 24px; border-radius:4px; } QPushButton:hover { background:#3B82F6; }"
-        )
+        save.setStyleSheet("""
+            QPushButton {
+                background-color: #0A84FF;
+                color: #FFFFFF;
+                font-weight: 600;
+                padding: 8px 24px;
+                border-radius: 6px;
+                border: none;
+                font-size: 13px;
+            }
+            QPushButton:hover {
+                background-color: #0071E3;
+            }
+            QPushButton:pressed {
+                background-color: #005BB5;
+            }
+        """)
         save.clicked.connect(self.save_and_close)
         bottom.addWidget(save)
 
         cancel = QtWidgets.QPushButton("关闭", self)
+        cancel.setStyleSheet("""
+            QPushButton {
+                background-color: rgba(255, 255, 255, 0.08);
+                color: #F5F5F7;
+                font-weight: 500;
+                padding: 8px 20px;
+                border-radius: 6px;
+                border: 1px solid rgba(255, 255, 255, 0.10);
+                font-size: 13px;
+            }
+            QPushButton:hover {
+                background-color: rgba(255, 255, 255, 0.14);
+            }
+        """)
         cancel.clicked.connect(self.reject)
         bottom.addWidget(cancel)
         root.addLayout(bottom)
@@ -332,7 +544,7 @@ class SettingsDialog(QtWidgets.QDialog):
         # Main Splitter: Left Preview vs Right Button & Action Editor
         splitter = QtWidgets.QSplitter(QtCore.Qt.Horizontal, tab)
         self.splitter = splitter
-        splitter.setStyleSheet("QSplitter::handle { background: #333348; width: 4px; }")
+        splitter.setStyleSheet("QSplitter::handle { background: rgba(255, 255, 255, 0.08); width: 3px; border-radius: 1.5px; } QSplitter::handle:hover { background: #0A84FF; }")
         splitter.setChildrenCollapsible(False)
 
         # LEFT: Layout Preview
@@ -349,7 +561,7 @@ class SettingsDialog(QtWidgets.QDialog):
         preview_lbl.setToolTip("点击按钮即可选中编辑；支持拖动按钮与其他槽位调换位置")
         top_preview_bar.addWidget(preview_lbl)
         preview_hint = QtWidgets.QLabel("（点击选中 / 拖动调换）", left_widget)
-        preview_hint.setStyleSheet("color: #8888A0; font-size: 11px;")
+        preview_hint.setStyleSheet("color: #8E8E93; font-size: 11px;")
         top_preview_bar.addWidget(preview_hint)
         top_preview_bar.addStretch()
 
@@ -393,7 +605,7 @@ class SettingsDialog(QtWidgets.QDialog):
         # Scroll area for the preview grid
         scroll = QtWidgets.QScrollArea(left_widget)
         scroll.setWidgetResizable(True)
-        scroll.setStyleSheet("QScrollArea { border: 1px solid #36364A; border-radius: 4px; background: #111118; }")
+        scroll.setStyleSheet("QScrollArea { border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; background-color: #18181A; }")
         self.preview_container = QtWidgets.QWidget()
         self.preview_grid = QtWidgets.QGridLayout(self.preview_container)
         self.preview_grid.setContentsMargins(10, 10, 10, 10)
@@ -420,7 +632,7 @@ class SettingsDialog(QtWidgets.QDialog):
         bp_grid.setSpacing(6)
 
         self.selected_info_label = QtWidgets.QLabel("未选中按钮（请在左侧预览中点击按钮）", btn_prop_box)
-        self.selected_info_label.setStyleSheet("color:#60A5FA; font-weight:bold;")
+        self.selected_info_label.setStyleSheet("color: #0A84FF; font-weight: 600; font-size: 12px;")
         bp_grid.addWidget(QtWidgets.QLabel("槽位状态:"), 0, 0)
         bp_grid.addWidget(self.selected_info_label, 0, 1, 1, 3)
 
@@ -465,7 +677,7 @@ class SettingsDialog(QtWidgets.QDialog):
 
         self.record_macro_btn = QtWidgets.QPushButton("⏺ 录制宏…", steps_box)
         self.record_macro_btn.setStyleSheet(
-            "QPushButton { background:#DC2626; color:#FFFFFF; font-weight:bold; } QPushButton:hover { background:#EF4444; }"
+            "QPushButton { background-color: #FF453A; color: #FFFFFF; font-weight: 600; border-radius: 6px; border: none; padding: 5px 12px; } QPushButton:hover { background-color: #D70015; }"
         )
         self.record_macro_btn.setToolTip("实时录制键盘与鼠标操作")
         self.record_macro_btn.clicked.connect(self._record_macro)
@@ -788,22 +1000,30 @@ class SettingsDialog(QtWidgets.QDialog):
                 btn_model = self.layout_mgr.get_button(btn_id) if btn_id else None
 
                 if btn_model:
-                    display_text = f"{btn_model.icon} {btn_model.label}".strip() if btn_model.icon else btn_model.label
+                    display_text = format_button_display_text(btn_model.icon, btn_model.label)
                     btn = PreviewSlotButton(
                         r, c, btn_model, self._select_slot, self._on_slot_drag_swap, self.preview_container
                     )
                     btn.setText(display_text)
                     btn.setFixedSize(width, height)
                     btn.setToolTip(btn_model.tooltip or btn_model.label)
-                    color = btn_model.color or "#1976D2"
+                    color = btn_model.color or "#0A84FF"
                     is_sel = (self.selected_button_id == btn_model.id)
-                    border = "3px solid #00E676" if is_sel else "1px solid rgba(255,255,255,0.3)"
+                    border = "3px solid #00E676" if is_sel else "1px solid rgba(255,255,255,0.18)"
                     btn.setStyleSheet(f"""
                         QPushButton {{
-                            background-color: {color}; color: #FFFFFF; font-weight: bold;
-                            font-size: {font_size}px; border: {border}; border-radius: 4px; padding: 2px;
+                            background-color: {color};
+                            color: #FFFFFF;
+                            font-weight: 600;
+                            font-family: -apple-system, "SF Pro Text", "PingFang SC", "Segoe UI Variable Text", "Segoe UI", sans-serif;
+                            font-size: {font_size}px;
+                            border: {border};
+                            border-radius: 6px;
+                            padding: 2px;
                         }}
-                        QPushButton:hover {{ border: 2px solid #FFFFFF; }}
+                        QPushButton:hover {{
+                            border: 2px solid rgba(255, 255, 255, 0.85);
+                        }}
                     """)
                     self.preview_grid.addWidget(btn, r, c)
                     self._preview_widgets[(r, c)] = btn
@@ -822,11 +1042,17 @@ class SettingsDialog(QtWidgets.QDialog):
                     empty_btn.setToolTip("点击创建此槽位按钮，或将其他按钮拖放到此处")
                     empty_btn.setStyleSheet("""
                         QPushButton {
-                            background-color: transparent; color: #777788;
-                            border: 1px dashed #555566; border-radius: 4px; font-size: 14px;
+                            background-color: rgba(255, 255, 255, 0.02);
+                            color: #6E6E73;
+                            border: 1.5px dashed rgba(255, 255, 255, 0.18);
+                            border-radius: 6px;
+                            font-size: 14px;
+                            font-weight: 400;
                         }
                         QPushButton:hover {
-                            border-color: #60A5FA; color: #60A5FA; background-color: rgba(96,165,250,0.1);
+                            border-color: #0A84FF;
+                            color: #0A84FF;
+                            background-color: rgba(10, 132, 255, 0.08);
                         }
                     """)
                     self.preview_grid.addWidget(empty_btn, r, c)
@@ -878,14 +1104,22 @@ class SettingsDialog(QtWidgets.QDialog):
             slot_button = getattr(widget, "button_model", None)
             if slot_button:
                 is_sel = (self.selected_row == r and self.selected_col == c)
-                border = "3px solid #00E676" if is_sel else "1px solid rgba(255,255,255,0.3)"
-                color = slot_button.color or "#1976D2"
+                border = "3px solid #00E676" if is_sel else "1px solid rgba(255,255,255,0.18)"
+                color = slot_button.color or "#0A84FF"
                 widget.setStyleSheet(f"""
                     QPushButton {{
-                        background-color: {color}; color: #FFFFFF; font-weight: bold;
-                        font-size: {self._preview_font_size}px; border: {border}; border-radius: 4px; padding: 2px;
+                        background-color: {color};
+                        color: #FFFFFF;
+                        font-weight: 600;
+                        font-family: -apple-system, "SF Pro Text", "PingFang SC", "Segoe UI Variable Text", "Segoe UI", sans-serif;
+                        font-size: {self._preview_font_size}px;
+                        border: {border};
+                        border-radius: 6px;
+                        padding: 2px;
                     }}
-                    QPushButton:hover {{ border: 2px solid #FFFFFF; }}
+                    QPushButton:hover {{
+                        border: 2px solid rgba(255, 255, 255, 0.85);
+                    }}
                 """)
 
     def _clear_selection(self):
@@ -970,16 +1204,24 @@ class SettingsDialog(QtWidgets.QDialog):
         coord = (self.selected_row, self.selected_col)
         widget = self._preview_widgets.get(coord)
         if widget and hasattr(widget, "setText"):
-            display_text = f"{button.icon} {button.label}".strip() if button.icon else button.label
+            display_text = format_button_display_text(button.icon, button.label)
             widget.setText(display_text)
             widget.setToolTip(button.tooltip or button.label)
             border = "3px solid #00E676"
             widget.setStyleSheet(f"""
                 QPushButton {{
-                    background-color: {button.color}; color: #FFFFFF; font-weight: bold;
-                    font-size: {self._preview_font_size}px; border: {border}; border-radius: 4px; padding: 2px;
+                    background-color: {button.color};
+                    color: #FFFFFF;
+                    font-weight: 600;
+                    font-family: -apple-system, "SF Pro Text", "PingFang SC", "Segoe UI Variable Text", "Segoe UI", sans-serif;
+                    font-size: {self._preview_font_size}px;
+                    border: {border};
+                    border-radius: 6px;
+                    padding: 2px;
                 }}
-                QPushButton:hover {{ border: 2px solid #FFFFFF; }}
+                QPushButton:hover {{
+                    border: 2px solid rgba(255, 255, 255, 0.85);
+                }}
             """)
         else:
             self._render_preview_grid()

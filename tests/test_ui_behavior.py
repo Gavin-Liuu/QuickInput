@@ -678,3 +678,43 @@ def test_settings_dialog_layout_switch_clean_preview_and_selection(qapp):
             assert len(borders) == 1
             assert borders[0] == (dlg.selected_row, dlg.selected_col)
         dlg.close()
+
+
+def test_settings_dialog_chess_layout_no_duplicate_characters(qapp):
+    """Verify that editing Chinese chess layout in SettingsDialog displays no duplicate piece characters (e.g. 车车rc)."""
+    from ui.settings_dialog import SettingsDialog
+    from main import load_default_packs
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        cs = ConfigStore(config_dir=tmp_dir)
+        lm = LayoutManager()
+        load_default_packs(lm, ".")
+        inj = MockInputInjector()
+        wm = MockWindowManager()
+        clip = MockClipboardManager()
+        tm = TargetManager(window_manager=wm)
+        ex = ActionExecutor(injector=inj, clipboard_mgr=clip, target_mgr=tm)
+
+        dlg = SettingsDialog(lm, ex, tm, cs)
+        # Select Chinese chess layout
+        idx = dlg.layout_selector.findData("chess")
+        assert idx >= 0
+        dlg.layout_selector.setCurrentIndex(idx)
+        qapp.processEvents()
+
+        # Find red_che button in preview widgets
+        che_btn = None
+        for (r, c), widget in dlg._preview_widgets.items():
+            model = getattr(widget, "button_model", None)
+            if model and model.id == "red_che":
+                che_btn = widget
+                break
+
+        assert che_btn is not None
+        # Verify text is exactly '车\nrc', without two '车'
+        assert che_btn.text().count("车") == 1
+        assert "rc" in che_btn.text()
+        assert "车车" not in che_btn.text()
+        assert "车 车" not in che_btn.text()
+        dlg.close()
+

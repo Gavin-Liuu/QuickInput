@@ -47,13 +47,61 @@ class MacroRecorderDialog(QtWidgets.QDialog):
         self.setWindowFlags(flags)
         self.setMinimumSize(620, 500)
         self.setStyleSheet("""
-            QDialog { background-color: #1A1A24; color: #FFFFFF; font-family: "Segoe UI", "Microsoft YaHei"; }
-            QLabel { color: #ECECF0; }
-            QPushButton { background-color: #2D2D3D; color: #FFFFFF; border: 1px solid #555566; border-radius: 4px; padding: 6px 12px; }
-            QPushButton:hover { background-color: #3D3D52; border-color: #777799; }
-            QPushButton:disabled { color: #777788; background-color: #22222E; border-color: #3A3A4A; }
-            QTableWidget { background-color: #14141C; color: #FFFFFF; gridline-color: #2A2A38; border: 1px solid #3A3A4A; border-radius: 4px; }
-            QHeaderView::section { background-color: #242432; color: #A0A0B4; border: 1px solid #3A3A4A; padding: 4px; }
+            QDialog {
+                background-color: #1E1E20;
+                color: #F5F5F7;
+                font-family: -apple-system, "SF Pro Text", "PingFang SC", "Segoe UI Variable Text", "Segoe UI", "Microsoft YaHei UI", sans-serif;
+            }
+            QLabel {
+                color: #F5F5F7;
+                font-size: 12px;
+            }
+            QPushButton {
+                background-color: rgba(255, 255, 255, 0.08);
+                color: #F5F5F7;
+                border: 1px solid rgba(255, 255, 255, 0.10);
+                border-radius: 6px;
+                padding: 6px 14px;
+                font-size: 12px;
+                font-weight: 500;
+            }
+            QPushButton:hover {
+                background-color: rgba(255, 255, 255, 0.14);
+                border-color: rgba(255, 255, 255, 0.20);
+            }
+            QPushButton:pressed {
+                background-color: rgba(255, 255, 255, 0.05);
+            }
+            QPushButton:disabled {
+                color: #636366;
+                background-color: rgba(255, 255, 255, 0.03);
+                border-color: rgba(255, 255, 255, 0.05);
+            }
+            QTableWidget {
+                background-color: #18181A;
+                color: #F5F5F7;
+                gridline-color: rgba(255, 255, 255, 0.04);
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                border-radius: 8px;
+                outline: none;
+            }
+            QTableWidget::item {
+                padding: 4px 6px;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+            }
+            QTableWidget::item:selected {
+                background-color: #0A84FF;
+                color: #FFFFFF;
+            }
+            QHeaderView::section {
+                background-color: #222225;
+                color: #8E8E93;
+                border: none;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+                padding: 6px;
+                font-size: 11px;
+                font-weight: 600;
+            }
         """)
 
         # Default to full-system recording so user can type in any external app
@@ -79,13 +127,13 @@ class MacroRecorderDialog(QtWidgets.QDialog):
         # 0. User Guidance Banner
         help_card = QtWidgets.QFrame(self)
         help_card.setStyleSheet(
-            "QFrame { background-color: #1E293B; border: 1px solid #3B82F6; border-radius: 6px; padding: 6px; }"
+            "QFrame { background-color: rgba(10, 132, 255, 0.08); border: 1px solid rgba(10, 132, 255, 0.22); border-radius: 8px; padding: 6px; }"
         )
         hc_layout = QtWidgets.QVBoxLayout(help_card)
-        hc_layout.setContentsMargins(8, 6, 8, 6)
-        hc_layout.setSpacing(2)
+        hc_layout.setContentsMargins(10, 8, 10, 8)
+        hc_layout.setSpacing(3)
         help_title = QtWidgets.QLabel("💡 宏按键录制指南：", help_card)
-        help_title.setStyleSheet("font-weight: bold; color: #60A5FA; font-size: 12px;")
+        help_title.setStyleSheet("font-weight: 600; color: #0A84FF; font-size: 12px;")
         hc_layout.addWidget(help_title)
         help_text = QtWidgets.QLabel(
             "1. 点击下方【● 开始录制】按钮。\n"
@@ -93,18 +141,21 @@ class MacroRecorderDialog(QtWidgets.QDialog):
             "3. 外部输入将实时自动捕获并显示在列表中。录制完成后切回本窗口，点击【⏹ 停止录制】即可保存。",
             help_card,
         )
-        help_text.setStyleSheet("color: #E2E8F0; font-size: 11px;")
+        help_text.setStyleSheet("color: #A1A1A6; font-size: 11px;")
         hc_layout.addWidget(help_text)
         layout.addWidget(help_card)
 
         # 1. Target & Status Banner
         self.target_box = QtWidgets.QGroupBox("1. 录制目标与状态", self)
-        self.target_box.setStyleSheet("QGroupBox { font-weight: bold; border: 1px solid #3E3E52; border-radius: 6px; margin-top: 6px; padding-top: 10px; } QGroupBox::title { subcontrol-origin: margin; left: 8px; color: #60A5FA; }")
+        self.target_box.setStyleSheet(
+            "QGroupBox { font-weight: 600; background-color: #252528; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; margin-top: 8px; padding: 12px; } "
+            "QGroupBox::title { subcontrol-origin: margin; left: 12px; color: #F5F5F7; font-size: 12px; }"
+        )
         t_layout = QtWidgets.QVBoxLayout(self.target_box)
 
         top_row = QtWidgets.QHBoxLayout()
         self.target_label = QtWidgets.QLabel(self)
-        self.target_label.setStyleSheet("font-size: 13px; font-weight: bold; color: #60A5FA;")
+        self.target_label.setStyleSheet("font-size: 12px; font-weight: 600; color: #0A84FF;")
         self._update_target_label()
         top_row.addWidget(self.target_label, 1)
 
@@ -116,11 +167,11 @@ class MacroRecorderDialog(QtWidgets.QDialog):
 
         status_row = QtWidgets.QHBoxLayout()
         self.status_indicator = QtWidgets.QLabel("状态：未录制", self)
-        self.status_indicator.setStyleSheet("color: #A0A0B0; font-size: 12px;")
+        self.status_indicator.setStyleSheet("color: #8E8E93; font-size: 12px;")
         status_row.addWidget(self.status_indicator)
 
         self.warning_label = QtWidgets.QLabel("⚠️ 已切换离开录制目标，按键已自动过滤", self)
-        self.warning_label.setStyleSheet("color: #F87171; font-weight: bold; font-size: 12px;")
+        self.warning_label.setStyleSheet("color: #FF453A; font-weight: 600; font-size: 12px;")
         self.warning_label.hide()
         status_row.addWidget(self.warning_label)
 
@@ -131,7 +182,9 @@ class MacroRecorderDialog(QtWidgets.QDialog):
         # 2. Controls Bar
         btn_bar = QtWidgets.QHBoxLayout()
         self.record_btn = QtWidgets.QPushButton("● 开始录制", self)
-        self.record_btn.setStyleSheet("QPushButton { background-color: #DC2626; color: white; font-weight: bold; padding: 6px 18px; border-radius: 4px; } QPushButton:hover { background-color: #EF4444; }")
+        self.record_btn.setStyleSheet(
+            "QPushButton { background-color: #FF453A; color: white; font-weight: 600; padding: 6px 18px; border-radius: 6px; border: none; } QPushButton:hover { background-color: #D70015; }"
+        )
         self.record_btn.clicked.connect(self.toggle_recording)
         btn_bar.addWidget(self.record_btn)
 
@@ -152,7 +205,9 @@ class MacroRecorderDialog(QtWidgets.QDialog):
         btn_bar.addStretch()
 
         self.test_btn = QtWidgets.QPushButton("▶ 测试运行", self)
-        self.test_btn.setStyleSheet("QPushButton { background-color: #2563EB; color: white; font-weight: bold; } QPushButton:hover { background-color: #3B82F6; }")
+        self.test_btn.setStyleSheet(
+            "QPushButton { background-color: #0A84FF; color: white; font-weight: 600; padding: 6px 16px; border-radius: 6px; border: none; } QPushButton:hover { background-color: #0071E3; }"
+        )
         self.test_btn.clicked.connect(self.test_run)
         btn_bar.addWidget(self.test_btn)
 
@@ -345,17 +400,21 @@ class MacroRecorderDialog(QtWidgets.QDialog):
             self.record_btn.setText("⏹ 停止录制")
             self.record_btn.setStyleSheet("""
                 QPushButton {
-                    background-color: #991B1B;
+                    background-color: #D70015;
                     color: white;
-                    font-weight: bold;
+                    font-weight: 600;
                     padding: 6px 18px;
-                    border-radius: 4px;
+                    border-radius: 6px;
+                    border: none;
+                }
+                QPushButton:hover {
+                    background-color: #B50010;
                 }
             """)
             self.pause_btn.setEnabled(True)
             self.pause_btn.setText("❚❚ 暂停")
             self.status_indicator.setText("状态：正在录制中... (请切换到其他软件正常打字输入)")
-            self.status_indicator.setStyleSheet("color: #EF4444; font-size: 12px; font-weight: bold;")
+            self.status_indicator.setStyleSheet("color: #FF453A; font-size: 12px; font-weight: 600;")
             if not self.focus_poll_timer:
                 self.focus_poll_timer = QtCore.QTimer(self)
                 self.focus_poll_timer.timeout.connect(self._poll_focus)
@@ -369,16 +428,20 @@ class MacroRecorderDialog(QtWidgets.QDialog):
             self.record_btn.setText("● 开始录制")
             self.record_btn.setStyleSheet("""
                 QPushButton {
-                    background-color: #DC2626;
+                    background-color: #FF453A;
                     color: white;
-                    font-weight: bold;
+                    font-weight: 600;
                     padding: 6px 18px;
-                    border-radius: 4px;
+                    border-radius: 6px;
+                    border: none;
+                }
+                QPushButton:hover {
+                    background-color: #D70015;
                 }
             """)
             self.pause_btn.setEnabled(False)
             self.status_indicator.setText("状态：已停止")
-            self.status_indicator.setStyleSheet("color: #10B981; font-size: 12px; font-weight: bold;")
+            self.status_indicator.setStyleSheet("color: #30D158; font-size: 12px; font-weight: 600;")
             self.warning_label.hide()
             self.refresh_table()
 
@@ -389,14 +452,14 @@ class MacroRecorderDialog(QtWidgets.QDialog):
             self.recorder.resume()
             self.pause_btn.setText("❚❚ 暂停")
             self.status_indicator.setText("状态：正在录制中...")
-            self.status_indicator.setStyleSheet("color: #EF4444; font-size: 12px; font-weight: bold;")
+            self.status_indicator.setStyleSheet("color: #FF453A; font-size: 12px; font-weight: 600;")
             if self.focus_poll_timer:
                 self.focus_poll_timer.start(150)
         else:
             self.recorder.pause()
             self.pause_btn.setText("▶ 继续")
             self.status_indicator.setText("状态：已暂停")
-            self.status_indicator.setStyleSheet("color: #F59E0B; font-size: 12px; font-weight: bold;")
+            self.status_indicator.setStyleSheet("color: #FF9F0A; font-size: 12px; font-weight: 600;")
             if self.focus_poll_timer:
                 self.focus_poll_timer.stop()
 

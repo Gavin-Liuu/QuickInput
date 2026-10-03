@@ -6,6 +6,20 @@ from typing import Dict, Any, Optional, List
 import copy
 
 
+def format_button_display_text(icon: str, label: str) -> str:
+    """Format button display text cleanly, preventing duplicate icon characters."""
+    icon = (icon or "").strip()
+    label = label or ""
+    if not icon:
+        return label
+    if label.startswith(icon):
+        return label
+    first_token = label.split()[0] if label.split() else ""
+    if first_token == icon:
+        return label
+    return f"{icon} {label}".strip()
+
+
 @dataclass
 class Button:
     """Represents a button on the floating keyboard panel."""
@@ -16,6 +30,10 @@ class Button:
     color: str = ""
     tooltip: str = ""
     auto_enter: Optional[bool] = None  # None = use global or action setting
+
+    @property
+    def display_text(self) -> str:
+        return format_button_display_text(self.icon, self.label)
 
     def validate(self) -> List[str]:
         errors = []
@@ -42,11 +60,15 @@ class Button:
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "Button":
+        label = str(data.get("label", ""))
+        icon = str(data.get("icon", "")).strip()
+        if icon and (label.startswith(icon) or (label.split() and label.split()[0] == icon)):
+            icon = ""
         return cls(
             id=str(data.get("id", "")),
-            label=str(data.get("label", "")),
+            label=label,
             action_id=str(data.get("action_id", "")),
-            icon=str(data.get("icon", "")),
+            icon=icon,
             color=str(data.get("color", "")),
             tooltip=str(data.get("tooltip", "")),
             auto_enter=data.get("auto_enter", None),

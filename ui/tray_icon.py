@@ -29,10 +29,29 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
         # Create persistent menu to prevent garbage collection
         self.tray_menu = QtWidgets.QMenu()
         self.tray_menu.setStyleSheet("""
-            QMenu { background:#111111; color:#FFFFFF; border:1px solid #666666; padding:4px; }
-            QMenu::item { color:#FFFFFF; padding:6px 18px; }
-            QMenu::item:selected { background:#2563EB; color:#FFFFFF; }
-            QMenu::separator { height:1px; background:#444444; margin:4px 8px; }
+            QMenu {
+                background-color: #252528;
+                color: #F5F5F7;
+                border: 1px solid rgba(255, 255, 255, 0.12);
+                border-radius: 8px;
+                padding: 5px;
+                font-family: -apple-system, "SF Pro Text", "PingFang SC", "Segoe UI Variable Text", "Segoe UI", sans-serif;
+                font-size: 12px;
+            }
+            QMenu::item {
+                color: #F5F5F7;
+                padding: 6px 18px;
+                border-radius: 4px;
+            }
+            QMenu::item:selected {
+                background-color: #0A84FF;
+                color: #FFFFFF;
+            }
+            QMenu::separator {
+                height: 1px;
+                background: rgba(255, 255, 255, 0.08);
+                margin: 4px 6px;
+            }
         """)
         self.tray_menu.aboutToShow.connect(self.build_menu)
         self.setContextMenu(self.tray_menu)
@@ -52,13 +71,14 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
         painter.setRenderHint(QtGui.QPainter.Antialiasing)
 
         # Draw rounded badge
-        painter.setBrush(QtGui.QColor("#3B82F6"))
+        painter.setBrush(QtGui.QColor("#0A84FF"))
         painter.setPen(QtCore.Qt.NoPen)
-        painter.drawRoundedRect(2, 2, 28, 28, 6, 6)
+        painter.drawRoundedRect(2, 2, 28, 28, 7, 7)
 
         # Draw text 'Q'
         painter.setPen(QtGui.QColor("#FFFFFF"))
-        font = QtGui.QFont("Segoe UI", 16, QtGui.QFont.Bold)
+        font = QtGui.QFont("SF Pro Display", 16, QtGui.QFont.Bold)
+        font.setStyleHint(QtGui.QFont.SansSerif)
         painter.setFont(font)
         painter.drawText(pix.rect(), QtCore.Qt.AlignCenter, "Q")
         painter.end()

@@ -22,6 +22,20 @@ MA_NOACTIVATE = 3
 WS_EX_NOACTIVATE = 0x08000000
 
 
+def format_button_display_text(icon: str, label: str) -> str:
+    """Format button display text cleanly, preventing duplicate icon characters."""
+    icon = (icon or "").strip()
+    label = label or ""
+    if not icon:
+        return label
+    if label.startswith(icon):
+        return label
+    first_token = label.split()[0] if label.split() else ""
+    if first_token == icon:
+        return label
+    return f"{icon} {label}".strip()
+
+
 class ActionButtonWidget(QtWidgets.QPushButton):
     """A button that never accepts keyboard focus during panel operation."""
 
@@ -30,7 +44,7 @@ class ActionButtonWidget(QtWidgets.QPushButton):
         self.button_model = button_model
         self.setFocusPolicy(QtCore.Qt.NoFocus)
         self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        display_text = f"{button_model.icon} {button_model.label}".strip() if button_model.icon else button_model.label
+        display_text = format_button_display_text(button_model.icon, button_model.label)
         self.setText(display_text)
         self.setToolTip(button_model.tooltip or button_model.label)
         self.apply_scale(1.0)
@@ -41,16 +55,25 @@ class ActionButtonWidget(QtWidgets.QPushButton):
         height = max(24, min(100, int(height * scale)))
         font = max(8, min(20, int(font_size * scale)))
         self.setFixedSize(width, height)
-        color = self.button_model.color or "#1976D2"
+        color = self.button_model.color or "#0A84FF"
         self.setStyleSheet(f"""
             QPushButton {{
-                background-color: {color}; color: #FFFFFF;
-                font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
-                font-size: {font}px; font-weight: bold;
-                border: 1px solid rgba(255,255,255,0.32); border-radius: 4px; padding: 1px;
+                background-color: {color};
+                color: #FFFFFF;
+                font-family: -apple-system, "SF Pro Text", "PingFang SC", "Segoe UI Variable Text", "Segoe UI", "Microsoft YaHei UI", sans-serif;
+                font-size: {font}px;
+                font-weight: 600;
+                border: 1px solid rgba(255, 255, 255, 0.18);
+                border-radius: 6px;
+                padding: 1px 2px;
             }}
-            QPushButton:hover {{ border: 2px solid #FFFFFF; }}
-            QPushButton:pressed {{ background-color: rgba(0,0,0,0.42); }}
+            QPushButton:hover {{
+                border: 1.5px solid rgba(255, 255, 255, 0.85);
+            }}
+            QPushButton:pressed {{
+                background-color: rgba(0, 0, 0, 0.38);
+                border: 1px solid rgba(255, 255, 255, 0.25);
+            }}
         """)
 
     def flash_feedback(self):
@@ -182,18 +205,25 @@ class FloatingPanel(QtWidgets.QWidget):
         self.main_container = QtWidgets.QFrame(self)
         self.main_container.setObjectName("MainContainer")
         self.main_container.setStyleSheet("""
-            QFrame#MainContainer { background-color: #111111; border: 1px solid #444444; border-radius: 8px; }
-            QLabel { color: #FFFFFF; }
+            QFrame#MainContainer {
+                background-color: #1C1C1E;
+                border: 1px solid rgba(255, 255, 255, 0.12);
+                border-radius: 10px;
+            }
+            QLabel {
+                color: #F5F5F7;
+                font-family: -apple-system, "SF Pro Text", "PingFang SC", "Segoe UI Variable Text", "Segoe UI", "Microsoft YaHei UI", sans-serif;
+            }
         """)
         shadow = QtWidgets.QGraphicsDropShadowEffect(self)
-        shadow.setBlurRadius(8)
-        shadow.setColor(QtGui.QColor(0, 0, 0, 160))
-        shadow.setOffset(0, 2)
+        shadow.setBlurRadius(16)
+        shadow.setColor(QtGui.QColor(0, 0, 0, 140))
+        shadow.setOffset(0, 3)
         self.main_container.setGraphicsEffect(shadow)
 
         self.container_layout = QtWidgets.QVBoxLayout(self.main_container)
-        self.container_layout.setContentsMargins(6, 4, 6, 4)
-        self.container_layout.setSpacing(4)
+        self.container_layout.setContentsMargins(7, 5, 7, 5)
+        self.container_layout.setSpacing(5)
 
         # 1. Header (Search button is first on left, then current layout dropdown, then settings)
         self.init_header(self.container_layout)
@@ -206,9 +236,21 @@ class FloatingPanel(QtWidgets.QWidget):
         self.search_input = QtWidgets.QLineEdit(self.search_box_frame)
         self.search_input.setPlaceholderText("搜索当前布局按钮… (按 Esc 退出搜索)")
         self.search_input.setClearButtonEnabled(True)
-        self.search_input.setStyleSheet(
-            "QLineEdit { background:#222222; color:#FFFFFF; border:1px solid #666666; padding:4px; border-radius:3px; }"
-        )
+        self.search_input.setStyleSheet("""
+            QLineEdit {
+                background-color: rgba(255, 255, 255, 0.08);
+                color: #F5F5F7;
+                border: 1px solid rgba(255, 255, 255, 0.12);
+                padding: 4px 8px;
+                border-radius: 6px;
+                font-family: -apple-system, "SF Pro Text", "PingFang SC", "Segoe UI Variable Text", "Segoe UI", sans-serif;
+                font-size: 11px;
+            }
+            QLineEdit:focus {
+                border: 1.5px solid #0A84FF;
+                background-color: rgba(255, 255, 255, 0.12);
+            }
+        """)
         self.search_input.textChanged.connect(self.filter_buttons)
         self.search_input.installEventFilter(self)
         search_layout.addWidget(self.search_input)
@@ -234,7 +276,7 @@ class FloatingPanel(QtWidgets.QWidget):
         self.header_widget = QtWidgets.QWidget(self)
         layout = QtWidgets.QHBoxLayout(self.header_widget)
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(4)
+        layout.setSpacing(5)
 
         # First control on left: Search button
         self.search_toggle_btn = QtWidgets.QPushButton("🔍", self.header_widget)
@@ -249,8 +291,37 @@ class FloatingPanel(QtWidgets.QWidget):
         self.layout_combo = QtWidgets.QComboBox(self.header_widget)
         self.layout_combo.setFocusPolicy(QtCore.Qt.NoFocus)
         self.layout_combo.setStyleSheet("""
-            QComboBox { background:#222222; color:#FFFFFF; border:1px solid #666666; padding:2px 6px; border-radius:3px; }
-            QComboBox QAbstractItemView { background:#222222; color:#FFFFFF; selection-background-color:#2563EB; }
+            QComboBox {
+                background-color: rgba(255, 255, 255, 0.08);
+                color: #F5F5F7;
+                border: 1px solid rgba(255, 255, 255, 0.10);
+                padding: 2px 8px;
+                border-radius: 6px;
+                font-family: -apple-system, "SF Pro Text", "PingFang SC", "Segoe UI Variable Text", "Segoe UI", "Microsoft YaHei UI", sans-serif;
+                font-size: 11px;
+                font-weight: 500;
+            }
+            QComboBox:hover {
+                background-color: rgba(255, 255, 255, 0.13);
+                border-color: rgba(255, 255, 255, 0.22);
+            }
+            QComboBox::drop-down {
+                subcontrol-origin: padding;
+                subcontrol-position: top right;
+                width: 16px;
+                border-left-width: 0px;
+            }
+            QComboBox QAbstractItemView {
+                background-color: #252528;
+                color: #F5F5F7;
+                border: 1px solid rgba(255, 255, 255, 0.12);
+                border-radius: 6px;
+                padding: 4px;
+                selection-background-color: #0A84FF;
+                selection-color: #FFFFFF;
+                outline: none;
+                font-size: 11px;
+            }
         """)
         self.refresh_layout_combo()
         self.layout_combo.currentIndexChanged.connect(self._on_layout_combo_selected)
@@ -276,7 +347,7 @@ class FloatingPanel(QtWidgets.QWidget):
 
         # Left: Layout Opacity Slider
         opacity_label = QtWidgets.QLabel("透明度", self.footer_widget)
-        opacity_label.setStyleSheet("color:#A0A0B0; font-size:9px;")
+        opacity_label.setStyleSheet("color: #8E8E93; font-size: 10px; font-weight: 500;")
         layout.addWidget(opacity_label)
 
         self.opacity_slider = QtWidgets.QSlider(QtCore.Qt.Horizontal, self.footer_widget)
@@ -284,9 +355,26 @@ class FloatingPanel(QtWidgets.QWidget):
         self.opacity_slider.setFixedWidth(80)
         self.opacity_slider.setFocusPolicy(QtCore.Qt.NoFocus)
         self.opacity_slider.setStyleSheet("""
-            QSlider::groove:horizontal { height: 4px; background: #333333; border-radius: 2px; }
-            QSlider::sub-page:horizontal { background: #3B82F6; border-radius: 2px; }
-            QSlider::handle:horizontal { background: #FFFFFF; width: 10px; margin-top: -3px; margin-bottom: -3px; border-radius: 5px; }
+            QSlider::groove:horizontal {
+                height: 4px;
+                background: rgba(255, 255, 255, 0.16);
+                border-radius: 2px;
+            }
+            QSlider::sub-page:horizontal {
+                background: #0A84FF;
+                border-radius: 2px;
+            }
+            QSlider::handle:horizontal {
+                background: #FFFFFF;
+                width: 12px;
+                height: 12px;
+                margin-top: -4px;
+                margin-bottom: -4px;
+                border-radius: 6px;
+            }
+            QSlider::handle:horizontal:hover {
+                background: #E5E5EA;
+            }
         """)
         layout_obj = self.layout_mgr.get_active_layout()
         curr_op = int((layout_obj.settings.opacity if layout_obj else 0.95) * 100)
@@ -300,8 +388,18 @@ class FloatingPanel(QtWidgets.QWidget):
         self.stop_exec_btn = QtWidgets.QPushButton("⏹ 停止", self.footer_widget)
         self.stop_exec_btn.setFocusPolicy(QtCore.Qt.NoFocus)
         self.stop_exec_btn.setStyleSheet("""
-            QPushButton { background:#DC2626; color:#FFFFFF; border:1px solid #EF4444; border-radius:3px; padding:2px 8px; font-weight:bold; }
-            QPushButton:hover { background:#B91C1C; }
+            QPushButton {
+                background-color: #FF453A;
+                color: #FFFFFF;
+                border: none;
+                border-radius: 5px;
+                padding: 2px 10px;
+                font-weight: 600;
+                font-size: 10px;
+            }
+            QPushButton:hover {
+                background-color: #D70015;
+            }
         """)
         self.stop_exec_btn.clicked.connect(self.executor.cancel_current)
         self.stop_exec_btn.hide()
@@ -312,9 +410,21 @@ class FloatingPanel(QtWidgets.QWidget):
         # Right: Target window pill and lock toggle
         self.target_lock_btn = QtWidgets.QPushButton("🎯 未检测", self.footer_widget)
         self.target_lock_btn.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.target_lock_btn.setStyleSheet(
-            "QPushButton { background:#222222; color:#FFFFFF; border:1px solid #666666; border-radius:3px; padding:2px 6px; font-size:10px; }"
-        )
+        self.target_lock_btn.setStyleSheet("""
+            QPushButton {
+                background-color: rgba(255, 255, 255, 0.07);
+                color: #A1A1A6;
+                border: 1px solid rgba(255, 255, 255, 0.10);
+                border-radius: 10px;
+                padding: 2px 8px;
+                font-family: -apple-system, "SF Pro Text", "PingFang SC", "Segoe UI Variable Text", "Segoe UI", sans-serif;
+                font-size: 10px;
+            }
+            QPushButton:hover {
+                background-color: rgba(255, 255, 255, 0.13);
+                color: #F5F5F7;
+            }
+        """)
         self.target_lock_btn.clicked.connect(self.target_mgr.toggle_lock)
         layout.addWidget(self.target_lock_btn)
 
@@ -322,7 +432,23 @@ class FloatingPanel(QtWidgets.QWidget):
 
     @staticmethod
     def get_tool_btn_style():
-        return "QPushButton { background:#222222; color:#FFFFFF; border:1px solid #666666; border-radius:3px; padding:0; } QPushButton:hover { background:#333333; border-color:#FFFFFF; }"
+        return """
+            QPushButton {
+                background-color: rgba(255, 255, 255, 0.08);
+                color: #F5F5F7;
+                border: 1px solid rgba(255, 255, 255, 0.10);
+                border-radius: 6px;
+                padding: 0px;
+                font-family: -apple-system, "SF Pro Text", "PingFang SC", "Segoe UI Variable Text", "Segoe UI", sans-serif;
+            }
+            QPushButton:hover {
+                background-color: rgba(255, 255, 255, 0.15);
+                border-color: rgba(255, 255, 255, 0.24);
+            }
+            QPushButton:pressed {
+                background-color: rgba(255, 255, 255, 0.05);
+            }
+        """
 
     def _on_opacity_slider_changed(self, val):
         opacity = max(0.3, min(1.0, val / 100.0))

@@ -118,6 +118,15 @@ class ConfigStore:
             merged = self.get_default_config()
             self._deep_update(merged, data)
             merged["schema_version"] = DEFAULT_SCHEMA_VERSION
+
+            # Clean up redundant duplicate icons from stored buttons
+            for bid, b_dict in merged.get("buttons", {}).items():
+                if isinstance(b_dict, dict):
+                    icon = str(b_dict.get("icon", "")).strip()
+                    label = str(b_dict.get("label", ""))
+                    if icon and (label.startswith(icon) or (label.split() and label.split()[0] == icon)):
+                        b_dict["icon"] = ""
+
             return merged
 
         except Exception as e:
