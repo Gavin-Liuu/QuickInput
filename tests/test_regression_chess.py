@@ -115,29 +115,11 @@ def test_chess_buttons_no_duplicate_characters(qapp):
 def test_button_empty_label_icon_promotion():
     """Verify that if label is empty but icon is set, icon is promoted to label."""
     from domain.button import Button
-    from storage.config_store import ConfigStore
-    import tempfile, json
 
     btn = Button.from_dict({"id": "damaged", "label": "", "action_id": "act_d", "icon": "兵"})
     assert btn.label == "兵"
     assert btn.icon == ""
     assert btn.validate() == []
-
-    with tempfile.TemporaryDirectory() as tmp_dir:
-        cs = ConfigStore(config_dir=tmp_dir)
-        cfg = {
-            "schema_version": 2,
-            "buttons": {
-                "b_damaged": {"id": "b_damaged", "label": "", "action_id": "a", "icon": "车"},
-                "b_dup": {"id": "b_dup", "label": "车\nrc", "action_id": "a", "icon": "车"},
-            },
-        }
-        with open(cs.config_file, "w", encoding="utf-8") as f:
-            json.dump(cfg, f)
-        loaded = cs.load_config()
-        assert loaded["buttons"]["b_damaged"]["label"] == "车"
-        assert loaded["buttons"]["b_damaged"]["icon"] == ""
-        assert loaded["buttons"]["b_dup"]["icon"] == ""
 
 
 def test_settings_dialog_multiline_label_editing_preserves_newline(qapp):

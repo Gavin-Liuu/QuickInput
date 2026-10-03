@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Target Window Manager managing auto-detection, explicit lock, and app-binding."""
 
+import os
 from typing import Optional, Dict, Any, Callable, List, Tuple
 from platform_layer.base import BaseWindowManager
 
@@ -48,6 +49,12 @@ class TargetManager:
         if not self.window_manager.is_window_valid(hwnd):
             return
 
+        # Never track any window belonging to our own application process
+        info = self.window_manager.get_window_info(hwnd)
+        if info.get("process_id") == os.getpid():
+            self.own_hwnds.add(int(hwnd))
+            return
+
         prev_target = self.get_effective_hwnd()
         self._recent_external_hwnd = hwnd
 
@@ -60,8 +67,12 @@ class TargetManager:
         if not target or target in self.own_hwnds or not self.window_manager.is_window_valid(target):
             return False
 
+        info = self.window_manager.get_window_info(target)
+        if info.get("process_id") == os.getpid():
+            return False
+
         self._locked_hwnd = int(target)
-        self._locked_info = self.window_manager.get_window_info(self._locked_hwnd)
+        self._locked_info = info
         self.mode = self.MODE_LOCKED
         self._notify_target_changed()
         return True
@@ -100,6 +111,15 @@ class TargetManager:
             }
 
         info = self.window_manager.get_window_info(hwnd)
+        if info.get("process_id") == os.getpid():
+            return {
+                "handle": None,
+                "title": "(无目标)" if self.mode == self.MODE_AUTO else "(锁定目标已失效)",
+                "process_name": "",
+                "is_admin": False,
+                "is_locked": self.mode == self.MODE_LOCKED,
+                "is_valid": False,
+            }
         info["is_locked"] = (self.mode == self.MODE_LOCKED)
         info["is_valid"] = True
         return info

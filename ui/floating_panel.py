@@ -23,17 +23,12 @@ WS_EX_NOACTIVATE = 0x08000000
 
 
 def format_button_display_text(icon: str, label: str) -> str:
-    """Format button display text cleanly, preventing duplicate icon characters."""
+    """Format button display text cleanly."""
     icon = (icon or "").strip()
     label = label or ""
-    if not icon:
+    if not icon or icon in label:
         return label
-    if label.startswith(icon):
-        return label
-    first_token = label.split()[0] if label.split() else ""
-    if first_token == icon:
-        return label
-    return f"{icon} {label}".strip()
+    return f"{icon} {label}".strip() if label else icon
 
 
 class ActionButtonWidget(QtWidgets.QPushButton):
@@ -138,7 +133,6 @@ class FloatingPanel(QtWidgets.QWidget):
             | QtCore.Qt.WindowCloseButtonHint
         )
         self.setWindowFlags(flags)
-        self.setAttribute(QtCore.Qt.WA_TranslucentBackground, True)
         self.setAttribute(QtCore.Qt.WA_ShowWithoutActivating, True)
         self.setMinimumSize(220, 60)
         self.setWindowTitle("快捷输入工作台")
@@ -208,67 +202,33 @@ class FloatingPanel(QtWidgets.QWidget):
         self.main_container.setStyleSheet("""
             QFrame#MainContainer {
                 background-color: #1C1C1E;
-                border: 1px solid rgba(255, 255, 255, 0.12);
-                border-radius: 10px;
+                border: none;
             }
             QLabel {
                 color: #F5F5F7;
                 font-family: "Segoe UI Variable Text", "Segoe UI", "PingFang SC", "Microsoft YaHei UI", sans-serif;
             }
         """)
-        shadow = QtWidgets.QGraphicsDropShadowEffect(self)
-        shadow.setBlurRadius(16)
-        shadow.setColor(QtGui.QColor(0, 0, 0, 140))
-        shadow.setOffset(0, 3)
-        self.main_container.setGraphicsEffect(shadow)
 
         self.container_layout = QtWidgets.QVBoxLayout(self.main_container)
         self.container_layout.setContentsMargins(7, 5, 7, 5)
         self.container_layout.setSpacing(5)
 
-        # 1. Header (Search button is first on left, then current layout dropdown, then settings)
+        # 1. Header (Search button, inline search input, layout selector dropdown, settings)
         self.init_header(self.container_layout)
 
-        # 2. Search Box Frame (Hidden by default, expands on clicking search)
-        self.search_box_frame = QtWidgets.QFrame(self)
-        self.search_box_frame.hide()
-        search_layout = QtWidgets.QHBoxLayout(self.search_box_frame)
-        search_layout.setContentsMargins(0, 1, 0, 1)
-        self.search_input = QtWidgets.QLineEdit(self.search_box_frame)
-        self.search_input.setPlaceholderText("搜索当前布局按钮… (按 Esc 退出搜索)")
-        self.search_input.setClearButtonEnabled(True)
-        self.search_input.setStyleSheet("""
-            QLineEdit {
-                background-color: rgba(255, 255, 255, 0.08);
-                color: #F5F5F7;
-                border: 1px solid rgba(255, 255, 255, 0.12);
-                padding: 4px 8px;
-                border-radius: 6px;
-                font-family: "Segoe UI Variable Text", "Segoe UI", "PingFang SC", "Microsoft YaHei UI", sans-serif;
-                font-size: 11px;
-            }
-            QLineEdit:focus {
-                border: 1.5px solid #0A84FF;
-                background-color: rgba(255, 255, 255, 0.12);
-            }
-        """)
-        self.search_input.textChanged.connect(self.filter_buttons)
-        self.search_input.installEventFilter(self)
-        search_layout.addWidget(self.search_input)
-        self.container_layout.addWidget(self.search_box_frame)
-
-        # 3. Button Grid Area
+        # 2. Button Grid Area
         self.button_grid_widget = QtWidgets.QWidget(self)
         self.button_grid_layout = QtWidgets.QGridLayout(self.button_grid_widget)
         self.button_grid_layout.setContentsMargins(0, 1, 0, 1)
         self.button_grid_layout.setSpacing(3)
         self.container_layout.addWidget(self.button_grid_widget)
 
-        # 4. Footer (Opacity slider on left, target window lock on right; no persistent status text)
+        # 3. Footer (Opacity slider on left, target window lock on right; no persistent status text)
         self.init_footer(self.container_layout)
 
         root = QtWidgets.QVBoxLayout(self)
-        root.setContentsMargins(2, 2, 2, 2)
+        root.setContentsMargins(0, 0, 0, 0)
         root.addWidget(self.main_container)
         self.setLayout(root)
         self.rebuild_buttons()
@@ -281,12 +241,36 @@ class FloatingPanel(QtWidgets.QWidget):
 
         # First control on left: Search button
         self.search_toggle_btn = QtWidgets.QPushButton("🔍", self.header_widget)
-        self.search_toggle_btn.setToolTip("展开/收起搜索")
+        self.search_toggle_btn.setToolTip("搜索按钮 (点击展开/退出搜索)")
         self.search_toggle_btn.setFixedSize(26, 24)
         self.search_toggle_btn.setFocusPolicy(QtCore.Qt.NoFocus)
         self.search_toggle_btn.setStyleSheet(self.get_tool_btn_style())
         self.search_toggle_btn.clicked.connect(self.toggle_search_box)
         layout.addWidget(self.search_toggle_btn)
+
+        # Inline search input field (expands horizontally inside header, hidden initially)
+        self.search_input = QtWidgets.QLineEdit(self.header_widget)
+        self.search_input.setPlaceholderText("全局搜索所有布局按钮… (Esc 退出)")
+        self.search_input.setClearButtonEnabled(True)
+        self.search_input.setStyleSheet("""
+            QLineEdit {
+                background-color: rgba(255, 255, 255, 0.08);
+                color: #F5F5F7;
+                border: 1px solid rgba(255, 255, 255, 0.14);
+                padding: 2px 8px;
+                border-radius: 6px;
+                font-family: "Segoe UI Variable Text", "Segoe UI", "PingFang SC", "Microsoft YaHei UI", sans-serif;
+                font-size: 11px;
+            }
+            QLineEdit:focus {
+                border: 1.5px solid #0A84FF;
+                background-color: rgba(255, 255, 255, 0.12);
+            }
+        """)
+        self.search_input.textChanged.connect(self.filter_buttons)
+        self.search_input.installEventFilter(self)
+        self.search_input.hide()
+        layout.addWidget(self.search_input)
 
         # Layout selector dropdown
         self.layout_combo = QtWidgets.QComboBox(self.header_widget)
@@ -633,41 +617,141 @@ class FloatingPanel(QtWidgets.QWidget):
             pass
 
     def toggle_search_box(self):
-        if self.search_box_frame.isVisible():
-            self.search_box_frame.hide()
-            self.search_input.clear()
-            self.filter_buttons("")
-            self._set_search_interactive(False)
-            self.clearFocus()
-            self.adjustSize()
+        if self._search_interactive or self.search_input.isVisible():
+            self.exit_search()
         else:
-            self.search_box_frame.show()
-            self._set_search_interactive(True)
-            self.show()
-            self.raise_()
-            self.activateWindow()
-            self.search_input.setFocus(QtCore.Qt.OtherFocusReason)
-            self.search_input.selectAll()
-            self.adjustSize()
+            self.enter_search()
+
+    def enter_search(self):
+        self._search_interactive = True
+        self.layout_combo.hide()
+        self.search_input.show()
+        self.search_input.clear()
+        self._set_search_interactive(True)
+        self.show()
+        self.raise_()
+        self.activateWindow()
+        self.search_input.setFocus(QtCore.Qt.OtherFocusReason)
+
+    def exit_search(self):
+        self._search_interactive = False
+        self.search_input.clear()
+        self.search_input.hide()
+        self.layout_combo.show()
+        self._set_search_interactive(False)
+        self.clearFocus()
+        self.rebuild_buttons()
 
     def filter_buttons(self, text):
         query = (text or "").strip().lower()
+        if not query:
+            self.rebuild_buttons()
+            return
+
         for widget in self.buttons_widgets:
-            model = widget.button_model
-            haystack = " ".join((model.label, model.tooltip, model.icon)).lower()
-            widget.setVisible(not query or query in haystack)
-        self.button_grid_widget.adjustSize()
-        self.adjustSize()
+            widget.setParent(None)
+            widget.deleteLater()
+        self.buttons_widgets.clear()
+
+        if self.button_grid_layout is not None:
+            sip.delete(self.button_grid_layout)
+        self.button_grid_layout = QtWidgets.QGridLayout(self.button_grid_widget)
+        self.button_grid_layout.setContentsMargins(0, 1, 0, 1)
+        self.button_grid_layout.setSpacing(3)
+
+        matched_results = []
+        seen_keys = set()
+        for lid, layout in self.layout_mgr.layouts.items():
+            for slot in layout.buttons:
+                bm = self.layout_mgr.get_button(slot.button_id)
+                if not bm:
+                    continue
+                action = self.layout_mgr.actions.get(bm.action_id)
+                action_text = ""
+                if action:
+                    action_text = " ".join(s.value for s in action.steps if s.value)
+                haystack = f"{bm.label} {bm.tooltip} {bm.action_id} {action_text}".lower()
+                if query in haystack:
+                    key = (lid, bm.id)
+                    if key not in seen_keys:
+                        seen_keys.add(key)
+                        matched_results.append((lid, layout.name, bm))
+
+        curr_layout = self.layout_mgr.get_active_layout()
+        cols = max(1, curr_layout.columns if curr_layout else 4)
+        for idx, (lid, lname, bm) in enumerate(matched_results):
+            r = idx // cols
+            c = idx % cols
+            widget = ActionButtonWidget(bm, self.button_grid_widget)
+            widget.setToolTip(f"所属布局：【{lname}】\n点击切换至此布局并定位按钮")
+            widget.clicked.connect(
+                lambda checked=False, target_lid=lid, target_bid=bm.id: self._on_search_result_clicked(target_lid, target_bid)
+            )
+            self.button_grid_layout.addWidget(widget, r, c)
+            self.buttons_widgets.append(widget)
+
+        self._apply_button_scale()
+
+    def _on_search_result_clicked(self, target_lid: str, target_bid: str):
+        self.exit_search()
+        if target_lid != self.layout_mgr.active_layout_id:
+            self.layout_mgr.set_active_layout(target_lid)
+        else:
+            self.rebuild_buttons()
+        self._highlight_button(target_bid)
+
+    def _highlight_button(self, target_bid: str):
+        for widget in self.buttons_widgets:
+            if widget.button_model.id == target_bid:
+                orig_style = widget.styleSheet()
+                widget.setStyleSheet(orig_style + "QPushButton { border: 2.5px solid #00E676; background-color: rgba(0, 230, 118, 0.45); }")
+                def reset_style():
+                    try:
+                        widget.setStyleSheet(orig_style)
+                    except Exception:
+                        pass
+                QtCore.QTimer.singleShot(600, reset_style)
+                break
 
     def open_settings(self):
-        dialog = SettingsDialog(
+        if hasattr(self, "_settings_dialog") and self._settings_dialog and self._settings_dialog.isVisible():
+            self._settings_dialog.raise_()
+            self._settings_dialog.activateWindow()
+            return
+
+        self.save_window_config()
+        self._remove_topmost_temporarily()
+
+        self._settings_dialog = SettingsDialog(
             self.layout_mgr, self.executor, self.target_mgr, self.config_store, parent=None
         )
-        dialog.exec_()
+        self._settings_dialog.setWindowModality(QtCore.Qt.NonModal)
+        self._settings_dialog.finished.connect(self._on_settings_closed)
+        self._settings_dialog.show()
+        self._settings_dialog.raise_()
+        self._settings_dialog.activateWindow()
+
+    def _remove_topmost_temporarily(self):
+        try:
+            hwnd = int(self.winId())
+            ex = win32gui.GetWindowLong(hwnd, win32con.GWL_EXSTYLE)
+            ex &= ~win32con.WS_EX_TOPMOST
+            win32gui.SetWindowLong(hwnd, win32con.GWL_EXSTYLE, ex)
+            win32gui.SetWindowPos(
+                hwnd,
+                win32con.HWND_NOTOPMOST,
+                0, 0, 0, 0,
+                win32con.SWP_NOMOVE | win32con.SWP_NOSIZE | win32con.SWP_NOACTIVATE,
+            )
+        except Exception:
+            pass
+
+    def _on_settings_closed(self, result):
+        self._apply_topmost_setting()
         self.config = self.config_store.load_config()
         self.refresh_layout_combo()
         self.rebuild_buttons()
-        self.apply_config()
+        self.apply_config(restore_pos=False)
 
     def hide_to_tray(self):
         """Hide the panel while keeping the process and tray menu alive."""
@@ -682,9 +766,10 @@ class FloatingPanel(QtWidgets.QWidget):
         if app:
             app.quit()
 
-    def apply_config(self):
+    def apply_config(self, restore_pos: bool = True):
         window = self.config.get("window", {})
-        self.move(window.get("x", 350), window.get("y", 250))
+        if restore_pos:
+            self.move(window.get("x", 350), window.get("y", 250))
         layout = self.layout_mgr.get_active_layout()
         if layout and layout.settings.window_width and layout.settings.window_height:
             self.resize(int(layout.settings.window_width), int(layout.settings.window_height))
@@ -749,8 +834,12 @@ class FloatingPanel(QtWidgets.QWidget):
     def eventFilter(self, watched, event):
         if watched is self.search_input and event.type() == QtCore.QEvent.KeyPress:
             if event.key() == QtCore.Qt.Key_Escape:
-                self.toggle_search_box()
+                self.exit_search()
                 return True
+            elif event.key() in (QtCore.Qt.Key_Return, QtCore.Qt.Key_Enter):
+                if self.buttons_widgets:
+                    self.buttons_widgets[0].click()
+                    return True
         return super().eventFilter(watched, event)
 
     def mousePressEvent(self, event):

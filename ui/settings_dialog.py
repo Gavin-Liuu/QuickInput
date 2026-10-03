@@ -385,6 +385,7 @@ class SettingsDialog(QtWidgets.QDialog):
         try:
             import win32gui, win32con
             hwnd = int(self.winId())
+            self.target_mgr.register_own_hwnd(hwnd)
             win32gui.SetWindowPos(
                 hwnd,
                 win32con.HWND_NOTOPMOST,
@@ -773,11 +774,17 @@ class SettingsDialog(QtWidgets.QDialog):
         b_layout.addWidget(self.profile_table)
 
         b_btns1 = QtWidgets.QHBoxLayout()
-        bind_curr = QtWidgets.QPushButton("🎯 绑定当前目标应用", binding_box)
+        bind_curr = QtWidgets.QPushButton("🎯 绑定最近目标应用", binding_box)
+        bind_curr.setToolTip("绑定打开设置前最近一次聚焦的外部应用程序")
         bind_curr.clicked.connect(self._add_current_target_profile)
         b_btns1.addWidget(bind_curr)
 
-        bind_custom = QtWidgets.QPushButton("＋ 添加自定义绑定", binding_box)
+        bind_pick = QtWidgets.QPushButton("🪟 从打开的窗口选择", binding_box)
+        bind_pick.setToolTip("从当前运行中的全部窗口列表中选择一个应用绑定")
+        bind_pick.clicked.connect(self._add_from_running_windows)
+        b_btns1.addWidget(bind_pick)
+
+        bind_custom = QtWidgets.QPushButton("＋ 手动输入", binding_box)
         bind_custom.clicked.connect(self._add_custom_profile)
         b_btns1.addWidget(bind_custom)
         b_layout.addLayout(b_btns1)
@@ -1405,14 +1412,87 @@ class SettingsDialog(QtWidgets.QDialog):
         info = self.target_mgr.get_target_info()
         proc = info.get("process_name", "")
         if not proc:
-            QtWidgets.QMessageBox.warning(self, "未检测到目标", "请先在目标软件窗口中点击一次，然后再尝试绑定。")
+            QtWidgets.QMessageBox.warning(
+                self,
+                "未检测到外部应用",
+                "当前未捕获到外部目标应用！\n\n请在外部软件窗口（如 Notepad、浏览器等）中点击一次，或点击“🪟 从打开的窗口选择”直接指定应用。",
+            )
             return
-        # Add profile
+        title = info.get("title", "")
+        res = QtWidgets.QMessageBox.question(
+            self,
+            "确认绑定应用",
+            f"检测到最近使用的外部应用：\n\n• 进程名：{proc}\n• 窗口标题：{title or '(无标题)'}\n\n是否将该应用绑定到当前布局【{layout.name}】？",
+            QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
+            QtWidgets.QMessageBox.Yes,
+        )
+        if res != QtWidgets.QMessageBox.Yes:
+            return
         p_id = f"profile_{len(self.layout_mgr.profiles) + 1}"
         profile = Profile(id=p_id, process=proc, layout_id=layout.id)
         self.layout_mgr.register_profile(profile)
         self._refresh_profiles_for_current_layout()
-        QtWidgets.QMessageBox.information(self, "绑定成功", f"已成功将应用 {proc} 绑定到当前布局【{layout.name}】！")
+        QtWidgets.QMessageBox.information(
+            self, "绑定成功", f"已成功将应用 {proc} 绑定到当前布局【{layout.name}】！"
+        )
+
+    def _add_from_running_windows(self):
+        layout = self._current_layout()
+        if not layout:
+            return
+        windows_list = []
+        my_pid = os.getpid()
+
+        try:
+            import win32gui
+            def enum_win(hwnd, extra):
+                if win32gui.IsWindowVisible(hwnd):
+                    title = win32gui.GetWindowText(hwnd).strip()
+                    if title:
+                        info = self.target_mgr.window_manager.get_window_info(hwnd)
+                        pid = info.get("process_id", 0)
+                        proc = info.get("process_name", "")
+                        if pid != my_pid and proc and proc.lower() not in (
+                            "explorer.exe",
+                            "shellexperiencehost.exe",
+                            "searchhost.exe",
+                            "startmenuexperiencehost.exe",
+                        ):
+                            windows_list.append((proc, title))
+                return True
+
+            win32gui.EnumWindows(enum_win, None)
+        except Exception:
+            pass
+
+        if not windows_list:
+            QtWidgets.QMessageBox.information(self, "提示", "未找到可绑定的运行中外部窗口。")
+            return
+
+        seen = set()
+        unique_windows = []
+        for proc, title in windows_list:
+            key = (proc, title)
+            if key not in seen:
+                seen.add(key)
+                unique_windows.append((proc, title))
+
+        items = [f"{proc} — {title[:45]}" for proc, title in unique_windows]
+        chosen, ok = QtWidgets.QInputDialog.getItem(
+            self, "选择要绑定的应用程序", "请从当前打开的应用列表中选择：", items, 0, False
+        )
+        if not ok or not chosen:
+            return
+
+        idx = items.index(chosen)
+        proc, title = unique_windows[idx]
+        p_id = f"profile_{len(self.layout_mgr.profiles) + 1}"
+        profile = Profile(id=p_id, process=proc, layout_id=layout.id)
+        self.layout_mgr.register_profile(profile)
+        self._refresh_profiles_for_current_layout()
+        QtWidgets.QMessageBox.information(
+            self, "绑定成功", f"已成功将应用 {proc} 绑定到当前布局【{layout.name}】！"
+        )
 
     def _add_custom_profile(self):
         layout = self._current_layout()

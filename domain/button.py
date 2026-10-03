@@ -7,21 +7,12 @@ import copy
 
 
 def format_button_display_text(icon: str, label: str) -> str:
-    """Format button display text cleanly, preventing duplicate icon characters."""
+    """Format button display text cleanly."""
     icon = (icon or "").strip()
     label = label or ""
-    if not icon:
+    if not icon or icon in label:
         return label
-    clean_label = label.strip()
-    if not clean_label:
-        return icon
-    first_line = clean_label.split("\n")[0].strip()
-    if icon in first_line or clean_label.startswith(icon):
-        return label
-    first_token = clean_label.split()[0] if clean_label.split() else ""
-    if first_token == icon:
-        return label
-    return f"{icon} {label}".strip()
+    return f"{icon} {label}".strip() if label else icon
 
 
 @dataclass
@@ -68,16 +59,11 @@ class Button:
         icon = str(data.get("icon", "")).strip()
         if not label and icon:
             label = icon
-            icon = ""
-        elif icon:
-            first_line = label.strip().split("\n")[0].strip() if label.strip() else ""
-            if icon in first_line or label.startswith(icon) or (label.split() and label.split()[0] == icon):
-                icon = ""
         return cls(
             id=str(data.get("id", "")),
             label=label,
             action_id=str(data.get("action_id", "")),
-            icon=icon,
+            icon="",
             color=str(data.get("color", "")),
             tooltip=str(data.get("tooltip", "")),
             auto_enter=data.get("auto_enter", None),
