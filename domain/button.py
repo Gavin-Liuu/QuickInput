@@ -12,9 +12,13 @@ def format_button_display_text(icon: str, label: str) -> str:
     label = label or ""
     if not icon:
         return label
-    if label.startswith(icon):
+    clean_label = label.strip()
+    if not clean_label:
+        return icon
+    first_line = clean_label.split("\n")[0].strip()
+    if icon in first_line or clean_label.startswith(icon):
         return label
-    first_token = label.split()[0] if label.split() else ""
+    first_token = clean_label.split()[0] if clean_label.split() else ""
     if first_token == icon:
         return label
     return f"{icon} {label}".strip()
@@ -62,8 +66,13 @@ class Button:
     def from_dict(cls, data: Dict[str, Any]) -> "Button":
         label = str(data.get("label", ""))
         icon = str(data.get("icon", "")).strip()
-        if icon and (label.startswith(icon) or (label.split() and label.split()[0] == icon)):
+        if not label and icon:
+            label = icon
             icon = ""
+        elif icon:
+            first_line = label.strip().split("\n")[0].strip() if label.strip() else ""
+            if icon in first_line or label.startswith(icon) or (label.split() and label.split()[0] == icon):
+                icon = ""
         return cls(
             id=str(data.get("id", "")),
             label=label,

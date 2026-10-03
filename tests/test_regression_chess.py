@@ -109,6 +109,121 @@ def test_chess_buttons_no_duplicate_characters():
     # 4. format_button_display_text handles raw duplicate strings
     assert format_button_display_text("车", "车\nrc") == "车\nrc"
     assert format_button_display_text("兵", "兵\nrb") == "兵\nrb"
+    assert format_button_display_text("车", "红车\nrc") == "红车\nrc"
+    assert format_button_display_text("车", "  车\nrc  ") == "  车\nrc  "
     assert format_button_display_text("💾", "保存") == "💾 保存"
     assert format_button_display_text("", "普通按钮") == "普通按钮"
+    assert format_button_display_text("车", "") == "车"
+
+
+def test_button_empty_label_icon_promotion():
+    """Verify that if label is empty but icon is set, icon is promoted to label."""
+    from domain.button import Button
+    from storage.config_store import ConfigStore
+    import tempfile, json
+
+    btn = Button.from_dict({"id": "damaged", "label": "", "action_id": "act_d", "icon": "兵"})
+    assert btn.label == "兵"
+    assert btn.icon == ""
+    assert btn.validate() == []
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        cs = ConfigStore(config_dir=tmp_dir)
+        cfg = {
+            "schema_version": 2,
+            "buttons": {
+                "b_damaged": {"id": "b_damaged", "label": "", "action_id": "a", "icon": "车"},
+                "b_dup": {"id": "b_dup", "label": "车\nrc", "action_id": "a", "icon": "车"},
+            },
+        }
+        with open(cs.config_file, "w", encoding="utf-8") as f:
+            json.dump(cfg, f)
+        loaded = cs.load_config()
+        assert loaded["buttons"]["b_damaged"]["label"] == "车"
+        assert loaded["buttons"]["b_damaged"]["icon"] == ""
+        assert loaded["buttons"]["b_dup"]["icon"] == ""
+
+
+def test_settings_dialog_multiline_label_editing_preserves_newline(qapp):
+    """Verify that editing button label in SettingsDialog preserves newline characters via \\n."""
+    from ui.settings_dialog import SettingsDialog
+    from application.layout_manager import LayoutManager
+    from storage.config_store import ConfigStore
+    from main import load_default_packs
+    import tempfile
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        cs = ConfigStore(config_dir=tmp_dir)
+        lm = LayoutManager()
+        load_default_packs(lm, ".")
+        inj = MockInputInjector()
+        wm = MockWindowManager()
+        clip = MockClipboardManager()
+        tm = TargetManager(window_manager=wm)
+        ex = ActionExecutor(injector=inj, clipboard_mgr=clip, target_mgr=tm)
+
+        dlg = SettingsDialog(lm, ex, tm, cs)
+        idx = dlg.layout_selector.findData("chess")
+        dlg.layout_selector.setCurrentIndex(idx)
+        qapp.processEvents()
+
+        # Select red_che button
+        che_btn = lm.get_button("red_che")
+        assert che_btn is not None
+        assert che_btn.label == "车\nrc"
+
+        dlg._select_slot(0, 3, "red_che")
+        # In edit field, displayed with \n escaped as \n for easy editing
+        assert dlg.btn_label_edit.text() == "车\\nrc"
+
+        # Edit to a new multiline label
+        dlg.btn_label_edit.setText("帅\\nrshuai")
+        assert che_btn.label == "帅\nrshuai"
+        assert "车车" not in che_btn.display_text
+        dlg.close()
+
+
+def test_settings_dialog_reset_layout_to_preset(qapp, monkeypatch):
+    """Verify that clicking reset preset button successfully restores official layout."""
+    from ui.settings_dialog import SettingsDialog
+    from application.layout_manager import LayoutManager
+    from storage.config_store import ConfigStore
+    from main import load_default_packs
+    from PyQt5 import QtWidgets
+    import tempfile
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        cs = ConfigStore(config_dir=tmp_dir)
+        lm = LayoutManager()
+        load_default_packs(lm, ".")
+        inj = MockInputInjector()
+        wm = MockWindowManager()
+        clip = MockClipboardManager()
+        tm = TargetManager(window_manager=wm)
+        ex = ActionExecutor(injector=inj, clipboard_mgr=clip, target_mgr=tm)
+
+        dlg = SettingsDialog(lm, ex, tm, cs)
+        idx = dlg.layout_selector.findData("chess")
+        dlg.layout_selector.setCurrentIndex(idx)
+        qapp.processEvents()
+
+        # Mutate the layout (clear slot 0, 0)
+        dlg._select_slot(0, 0, "red_bing")
+        dlg._clear_selected_slot()
+        assert lm.layouts["chess"].get_slot_at(0, 0) is None
+
+        # Auto-accept confirmation dialogs
+        monkeypatch.setattr(QtWidgets.QMessageBox, "question", lambda *args, **kwargs: QtWidgets.QMessageBox.Yes)
+        monkeypatch.setattr(QtWidgets.QMessageBox, "information", lambda *args, **kwargs: QtWidgets.QMessageBox.Ok)
+
+        # Trigger reset
+        dlg._reset_current_layout_to_preset()
+        qapp.processEvents()
+
+        # Slot (0, 0) is restored to red_bing
+        slot00 = lm.layouts["chess"].get_slot_at(0, 0)
+        assert slot00 is not None
+        assert slot00.button_id == "red_bing"
+        dlg.close()
+
 

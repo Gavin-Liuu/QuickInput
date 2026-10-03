@@ -4,6 +4,7 @@
 from typing import Optional, Dict, Tuple
 from PyQt5 import QtCore, QtGui, QtWidgets
 
+import os
 from domain.action import Action, ActionStep
 from domain.button import Button, format_button_display_text
 from domain.layout import Layout
@@ -12,6 +13,7 @@ from application.layout_manager import LayoutManager
 from application.action_executor import ActionExecutor
 from application.target_manager import TargetManager
 from storage.config_store import ConfigStore
+from storage.pack_store import PackStore
 from .macro_recorder_dialog import MacroRecorderDialog
 from application.macro_recorder import MacroRecorder
 
@@ -38,7 +40,7 @@ class NewLayoutDialog(QtWidgets.QDialog):
             QDialog {
                 background-color: #1E1E20;
                 color: #F5F5F7;
-                font-family: -apple-system, "SF Pro Text", "PingFang SC", "Segoe UI Variable Text", "Segoe UI", sans-serif;
+                font-family: "Segoe UI Variable Text", "Segoe UI", "PingFang SC", "Microsoft YaHei UI", sans-serif;
             }
             QLabel {
                 color: #F5F5F7;
@@ -205,32 +207,39 @@ class SettingsDialog(QtWidgets.QDialog):
         self.setWindowFlags(flags)
         self.setMinimumSize(480, 320)
         screen = QtGui.QGuiApplication.primaryScreen().availableGeometry()
-        target_w = min(1020, max(680, screen.width() - 80))
-        target_h = min(720, max(460, screen.height() - 80))
+        target_w = min(1040, max(720, screen.width() - 80))
+        target_h = min(740, max(500, screen.height() - 80))
         self.resize(target_w, target_h)
 
         self.setStyleSheet("""
-            QDialog {
+            QDialog, QScrollArea, QScrollArea > QWidget > QWidget {
                 background-color: #1E1E20;
                 color: #F5F5F7;
-                font-family: -apple-system, "SF Pro Text", "PingFang SC", "Segoe UI Variable Text", "Segoe UI", "Microsoft YaHei UI", sans-serif;
+                font-family: "Segoe UI Variable Text", "Segoe UI", "PingFang SC", "Microsoft YaHei UI", sans-serif;
             }
             QWidget {
-                font-family: -apple-system, "SF Pro Text", "PingFang SC", "Segoe UI Variable Text", "Segoe UI", "Microsoft YaHei UI", sans-serif;
+                font-family: "Segoe UI Variable Text", "Segoe UI", "PingFang SC", "Microsoft YaHei UI", sans-serif;
                 color: #F5F5F7;
             }
             QGroupBox {
                 background-color: #252528;
                 border: 1px solid rgba(255, 255, 255, 0.08);
                 border-radius: 10px;
-                margin-top: 12px;
-                padding: 12px 14px 14px 14px;
+                margin-top: 14px;
+                padding-top: 16px;
+                padding-bottom: 12px;
+                padding-left: 12px;
+                padding-right: 12px;
                 color: #F5F5F7;
             }
             QGroupBox::title {
                 subcontrol-origin: margin;
+                subcontrol-position: top left;
                 left: 12px;
-                padding: 0 4px;
+                top: 2px;
+                padding: 1px 6px;
+                background-color: #1E1E20;
+                border-radius: 4px;
                 color: #F5F5F7;
                 font-weight: 600;
                 font-size: 12px;
@@ -295,6 +304,11 @@ class SettingsDialog(QtWidgets.QDialog):
                 font-size: 11px;
                 font-weight: 600;
             }
+            QTableCornerButton::section {
+                background-color: #222225;
+                border: none;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+            }
             QPushButton {
                 background-color: rgba(255, 255, 255, 0.08);
                 color: #F5F5F7;
@@ -323,35 +337,42 @@ class SettingsDialog(QtWidgets.QDialog):
             }
             QScrollBar:vertical {
                 background: transparent;
-                width: 8px;
+                width: 6px;
                 margin: 0px;
             }
             QScrollBar::handle:vertical {
                 background: rgba(255, 255, 255, 0.18);
-                border-radius: 4px;
-                min-height: 24px;
+                border-radius: 3px;
+                min-height: 20px;
             }
             QScrollBar::handle:vertical:hover {
                 background: rgba(255, 255, 255, 0.32);
             }
-            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical,
+            QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+                background: none;
                 height: 0px;
             }
             QScrollBar:horizontal {
                 background: transparent;
-                height: 8px;
+                height: 6px;
                 margin: 0px;
             }
             QScrollBar::handle:horizontal {
                 background: rgba(255, 255, 255, 0.18);
-                border-radius: 4px;
-                min-width: 24px;
+                border-radius: 3px;
+                min-width: 20px;
             }
             QScrollBar::handle:horizontal:hover {
                 background: rgba(255, 255, 255, 0.32);
             }
-            QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
+            QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal,
+            QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {
+                background: none;
                 width: 0px;
+            }
+            QScrollBar::corner {
+                background: transparent;
             }
         """)
 
@@ -491,6 +512,11 @@ class SettingsDialog(QtWidgets.QDialog):
         self.delete_layout_btn = QtWidgets.QPushButton("删除布局", tab)
         self.delete_layout_btn.clicked.connect(self._delete_layout)
         top_bar.addWidget(self.delete_layout_btn)
+
+        self.reset_layout_btn = QtWidgets.QPushButton("恢复预设", tab)
+        self.reset_layout_btn.setToolTip("将当前布局重置为官方预设初始状态")
+        self.reset_layout_btn.clicked.connect(self._reset_current_layout_to_preset)
+        top_bar.addWidget(self.reset_layout_btn)
         tab_layout.addLayout(top_bar)
 
         # Layout-level properties box (rows, cols, size, opacity, auto-enter, confirm)
@@ -606,9 +632,11 @@ class SettingsDialog(QtWidgets.QDialog):
         scroll = QtWidgets.QScrollArea(left_widget)
         scroll.setWidgetResizable(True)
         scroll.setStyleSheet("QScrollArea { border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; background-color: #18181A; }")
+        scroll.viewport().setStyleSheet("background-color: #18181A;")
         self.preview_container = QtWidgets.QWidget()
+        self.preview_container.setStyleSheet("background-color: #18181A;")
         self.preview_grid = QtWidgets.QGridLayout(self.preview_container)
-        self.preview_grid.setContentsMargins(10, 10, 10, 10)
+        self.preview_grid.setContentsMargins(12, 12, 12, 12)
         self.preview_grid.setSpacing(6)
         scroll.setWidget(self.preview_container)
         left_layout.addWidget(scroll, 1)
@@ -619,11 +647,13 @@ class SettingsDialog(QtWidgets.QDialog):
         right_scroll = QtWidgets.QScrollArea(splitter)
         right_scroll.setWidgetResizable(True)
         right_scroll.setFrameShape(QtWidgets.QFrame.NoFrame)
-        right_scroll.setStyleSheet("QScrollArea { border: none; background: transparent; }")
+        right_scroll.setStyleSheet("QScrollArea { border: none; background-color: #1E1E20; }")
+        right_scroll.viewport().setStyleSheet("background-color: #1E1E20;")
 
         right_widget = QtWidgets.QWidget()
+        right_widget.setStyleSheet("background-color: #1E1E20;")
         right_layout = QtWidgets.QVBoxLayout(right_widget)
-        right_layout.setContentsMargins(4, 0, 4, 0)
+        right_layout.setContentsMargins(4, 0, 8, 0)
         right_layout.setSpacing(6)
 
         # Button properties box
@@ -638,6 +668,8 @@ class SettingsDialog(QtWidgets.QDialog):
 
         bp_grid.addWidget(QtWidgets.QLabel("显示文字:"), 1, 0)
         self.btn_label_edit = QtWidgets.QLineEdit(btn_prop_box)
+        self.btn_label_edit.setPlaceholderText("例如: 车\\nrc 或 保存")
+        self.btn_label_edit.setToolTip("按钮显示的文字标签，支持换行（输入 \\n 可表示换行）")
         self.btn_label_edit.textChanged.connect(self._button_property_changed)
         bp_grid.addWidget(self.btn_label_edit, 1, 1)
 
@@ -768,7 +800,9 @@ class SettingsDialog(QtWidgets.QDialog):
         tab_scroll = QtWidgets.QScrollArea(self.tabs)
         tab_scroll.setWidgetResizable(True)
         tab_scroll.setFrameShape(QtWidgets.QFrame.NoFrame)
-        tab_scroll.setStyleSheet("QScrollArea { border: none; background: transparent; }")
+        tab_scroll.setStyleSheet("QScrollArea { border: none; background-color: #1E1E20; }")
+        tab_scroll.viewport().setStyleSheet("background-color: #1E1E20;")
+        tab.setStyleSheet("background-color: #1E1E20;")
         tab_scroll.setWidget(tab)
         self.tabs.addTab(tab_scroll, "布局与按钮")
 
@@ -776,9 +810,11 @@ class SettingsDialog(QtWidgets.QDialog):
         tab_scroll = QtWidgets.QScrollArea(self.tabs)
         tab_scroll.setWidgetResizable(True)
         tab_scroll.setFrameShape(QtWidgets.QFrame.NoFrame)
-        tab_scroll.setStyleSheet("QScrollArea { border: none; background: transparent; }")
+        tab_scroll.setStyleSheet("QScrollArea { border: none; background-color: #1E1E20; }")
+        tab_scroll.viewport().setStyleSheet("background-color: #1E1E20;")
 
         tab = QtWidgets.QWidget()
+        tab.setStyleSheet("background-color: #1E1E20;")
         layout = QtWidgets.QVBoxLayout(tab)
         layout.setContentsMargins(14, 14, 14, 14)
         layout.setSpacing(12)
@@ -1015,7 +1051,7 @@ class SettingsDialog(QtWidgets.QDialog):
                             background-color: {color};
                             color: #FFFFFF;
                             font-weight: 600;
-                            font-family: -apple-system, "SF Pro Text", "PingFang SC", "Segoe UI Variable Text", "Segoe UI", sans-serif;
+                            font-family: "Segoe UI Variable Text", "Segoe UI", "PingFang SC", "Microsoft YaHei UI", sans-serif;
                             font-size: {font_size}px;
                             border: {border};
                             border-radius: 6px;
@@ -1080,7 +1116,7 @@ class SettingsDialog(QtWidgets.QDialog):
             else:
                 self.selected_info_label.setText(f"文字: {clean_lbl}")
             self.btn_label_edit.setEnabled(True)
-            self.btn_label_edit.setText(button.label)
+            self.btn_label_edit.setText(button.label.replace("\n", "\\n"))
             self.btn_tooltip_edit.setEnabled(True)
             self.btn_tooltip_edit.setText(button.tooltip)
             self.btn_color_combo.setEnabled(True)
@@ -1111,7 +1147,7 @@ class SettingsDialog(QtWidgets.QDialog):
                         background-color: {color};
                         color: #FFFFFF;
                         font-weight: 600;
-                        font-family: -apple-system, "SF Pro Text", "PingFang SC", "Segoe UI Variable Text", "Segoe UI", sans-serif;
+                        font-family: "Segoe UI Variable Text", "Segoe UI", "PingFang SC", "Microsoft YaHei UI", sans-serif;
                         font-size: {self._preview_font_size}px;
                         border: {border};
                         border-radius: 6px;
@@ -1190,9 +1226,9 @@ class SettingsDialog(QtWidgets.QDialog):
         action = self.layout_mgr.get_action_for_button(self.selected_button_id)
         if not button:
             return
-        button.label = self.btn_label_edit.text()
+        button.label = self.btn_label_edit.text().replace("\\n", "\n")
         button.tooltip = self.btn_tooltip_edit.text()
-        button.color = self.btn_color_combo.currentData() or "#1976D2"
+        button.color = self.btn_color_combo.currentData() or "#0A84FF"
         if action:
             action.label = button.label
 
@@ -1213,7 +1249,7 @@ class SettingsDialog(QtWidgets.QDialog):
                     background-color: {button.color};
                     color: #FFFFFF;
                     font-weight: 600;
-                    font-family: -apple-system, "SF Pro Text", "PingFang SC", "Segoe UI Variable Text", "Segoe UI", sans-serif;
+                    font-family: "Segoe UI Variable Text", "Segoe UI", "PingFang SC", "Microsoft YaHei UI", sans-serif;
                     font-size: {self._preview_font_size}px;
                     border: {border};
                     border-radius: 6px;
@@ -1471,6 +1507,57 @@ class SettingsDialog(QtWidgets.QDialog):
         self.layout_mgr.delete_layout(layout.id)
         self._refresh_layout_selector()
         self._load_active_layout()
+
+    def _reset_current_layout_to_preset(self):
+        """Reset the current layout to its default preset pack state."""
+        layout = self._current_layout()
+        if not layout:
+            return
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        packs_dir = os.path.join(base_dir, "packs")
+        found_data = None
+        found_layout = None
+        for p_name in ["chess", "annotation", "customer_service", "programmer"]:
+            p_dir = os.path.join(packs_dir, p_name)
+            if os.path.isdir(p_dir):
+                ok, _, p_data = PackStore.import_pack(p_dir)
+                if ok:
+                    for l in p_data.get("layouts", []):
+                        if l.id == layout.id:
+                            found_data = p_data
+                            found_layout = l
+                            break
+            if found_layout:
+                break
+
+        if not found_layout:
+            QtWidgets.QMessageBox.information(
+                self, "提示", f"当前布局“{layout.name}”无官方预设包，无法恢复预设。"
+            )
+            return
+
+        res = QtWidgets.QMessageBox.question(
+            self,
+            "恢复官方预设",
+            f"确定要将布局“{layout.name}”重置为官方预设初始状态吗？\n当前对该布局槽位的修改将被覆盖。",
+            QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
+            QtWidgets.QMessageBox.No,
+        )
+        if res != QtWidgets.QMessageBox.Yes:
+            return
+
+        for a in found_data.get("actions", []):
+            self.layout_mgr.register_action(a)
+        for b in found_data.get("buttons", []):
+            self.layout_mgr.register_button(b)
+        self.layout_mgr.register_layout(found_layout)
+
+        self._refresh_layout_selector()
+        idx = self.layout_selector.findData(layout.id)
+        if idx >= 0:
+            self.layout_selector.setCurrentIndex(idx)
+        self._load_active_layout()
+        QtWidgets.QMessageBox.information(self, "完成", f"已成功将“{layout.name}”恢复为官方预设！")
 
     def _backup_config(self):
         path = self.config_store.create_backup()

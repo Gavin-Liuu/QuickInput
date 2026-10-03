@@ -35,7 +35,7 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
                 border: 1px solid rgba(255, 255, 255, 0.12);
                 border-radius: 8px;
                 padding: 5px;
-                font-family: -apple-system, "SF Pro Text", "PingFang SC", "Segoe UI Variable Text", "Segoe UI", sans-serif;
+                font-family: "Segoe UI Variable Text", "Segoe UI", "PingFang SC", "Microsoft YaHei UI", sans-serif;
                 font-size: 12px;
             }
             QMenu::item {
@@ -77,7 +77,7 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
 
         # Draw text 'Q'
         painter.setPen(QtGui.QColor("#FFFFFF"))
-        font = QtGui.QFont("SF Pro Display", 16, QtGui.QFont.Bold)
+        font = QtGui.QFont("Microsoft YaHei UI", 16, QtGui.QFont.Bold)
         font.setStyleHint(QtGui.QFont.SansSerif)
         painter.setFont(font)
         painter.drawText(pix.rect(), QtCore.Qt.AlignCenter, "Q")

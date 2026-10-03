@@ -50,9 +50,9 @@ class ActionButtonWidget(QtWidgets.QPushButton):
         self.apply_scale(1.0)
 
     def apply_scale(self, scale: float):
-        width, height, font_size = 48, 30, 9
+        width, height, font_size = 48, 32, 9
         width = max(32, min(180, int(width * scale)))
-        height = max(24, min(100, int(height * scale)))
+        height = max(26, min(100, int(height * scale)))
         font = max(8, min(20, int(font_size * scale)))
         self.setFixedSize(width, height)
         color = self.button_model.color or "#0A84FF"
@@ -60,9 +60,10 @@ class ActionButtonWidget(QtWidgets.QPushButton):
             QPushButton {{
                 background-color: {color};
                 color: #FFFFFF;
-                font-family: -apple-system, "SF Pro Text", "PingFang SC", "Segoe UI Variable Text", "Segoe UI", "Microsoft YaHei UI", sans-serif;
+                font-family: "Segoe UI Variable Text", "Segoe UI", "PingFang SC", "Microsoft YaHei UI", sans-serif;
                 font-size: {font}px;
                 font-weight: 600;
+                line-height: 1.1;
                 border: 1px solid rgba(255, 255, 255, 0.18);
                 border-radius: 6px;
                 padding: 1px 2px;
@@ -212,7 +213,7 @@ class FloatingPanel(QtWidgets.QWidget):
             }
             QLabel {
                 color: #F5F5F7;
-                font-family: -apple-system, "SF Pro Text", "PingFang SC", "Segoe UI Variable Text", "Segoe UI", "Microsoft YaHei UI", sans-serif;
+                font-family: "Segoe UI Variable Text", "Segoe UI", "PingFang SC", "Microsoft YaHei UI", sans-serif;
             }
         """)
         shadow = QtWidgets.QGraphicsDropShadowEffect(self)
@@ -243,7 +244,7 @@ class FloatingPanel(QtWidgets.QWidget):
                 border: 1px solid rgba(255, 255, 255, 0.12);
                 padding: 4px 8px;
                 border-radius: 6px;
-                font-family: -apple-system, "SF Pro Text", "PingFang SC", "Segoe UI Variable Text", "Segoe UI", sans-serif;
+                font-family: "Segoe UI Variable Text", "Segoe UI", "PingFang SC", "Microsoft YaHei UI", sans-serif;
                 font-size: 11px;
             }
             QLineEdit:focus {
@@ -297,7 +298,7 @@ class FloatingPanel(QtWidgets.QWidget):
                 border: 1px solid rgba(255, 255, 255, 0.10);
                 padding: 2px 8px;
                 border-radius: 6px;
-                font-family: -apple-system, "SF Pro Text", "PingFang SC", "Segoe UI Variable Text", "Segoe UI", "Microsoft YaHei UI", sans-serif;
+                font-family: "Segoe UI Variable Text", "Segoe UI", "PingFang SC", "Microsoft YaHei UI", sans-serif;
                 font-size: 11px;
                 font-weight: 500;
             }
@@ -417,7 +418,7 @@ class FloatingPanel(QtWidgets.QWidget):
                 border: 1px solid rgba(255, 255, 255, 0.10);
                 border-radius: 10px;
                 padding: 2px 8px;
-                font-family: -apple-system, "SF Pro Text", "PingFang SC", "Segoe UI Variable Text", "Segoe UI", sans-serif;
+                font-family: "Segoe UI Variable Text", "Segoe UI", "PingFang SC", "Microsoft YaHei UI", sans-serif;
                 font-size: 10px;
             }
             QPushButton:hover {
@@ -439,7 +440,7 @@ class FloatingPanel(QtWidgets.QWidget):
                 border: 1px solid rgba(255, 255, 255, 0.10);
                 border-radius: 6px;
                 padding: 0px;
-                font-family: -apple-system, "SF Pro Text", "PingFang SC", "Segoe UI Variable Text", "Segoe UI", sans-serif;
+                font-family: "Segoe UI Variable Text", "Segoe UI", "PingFang SC", "Microsoft YaHei UI", sans-serif;
             }
             QPushButton:hover {
                 background-color: rgba(255, 255, 255, 0.15);

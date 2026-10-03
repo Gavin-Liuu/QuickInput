@@ -96,6 +96,25 @@ def main():
     app.setApplicationName("QuickInput")
     app.setQuitOnLastWindowClosed(False)  # Keep running in system tray
 
+    # Set Apple-inspired clean dark mode palette & modern sans-serif typography
+    app_font = QtGui.QFont("Microsoft YaHei UI", 9)
+    app_font.setStyleHint(QtGui.QFont.SansSerif)
+    app.setFont(app_font)
+
+    palette = QtGui.QPalette()
+    palette.setColor(QtGui.QPalette.Window, QtGui.QColor("#1E1E20"))
+    palette.setColor(QtGui.QPalette.WindowText, QtGui.QColor("#F5F5F7"))
+    palette.setColor(QtGui.QPalette.Base, QtGui.QColor("#18181A"))
+    palette.setColor(QtGui.QPalette.AlternateBase, QtGui.QColor("#252528"))
+    palette.setColor(QtGui.QPalette.ToolTipBase, QtGui.QColor("#252528"))
+    palette.setColor(QtGui.QPalette.ToolTipText, QtGui.QColor("#F5F5F7"))
+    palette.setColor(QtGui.QPalette.Text, QtGui.QColor("#F5F5F7"))
+    palette.setColor(QtGui.QPalette.Button, QtGui.QColor("#252528"))
+    palette.setColor(QtGui.QPalette.ButtonText, QtGui.QColor("#F5F5F7"))
+    palette.setColor(QtGui.QPalette.Highlight, QtGui.QColor("#0A84FF"))
+    palette.setColor(QtGui.QPalette.HighlightedText, QtGui.QColor("#FFFFFF"))
+    app.setPalette(palette)
+
     if getattr(sys, "frozen", False):
         exe_dir = os.path.dirname(sys.executable)
         base_dir = exe_dir if os.path.exists(os.path.join(exe_dir, "packs")) else getattr(sys, "_MEIPASS", exe_dir)

@@ -124,8 +124,13 @@ class ConfigStore:
                 if isinstance(b_dict, dict):
                     icon = str(b_dict.get("icon", "")).strip()
                     label = str(b_dict.get("label", ""))
-                    if icon and (label.startswith(icon) or (label.split() and label.split()[0] == icon)):
+                    if not label and icon:
+                        b_dict["label"] = icon
                         b_dict["icon"] = ""
+                    elif icon:
+                        first_line = label.strip().split("\n")[0].strip() if label.strip() else ""
+                        if icon in first_line or label.startswith(icon) or (label.split() and label.split()[0] == icon):
+                            b_dict["icon"] = ""
 
             return merged
 

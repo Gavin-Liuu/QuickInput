@@ -50,11 +50,12 @@ class MacroRecorderDialog(QtWidgets.QDialog):
             QDialog {
                 background-color: #1E1E20;
                 color: #F5F5F7;
-                font-family: -apple-system, "SF Pro Text", "PingFang SC", "Segoe UI Variable Text", "Segoe UI", "Microsoft YaHei UI", sans-serif;
+                font-family: "Segoe UI Variable Text", "Segoe UI", "PingFang SC", "Microsoft YaHei UI", sans-serif;
             }
             QLabel {
                 color: #F5F5F7;
                 font-size: 12px;
+                font-family: "Segoe UI Variable Text", "Segoe UI", "PingFang SC", "Microsoft YaHei UI", sans-serif;
             }
             QPushButton {
                 background-color: rgba(255, 255, 255, 0.08);
@@ -64,6 +65,7 @@ class MacroRecorderDialog(QtWidgets.QDialog):
                 padding: 6px 14px;
                 font-size: 12px;
                 font-weight: 500;
+                font-family: "Segoe UI Variable Text", "Segoe UI", "PingFang SC", "Microsoft YaHei UI", sans-serif;
             }
             QPushButton:hover {
                 background-color: rgba(255, 255, 255, 0.14);
@@ -84,6 +86,7 @@ class MacroRecorderDialog(QtWidgets.QDialog):
                 border: 1px solid rgba(255, 255, 255, 0.08);
                 border-radius: 8px;
                 outline: none;
+                font-family: "Segoe UI Variable Text", "Segoe UI", "PingFang SC", "Microsoft YaHei UI", sans-serif;
             }
             QTableWidget::item {
                 padding: 4px 6px;
@@ -101,6 +104,29 @@ class MacroRecorderDialog(QtWidgets.QDialog):
                 padding: 6px;
                 font-size: 11px;
                 font-weight: 600;
+            }
+            QTableCornerButton::section {
+                background-color: #222225;
+                border: none;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+            }
+            QScrollBar:vertical {
+                background: transparent;
+                width: 6px;
+                margin: 0px;
+            }
+            QScrollBar::handle:vertical {
+                background: rgba(255, 255, 255, 0.18);
+                border-radius: 3px;
+                min-height: 20px;
+            }
+            QScrollBar::handle:vertical:hover {
+                background: rgba(255, 255, 255, 0.32);
+            }
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical,
+            QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+                background: none;
+                height: 0px;
             }
         """)
 
@@ -148,8 +174,8 @@ class MacroRecorderDialog(QtWidgets.QDialog):
         # 1. Target & Status Banner
         self.target_box = QtWidgets.QGroupBox("1. 录制目标与状态", self)
         self.target_box.setStyleSheet(
-            "QGroupBox { font-weight: 600; background-color: #252528; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; margin-top: 8px; padding: 12px; } "
-            "QGroupBox::title { subcontrol-origin: margin; left: 12px; color: #F5F5F7; font-size: 12px; }"
+            "QGroupBox { font-family: 'Segoe UI Variable Text', 'Segoe UI', 'PingFang SC', 'Microsoft YaHei UI', sans-serif; font-weight: 600; background-color: #252528; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 10px; margin-top: 14px; padding-top: 14px; padding-bottom: 10px; padding-left: 12px; padding-right: 12px; } "
+            "QGroupBox::title { subcontrol-origin: margin; subcontrol-position: top left; left: 12px; top: 2px; background-color: #1E1E20; padding: 1px 6px; border-radius: 4px; color: #F5F5F7; font-size: 12px; }"
         )
         t_layout = QtWidgets.QVBoxLayout(self.target_box)
 
