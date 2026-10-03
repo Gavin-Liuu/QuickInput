@@ -22,15 +22,6 @@ MA_NOACTIVATE = 3
 WS_EX_NOACTIVATE = 0x08000000
 
 
-def format_button_display_text(icon: str, label: str) -> str:
-    """Format button display text cleanly."""
-    icon = (icon or "").strip()
-    label = label or ""
-    if not icon or icon in label:
-        return label
-    return f"{icon} {label}".strip() if label else icon
-
-
 class ActionButtonWidget(QtWidgets.QPushButton):
     """A button that never accepts keyboard focus during panel operation."""
 
@@ -39,8 +30,7 @@ class ActionButtonWidget(QtWidgets.QPushButton):
         self.button_model = button_model
         self.setFocusPolicy(QtCore.Qt.NoFocus)
         self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        display_text = format_button_display_text(button_model.icon, button_model.label)
-        self.setText(display_text)
+        self.setText(button_model.display_text)
         self.setToolTip(button_model.tooltip or button_model.label)
         self.apply_scale(1.0)
 
@@ -172,9 +162,9 @@ class FloatingPanel(QtWidgets.QWidget):
     def _on_monitor_tick(self):
         try:
             fg = win32gui.GetForegroundWindow()
-            if fg and fg != int(self.winId()) and not self._search_interactive:
+            if fg and fg != int(self.winId()):
                 self.target_mgr.update_active_window(fg)
-                if self.config.get("settings", {}).get("auto_profile_switch", True):
+                if not self._search_interactive and self.config.get("settings", {}).get("auto_profile_switch", True):
                     info = self.target_mgr.get_target_info()
                     if self.layout_mgr.check_and_apply_profile(
                         info.get("process_name", ""), info.get("title", "")
@@ -250,6 +240,7 @@ class FloatingPanel(QtWidgets.QWidget):
 
         # Inline search input field (expands horizontally inside header, hidden initially)
         self.search_input = QtWidgets.QLineEdit(self.header_widget)
+        self.search_input.setFixedHeight(24)
         self.search_input.setPlaceholderText("全局搜索所有布局按钮… (Esc 退出)")
         self.search_input.setClearButtonEnabled(True)
         self.search_input.setStyleSheet("""
@@ -270,10 +261,11 @@ class FloatingPanel(QtWidgets.QWidget):
         self.search_input.textChanged.connect(self.filter_buttons)
         self.search_input.installEventFilter(self)
         self.search_input.hide()
-        layout.addWidget(self.search_input)
+        layout.addWidget(self.search_input, 1)
 
         # Layout selector dropdown
         self.layout_combo = QtWidgets.QComboBox(self.header_widget)
+        self.layout_combo.setFixedHeight(24)
         self.layout_combo.setFocusPolicy(QtCore.Qt.NoFocus)
         self.layout_combo.setStyleSheet("""
             QComboBox {
@@ -310,7 +302,7 @@ class FloatingPanel(QtWidgets.QWidget):
         """)
         self.refresh_layout_combo()
         self.layout_combo.currentIndexChanged.connect(self._on_layout_combo_selected)
-        layout.addWidget(self.layout_combo)
+        layout.addWidget(self.layout_combo, 1)
 
         # Settings button
         self.settings_btn = QtWidgets.QPushButton("⚙", self.header_widget)
@@ -321,7 +313,6 @@ class FloatingPanel(QtWidgets.QWidget):
         self.settings_btn.clicked.connect(self.open_settings)
         layout.addWidget(self.settings_btn)
 
-        layout.addStretch()
         parent_layout.addWidget(self.header_widget)
 
     def init_footer(self, parent_layout):
@@ -633,14 +624,21 @@ class FloatingPanel(QtWidgets.QWidget):
         self.activateWindow()
         self.search_input.setFocus(QtCore.Qt.OtherFocusReason)
 
-    def exit_search(self):
+    def exit_search(self, rebuild: bool = True):
         self._search_interactive = False
+        self.search_input.blockSignals(True)
         self.search_input.clear()
+        self.search_input.blockSignals(False)
         self.search_input.hide()
         self.layout_combo.show()
         self._set_search_interactive(False)
         self.clearFocus()
-        self.rebuild_buttons()
+        if rebuild:
+            self.rebuild_buttons()
+        # Restore focus to external target app so typing is immediately directed there
+        eff_hwnd = self.target_mgr.get_effective_hwnd()
+        if eff_hwnd and self.target_mgr.window_manager.is_window_valid(eff_hwnd):
+            self.target_mgr.window_manager.set_foreground_safe(eff_hwnd)
 
     def filter_buttons(self, text):
         query = (text or "").strip().lower()
@@ -669,8 +667,10 @@ class FloatingPanel(QtWidgets.QWidget):
                 action = self.layout_mgr.actions.get(bm.action_id)
                 action_text = ""
                 if action:
-                    action_text = " ".join(s.value for s in action.steps if s.value)
-                haystack = f"{bm.label} {bm.tooltip} {bm.action_id} {action_text}".lower()
+                    action_text = f"{action.label} {action.description} " + " ".join(
+                        f"{s.value} {s.key} {s.hotkey} {s.name}" for s in action.steps
+                    )
+                haystack = f"{bm.label} {bm.tooltip} {bm.id} {bm.action_id} {action_text}".lower()
                 if query in haystack:
                     key = (lid, bm.id)
                     if key not in seen_keys:
@@ -693,7 +693,7 @@ class FloatingPanel(QtWidgets.QWidget):
         self._apply_button_scale()
 
     def _on_search_result_clicked(self, target_lid: str, target_bid: str):
-        self.exit_search()
+        self.exit_search(rebuild=False)
         if target_lid != self.layout_mgr.active_layout_id:
             self.layout_mgr.set_active_layout(target_lid)
         else:
@@ -704,13 +704,12 @@ class FloatingPanel(QtWidgets.QWidget):
         for widget in self.buttons_widgets:
             if widget.button_model.id == target_bid:
                 orig_style = widget.styleSheet()
-                widget.setStyleSheet(orig_style + "QPushButton { border: 2.5px solid #00E676; background-color: rgba(0, 230, 118, 0.45); }")
-                def reset_style():
-                    try:
-                        widget.setStyleSheet(orig_style)
-                    except Exception:
-                        pass
-                QtCore.QTimer.singleShot(600, reset_style)
+                flash_style = orig_style + "QPushButton { border: 2.5px solid #00E676; background-color: rgba(0, 230, 118, 0.45); }"
+                # Double-pulse flash feedback
+                widget.setStyleSheet(flash_style)
+                QtCore.QTimer.singleShot(200, lambda w=widget, s=orig_style: w.setStyleSheet(s))
+                QtCore.QTimer.singleShot(350, lambda w=widget, s=flash_style: w.setStyleSheet(s))
+                QtCore.QTimer.singleShot(550, lambda w=widget, s=orig_style: w.setStyleSheet(s))
                 break
 
     def open_settings(self):
@@ -718,6 +717,9 @@ class FloatingPanel(QtWidgets.QWidget):
             self._settings_dialog.raise_()
             self._settings_dialog.activateWindow()
             return
+
+        if self._search_interactive:
+            self.exit_search(rebuild=False)
 
         self.save_window_config()
         self._remove_topmost_temporarily()
@@ -747,6 +749,8 @@ class FloatingPanel(QtWidgets.QWidget):
             pass
 
     def _on_settings_closed(self, result):
+        if hasattr(self, "_settings_dialog"):
+            self._settings_dialog = None
         self._apply_topmost_setting()
         self.config = self.config_store.load_config()
         self.refresh_layout_combo()
@@ -794,6 +798,8 @@ class FloatingPanel(QtWidgets.QWidget):
 
     def _apply_topmost_setting(self):
         """Apply the selected layout's topmost preference without activation."""
+        if hasattr(self, "_settings_dialog") and self._settings_dialog and self._settings_dialog.isVisible():
+            return
         try:
             hwnd = int(self.winId())
             layout = self.layout_mgr.get_active_layout()

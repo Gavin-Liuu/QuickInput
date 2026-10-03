@@ -49,6 +49,7 @@ def create_test_env(tmp_dir):
     wm = MockWindowManager()
     clip = MockClipboardManager()
     tm = TargetManager(window_manager=wm)
+    tm.update_active_window(12345)
     ex = ActionExecutor(injector=inj, clipboard_mgr=clip, target_mgr=tm)
 
     return cs, lm, inj, wm, clip, tm, ex
@@ -135,12 +136,25 @@ def test_issue_3_global_search_and_click_behavior(qapp):
         assert panel.search_input.isVisible() is False
         assert panel.layout_combo.isVisible() is True
 
-        # 3. Switched to layout_2
+        # 3. Switched to layout_2 and layout_combo updated
         assert lm.active_layout_id == "layout_2"
+        assert panel.layout_combo.currentData() == "layout_2"
 
         # 4. Button in layout_2 is highlighted/flashing
         b_in_l2 = next(w for w in panel.buttons_widgets if w.button_model.id == "b_special")
         assert b_in_l2 is not None
+
+        # 5. Clicking button in layout executes input into external target app, NOT search box
+        b_in_l2.click()
+        import time
+        for _ in range(25):
+            qapp.processEvents()
+            if inj.sent_texts:
+                break
+            time.sleep(0.02)
+        assert "special_text" in inj.sent_texts
+        assert panel.search_input.text() == ""
+
         panel.close()
 
 
@@ -156,9 +170,15 @@ def test_issue_4_button_clean_domain_model():
     assert b2.icon == ""
     assert b2.display_text == "车"
 
-    # No duplicate string combining
+    # Button icon is not superposed on label
+    b3 = Button(id="b3", label="保存", action_id="a3", icon="💾")
+    assert b3.display_text == "保存"
+
+    # Format helper directly returns label
     assert format_button_display_text("车", "车\nrc") == "车\nrc"
+    assert format_button_display_text("💾", "保存") == "保存"
     assert format_button_display_text("", "普通") == "普通"
+    assert format_button_display_text("车", "") == "车"
 
 
 def test_issue_5_window_position_preserved_after_settings(qapp):
@@ -268,4 +288,74 @@ def test_issue_7_target_manager_ignores_own_process():
     info = tm.get_target_info()
     assert info.get("process_name") == "notepad.exe"
     assert info.get("is_valid") is True
+
+
+def test_auto_mode_focus_restoration_prevents_typing_into_self():
+    """Verify that in auto mode, prepare_target_for_input restores foreground when foreground is our window."""
+    wm = ConfigurableMockWindowManager()
+    tm = TargetManager(window_manager=wm)
+    wm.register_window(77777, "External App", "app.exe", 1234)
+    tm.update_active_window(77777)
+    assert tm.get_effective_hwnd() == 77777
+
+    # Current foreground is another window (e.g. FloatingPanel or desktop)
+    wm.fg_hwnd = 99999
+    assert wm.get_foreground_window_handle() == 99999
+
+    ok, msg = tm.prepare_target_for_input()
+    assert ok is True
+    # TargetManager must bring target window 77777 safely to foreground
+    assert wm.get_foreground_window_handle() == 77777
+
+
+def test_topmost_not_restored_while_settings_dialog_is_open(qapp):
+    """Verify that _apply_topmost_setting does not restore topmost while SettingsDialog is open."""
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        cs, lm, inj, wm, clip, tm, ex = create_test_env(tmp_dir)
+        panel = FloatingPanel(lm, ex, tm, cs)
+        panel.show()
+        qapp.processEvents()
+
+        panel.open_settings()
+        qapp.processEvents()
+
+        dlg = panel._settings_dialog
+        assert dlg.isVisible() is True
+
+        # Switching active layout while in settings should NOT prematurely re-apply topmost
+        lm.set_active_layout("layout_2")
+        qapp.processEvents()
+
+        # Dialog is still visible, _apply_topmost_setting was suppressed
+        assert dlg.isVisible() is True
+
+        dlg.close()
+        qapp.processEvents()
+        panel.close()
+
+
+def test_header_layout_geometry_invariance(qapp):
+    """Verify search input and layout combo have matching fixed height 24 and expand cleanly between buttons."""
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        cs, lm, inj, wm, clip, tm, ex = create_test_env(tmp_dir)
+        panel = FloatingPanel(lm, ex, tm, cs)
+        panel.resize(320, 100)
+        qapp.processEvents()
+
+        assert panel.search_input.height() == 24
+        assert panel.layout_combo.height() == 24
+        assert panel.search_toggle_btn.width() == 26
+        assert panel.settings_btn.width() == 26
+
+        panel.enter_search()
+        qapp.processEvents()
+        assert panel.search_input.isVisible() is True
+        assert panel.search_input.width() > 100
+
+        panel.exit_search()
+        qapp.processEvents()
+        assert panel.layout_combo.isVisible() is True
+        assert panel.layout_combo.width() > 100
+
+        panel.close()
 

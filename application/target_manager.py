@@ -138,11 +138,10 @@ class TargetManager:
                 return False, "锁定的目标窗口已关闭，请重新锁定或切换为自动模式！"
             return False, "目标窗口无效或已关闭！"
 
-        # In locked mode, if target window is not currently foreground, restore/bring it safely
-        if self.mode == self.MODE_LOCKED:
-            curr_fg = self.window_manager.get_foreground_window_handle()
-            if curr_fg != hwnd:
-                self.window_manager.set_foreground_safe(hwnd)
+        # Ensure target window is brought safely to foreground if it's not currently foreground
+        curr_fg = self.window_manager.get_foreground_window_handle()
+        if curr_fg != hwnd:
+            self.window_manager.set_foreground_safe(hwnd)
 
         info = self.window_manager.get_window_info(hwnd)
         if info.get("is_admin", False):

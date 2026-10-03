@@ -6,13 +6,9 @@ from typing import Dict, Any, Optional, List
 import copy
 
 
-def format_button_display_text(icon: str, label: str) -> str:
-    """Format button display text cleanly."""
-    icon = (icon or "").strip()
-    label = label or ""
-    if not icon or icon in label:
-        return label
-    return f"{icon} {label}".strip() if label else icon
+def format_button_display_text(icon: str = "", label: str = "") -> str:
+    """Format button display text. Button icon/badge feature is removed; returns label directly."""
+    return label if label else (icon or "")
 
 
 @dataclass
@@ -28,13 +24,13 @@ class Button:
 
     @property
     def display_text(self) -> str:
-        return format_button_display_text(self.icon, self.label)
+        return self.label or self.icon
 
     def validate(self) -> List[str]:
         errors = []
         if not self.id:
             errors.append("Button 'id' must be non-empty")
-        if not self.label:
+        if not self.label and not self.icon:
             errors.append("Button 'label' must be non-empty")
         if not self.action_id:
             errors.append("Button 'action_id' must be non-empty")
@@ -45,7 +41,6 @@ class Button:
             "id": self.id,
             "label": self.label,
             "action_id": self.action_id,
-            "icon": self.icon,
             "color": self.color,
             "tooltip": self.tooltip,
         }

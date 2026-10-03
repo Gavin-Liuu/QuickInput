@@ -40,14 +40,19 @@ def test_ui_all_modules_import(qapp):
 def test_action_button_widget_displays_icon(qapp):
     from ui.floating_panel import ActionButtonWidget
 
+    # Button icon badge is removed; label is displayed cleanly without icon superposition
     b1 = Button(id="b1", label="保存", action_id="a1", icon="💾")
     w1 = ActionButtonWidget(b1)
-    assert "💾" in w1.text()
-    assert "保存" in w1.text()
+    assert w1.text() == "保存"
 
-    b2 = Button(id="b2", label="兵", action_id="a2", icon="")
+    # If label is empty, legacy icon is used as fallback
+    b2 = Button(id="b2", label="", action_id="a2", icon="💾")
     w2 = ActionButtonWidget(b2)
-    assert w2.text() == "兵"
+    assert w2.text() == "💾"
+
+    b3 = Button(id="b3", label="兵", action_id="a3", icon="")
+    w3 = ActionButtonWidget(b3)
+    assert w3.text() == "兵"
 
 
 def test_settings_dialog_slot_movement(qapp):

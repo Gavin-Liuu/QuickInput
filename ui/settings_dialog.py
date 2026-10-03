@@ -1043,7 +1043,7 @@ class SettingsDialog(QtWidgets.QDialog):
                 btn_model = self.layout_mgr.get_button(btn_id) if btn_id else None
 
                 if btn_model:
-                    display_text = format_button_display_text(btn_model.icon, btn_model.label)
+                    display_text = btn_model.display_text
                     btn = PreviewSlotButton(
                         r, c, btn_model, self._select_slot, self._on_slot_drag_swap, self.preview_container
                     )
@@ -1247,7 +1247,7 @@ class SettingsDialog(QtWidgets.QDialog):
         coord = (self.selected_row, self.selected_col)
         widget = self._preview_widgets.get(coord)
         if widget and hasattr(widget, "setText"):
-            display_text = format_button_display_text(button.icon, button.label)
+            display_text = button.display_text
             widget.setText(display_text)
             widget.setToolTip(button.tooltip or button.label)
             border = "3px solid #00E676"
@@ -1453,11 +1453,11 @@ class SettingsDialog(QtWidgets.QDialog):
                         pid = info.get("process_id", 0)
                         proc = info.get("process_name", "")
                         if pid != my_pid and proc and proc.lower() not in (
-                            "explorer.exe",
                             "shellexperiencehost.exe",
                             "searchhost.exe",
                             "startmenuexperiencehost.exe",
-                        ):
+                            "textinputhost.exe",
+                        ) and not (proc.lower() == "explorer.exe" and title.lower() in ("program manager", "")):
                             windows_list.append((proc, title))
                 return True
 
@@ -1472,12 +1472,12 @@ class SettingsDialog(QtWidgets.QDialog):
         seen = set()
         unique_windows = []
         for proc, title in windows_list:
-            key = (proc, title)
-            if key not in seen:
-                seen.add(key)
-                unique_windows.append((proc, title))
+            display_str = f"{proc} — {title[:50]}"
+            if display_str not in seen:
+                seen.add(display_str)
+                unique_windows.append((proc, title, display_str))
 
-        items = [f"{proc} — {title[:45]}" for proc, title in unique_windows]
+        items = [disp for _, _, disp in unique_windows]
         chosen, ok = QtWidgets.QInputDialog.getItem(
             self, "选择要绑定的应用程序", "请从当前打开的应用列表中选择：", items, 0, False
         )
@@ -1485,7 +1485,7 @@ class SettingsDialog(QtWidgets.QDialog):
             return
 
         idx = items.index(chosen)
-        proc, title = unique_windows[idx]
+        proc, title, _ = unique_windows[idx]
         p_id = f"profile_{len(self.layout_mgr.profiles) + 1}"
         profile = Profile(id=p_id, process=proc, layout_id=layout.id)
         self.layout_mgr.register_profile(profile)

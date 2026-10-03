@@ -102,12 +102,12 @@ def test_chess_buttons_no_duplicate_characters(qapp):
     assert legacy_btn.icon == ""  # Automatically sanitized
     assert legacy_btn.display_text == "车\nrc"
 
-    # 4. format_button_display_text handles raw duplicate strings
+    # 4. format_button_display_text returns clean label without icon badge superposition
     assert format_button_display_text("车", "车\nrc") == "车\nrc"
     assert format_button_display_text("兵", "兵\nrb") == "兵\nrb"
     assert format_button_display_text("车", "红车\nrc") == "红车\nrc"
     assert format_button_display_text("车", "  车\nrc  ") == "  车\nrc  "
-    assert format_button_display_text("💾", "保存") == "💾 保存"
+    assert format_button_display_text("💾", "保存") == "保存"
     assert format_button_display_text("", "普通按钮") == "普通按钮"
     assert format_button_display_text("车", "") == "车"
 
