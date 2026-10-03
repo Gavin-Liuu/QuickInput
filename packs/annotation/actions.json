@@ -1,0 +1,73 @@
+[
+  {
+    "id": "act_defect_next",
+    "label": "缺陷+下一张",
+    "description": "输入 defect，按回车确认并跳转下一张",
+    "steps": [
+      { "type": "text", "value": "defect" },
+      { "type": "key", "key": "ENTER" },
+      { "type": "delay", "ms": 50 },
+      { "type": "key", "key": "RIGHT" }
+    ]
+  },
+  {
+    "id": "act_normal_next",
+    "label": "正常+下一张",
+    "description": "输入 normal，按回车确认并跳转下一张",
+    "steps": [
+      { "type": "text", "value": "normal" },
+      { "type": "key", "key": "ENTER" },
+      { "type": "delay", "ms": 50 },
+      { "type": "key", "key": "RIGHT" }
+    ]
+  },
+  {
+    "id": "act_background",
+    "label": "背景/无目标",
+    "description": "输入 background 并回车",
+    "steps": [
+      { "type": "text", "value": "background" },
+      { "type": "key", "key": "ENTER" }
+    ]
+  },
+  {
+    "id": "act_create_poly",
+    "label": "创建多边形",
+    "description": "发送 Ctrl+N",
+    "steps": [
+      { "type": "hotkey", "hotkey": "CTRL+N" }
+    ]
+  },
+  {
+    "id": "act_create_rect",
+    "label": "创建矩形框",
+    "description": "发送 Ctrl+R",
+    "steps": [
+      { "type": "hotkey", "hotkey": "CTRL+R" }
+    ]
+  },
+  {
+    "id": "act_save_file",
+    "label": "保存标注",
+    "description": "发送 Ctrl+S",
+    "steps": [
+      { "type": "hotkey", "hotkey": "CTRL+S" }
+    ]
+  },
+  {
+    "id": "act_prev_image",
+    "label": "上一张",
+    "description": "发送 Left 方向键",
+    "steps": [
+      { "type": "key", "key": "LEFT" }
+    ]
+  },
+  {
+    "id": "act_next_image",
+    "label": "下一张",
+    "description": "发送 Right 方向键",
+    "steps": [
+      { "type": "key", "key": "RIGHT" }
+    ]
+  }
+]

@@ -1,0 +1,56 @@
+[
+  {
+    "id": "act_git_status",
+    "label": "git status",
+    "description": "输入 git status 并回车",
+    "steps": [
+      { "type": "text", "value": "git status" },
+      { "type": "key", "key": "ENTER" }
+    ]
+  },
+  {
+    "id": "act_git_pull",
+    "label": "git pull",
+    "description": "输入 git pull --rebase 并回车",
+    "steps": [
+      { "type": "text", "value": "git pull --rebase" },
+      { "type": "key", "key": "ENTER" }
+    ]
+  },
+  {
+    "id": "act_git_commit",
+    "label": "git commit",
+    "description": "带日期的 git commit 模板",
+    "steps": [
+      { "type": "text", "value": "git commit -m \"fix: update {{date}}\"" },
+      { "type": "key", "key": "ENTER" }
+    ]
+  },
+  {
+    "id": "act_docker_ps",
+    "label": "docker ps",
+    "description": "输入 docker ps -a",
+    "steps": [
+      { "type": "text", "value": "docker ps -a" },
+      { "type": "key", "key": "ENTER" }
+    ]
+  },
+  {
+    "id": "act_todo_comment",
+    "label": "TODO注释",
+    "description": "插入带当前日期的 TODO 注释",
+    "steps": [
+      { "type": "text", "value": "// TODO({{date}}): " }
+    ]
+  },
+  {
+    "id": "act_console_log",
+    "label": "日志打印",
+    "description": "插入 console.log 并将光标回退到括号内",
+    "steps": [
+      { "type": "text", "value": "console.log(\"[DEBUG]\", );" },
+      { "type": "key", "key": "LEFT" },
+      { "type": "key", "key": "LEFT" }
+    ]
+  }
+]

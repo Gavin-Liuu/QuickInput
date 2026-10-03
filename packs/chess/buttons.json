@@ -1,0 +1,17 @@
+[
+  { "id": "red_bing", "label": "兵\nrb", "action_id": "act_rb", "icon": "兵", "color": "#E53935", "tooltip": "红兵 (rb)" },
+  { "id": "red_pao", "label": "炮\nrp", "action_id": "act_rp", "icon": "炮", "color": "#E53935", "tooltip": "红炮 (rp)" },
+  { "id": "red_ma", "label": "马\nrm", "action_id": "act_rm", "icon": "马", "color": "#E53935", "tooltip": "红马 (rm)" },
+  { "id": "red_che", "label": "车\nrc", "action_id": "act_rc", "icon": "车", "color": "#E53935", "tooltip": "红车 (rc)" },
+  { "id": "red_shi", "label": "士\nrs", "action_id": "act_rs", "icon": "士", "color": "#E53935", "tooltip": "红士 (rs)" },
+  { "id": "red_xiang", "label": "相\nrx", "action_id": "act_rx", "icon": "相", "color": "#E53935", "tooltip": "红相 (rx)" },
+  { "id": "red_shuai", "label": "帅\nrshuai", "action_id": "act_rshuai", "icon": "帅", "color": "#E53935", "tooltip": "红帅 (rshuai)" },
+
+  { "id": "black_zu", "label": "卒\nbz", "action_id": "act_bz", "icon": "卒", "color": "#37474F", "tooltip": "黑卒 (bz)" },
+  { "id": "black_pao", "label": "炮\nbp", "action_id": "act_bp", "icon": "炮", "color": "#37474F", "tooltip": "黑炮 (bp)" },
+  { "id": "black_ma", "label": "马\nbm", "action_id": "act_bm", "icon": "马", "color": "#37474F", "tooltip": "黑马 (bm)" },
+  { "id": "black_che", "label": "车\nbc", "action_id": "act_bc", "icon": "车", "color": "#37474F", "tooltip": "黑车 (bc)" },
+  { "id": "black_shi", "label": "士\nbs", "action_id": "act_bs", "icon": "士", "color": "#37474F", "tooltip": "黑士 (bs)" },
+  { "id": "black_xiang", "label": "象\nbx", "action_id": "act_bx", "icon": "象", "color": "#37474F", "tooltip": "黑象 (bx)" },
+  { "id": "black_jiang", "label": "将\nbj", "action_id": "act_bj", "icon": "将", "color": "#37474F", "tooltip": "黑将 (bj)" }
+]

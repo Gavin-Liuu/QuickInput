@@ -1,0 +1,8 @@
+{
+  "id": "customer_service_pack",
+  "name": "电商与售后客服常用话术",
+  "version": "1.0.0",
+  "schema_version": 1,
+  "author": "QuickInput",
+  "description": "客服问候、物流催单、售后退款、道歉与自动日期单号填入"
+}

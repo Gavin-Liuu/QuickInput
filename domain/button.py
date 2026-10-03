@@ -1,0 +1,59 @@
+# -*- coding: utf-8 -*-
+"""Button domain model."""
+
+from dataclasses import dataclass
+from typing import Dict, Any, Optional, List
+import copy
+
+
+@dataclass
+class Button:
+    """Represents a button on the floating keyboard panel."""
+    id: str
+    label: str
+    action_id: str
+    icon: str = ""
+    color: str = ""
+    tooltip: str = ""
+    auto_enter: Optional[bool] = None  # None = use global or action setting
+
+    def validate(self) -> List[str]:
+        errors = []
+        if not self.id:
+            errors.append("Button 'id' must be non-empty")
+        if not self.label:
+            errors.append("Button 'label' must be non-empty")
+        if not self.action_id:
+            errors.append("Button 'action_id' must be non-empty")
+        return errors
+
+    def to_dict(self) -> Dict[str, Any]:
+        data: Dict[str, Any] = {
+            "id": self.id,
+            "label": self.label,
+            "action_id": self.action_id,
+            "icon": self.icon,
+            "color": self.color,
+            "tooltip": self.tooltip,
+        }
+        if self.auto_enter is not None:
+            data["auto_enter"] = self.auto_enter
+        return data
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "Button":
+        return cls(
+            id=str(data.get("id", "")),
+            label=str(data.get("label", "")),
+            action_id=str(data.get("action_id", "")),
+            icon=str(data.get("icon", "")),
+            color=str(data.get("color", "")),
+            tooltip=str(data.get("tooltip", "")),
+            auto_enter=data.get("auto_enter", None),
+        )
+
+    def clone(self, new_id: Optional[str] = None) -> "Button":
+        copied = copy.deepcopy(self)
+        if new_id:
+            copied.id = new_id
+        return copied

@@ -1,0 +1,64 @@
+[
+  {
+    "id": "chess",
+    "name": "中国象棋(横排)",
+    "orientation": "horizontal",
+    "rows": 2,
+    "columns": 7,
+    "description": "中国象棋14子横排紧凑布局",
+    "buttons": [
+      { "button_id": "red_bing", "row": 0, "column": 0 },
+      { "button_id": "red_pao", "row": 0, "column": 1 },
+      { "button_id": "red_ma", "row": 0, "column": 2 },
+      { "button_id": "red_che", "row": 0, "column": 3 },
+      { "button_id": "red_shi", "row": 0, "column": 4 },
+      { "button_id": "red_xiang", "row": 0, "column": 5 },
+      { "button_id": "red_shuai", "row": 0, "column": 6 },
+      { "button_id": "black_zu", "row": 1, "column": 0 },
+      { "button_id": "black_pao", "row": 1, "column": 1 },
+      { "button_id": "black_ma", "row": 1, "column": 2 },
+      { "button_id": "black_che", "row": 1, "column": 3 },
+      { "button_id": "black_shi", "row": 1, "column": 4 },
+      { "button_id": "black_xiang", "row": 1, "column": 5 },
+      { "button_id": "black_jiang", "row": 1, "column": 6 }
+    ],
+    "settings": {
+      "opacity": 0.95,
+      "show_labels": true,
+      "button_size": "compact",
+      "always_on_top": true,
+      "auto_enter_default": false
+    }
+  },
+  {
+    "id": "chess_vertical",
+    "name": "中国象棋(竖排)",
+    "orientation": "vertical",
+    "rows": 7,
+    "columns": 2,
+    "description": "中国象棋14子竖排紧凑侧边栏布局",
+    "buttons": [
+      { "button_id": "red_bing", "row": 0, "column": 0 },
+      { "button_id": "red_pao", "row": 1, "column": 0 },
+      { "button_id": "red_ma", "row": 2, "column": 0 },
+      { "button_id": "red_che", "row": 3, "column": 0 },
+      { "button_id": "red_shi", "row": 4, "column": 0 },
+      { "button_id": "red_xiang", "row": 5, "column": 0 },
+      { "button_id": "red_shuai", "row": 6, "column": 0 },
+      { "button_id": "black_zu", "row": 0, "column": 1 },
+      { "button_id": "black_pao", "row": 1, "column": 1 },
+      { "button_id": "black_ma", "row": 2, "column": 1 },
+      { "button_id": "black_che", "row": 3, "column": 1 },
+      { "button_id": "black_shi", "row": 4, "column": 1 },
+      { "button_id": "black_xiang", "row": 5, "column": 1 },
+      { "button_id": "black_jiang", "row": 6, "column": 1 }
+    ],
+    "settings": {
+      "opacity": 0.95,
+      "show_labels": true,
+      "button_size": "compact",
+      "always_on_top": true,
+      "auto_enter_default": false
+    }
+  }
+]

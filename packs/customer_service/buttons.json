@@ -1,0 +1,8 @@
+[
+  { "id": "btn_cs_greet", "label": "👋 问候\n亲您好", "action_id": "act_cs_greeting", "color": "#00897B", "tooltip": "发送标准问候语" },
+  { "id": "btn_cs_query", "label": "🔍 查单\n稍候中", "action_id": "act_cs_query", "color": "#039BE5", "tooltip": "发送查单安抚话术" },
+  { "id": "btn_cs_refund", "label": "📦 退款\n退换指引", "action_id": "act_cs_refund", "color": "#FB8C00", "tooltip": "发送售后退换货指引" },
+  { "id": "btn_cs_apology", "label": "🙏 致歉\n升级处理", "action_id": "act_cs_apology", "color": "#E53935", "tooltip": "发送致歉安抚话术" },
+  { "id": "btn_cs_thanks", "label": "🎉 感谢\n祝您愉快", "action_id": "act_cs_thanks", "color": "#43A047", "tooltip": "发送道别与感谢" },
+  { "id": "btn_cs_record", "label": "⏱ 记录\n时间+工单", "action_id": "act_cs_record", "color": "#5E35B1", "tooltip": "自动生成带日期和流水号的服务记录" }
+]

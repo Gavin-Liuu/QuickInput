@@ -1,0 +1,8 @@
+[
+  { "id": "btn_git_st", "label": "🌿 git\nstatus", "action_id": "act_git_status", "color": "#F4511E", "tooltip": "执行 git status" },
+  { "id": "btn_git_pull", "label": "⬇ git\npull", "action_id": "act_git_pull", "color": "#FB8C00", "tooltip": "执行 git pull --rebase" },
+  { "id": "btn_git_ci", "label": "💾 git\ncommit", "action_id": "act_git_commit", "color": "#43A047", "tooltip": "提交代码 (带日期)" },
+  { "id": "btn_docker_ps", "label": "🐳 docker\nps -a", "action_id": "act_docker_ps", "color": "#0288D1", "tooltip": "查看容器状态" },
+  { "id": "btn_todo", "label": "📝 TODO\n日期", "action_id": "act_todo_comment", "color": "#8E24AA", "tooltip": "插入 TODO 注释" },
+  { "id": "btn_log", "label": "🖨 Log\nconsole", "action_id": "act_console_log", "color": "#37474F", "tooltip": "插入打印日志并回退光标" }
+]

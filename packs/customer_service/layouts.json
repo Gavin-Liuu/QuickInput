@@ -1,0 +1,25 @@
+[
+  {
+    "id": "customer_service",
+    "name": "客服常用话术",
+    "orientation": "horizontal",
+    "rows": 2,
+    "columns": 3,
+    "description": "电商售后客服2x3高效回复话术面板",
+    "buttons": [
+      { "button_id": "btn_cs_greet", "row": 0, "column": 0 },
+      { "button_id": "btn_cs_query", "row": 0, "column": 1 },
+      { "button_id": "btn_cs_refund", "row": 0, "column": 2 },
+      { "button_id": "btn_cs_apology", "row": 1, "column": 0 },
+      { "button_id": "btn_cs_thanks", "row": 1, "column": 1 },
+      { "button_id": "btn_cs_record", "row": 1, "column": 2 }
+    ],
+    "settings": {
+      "opacity": 0.95,
+      "show_labels": true,
+      "button_size": "compact",
+      "always_on_top": true,
+      "auto_enter_default": false
+    }
+  }
+]

@@ -1,0 +1,8 @@
+{
+  "id": "programmer_pack",
+  "name": "程序员 & DevOps 快捷输入",
+  "version": "1.0.0",
+  "schema_version": 1,
+  "author": "QuickInput",
+  "description": "Git命令、Docker容器状态、代码TODO注释、日志打印快捷面板"
+}

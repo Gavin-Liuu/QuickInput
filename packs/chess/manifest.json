@@ -1,0 +1,8 @@
+{
+  "id": "chess_pack",
+  "name": "中国象棋标注",
+  "version": "1.0.0",
+  "schema_version": 1,
+  "author": "QuickInput",
+  "description": "中国象棋14个棋子快捷编码标注，支持横排(2x7)与竖排(7x2)切换"
+}

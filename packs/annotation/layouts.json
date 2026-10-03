@@ -1,0 +1,27 @@
+[
+  {
+    "id": "annotation",
+    "name": "图片与数据标注",
+    "orientation": "horizontal",
+    "rows": 2,
+    "columns": 4,
+    "description": "2x4 紧凑标注工作流",
+    "buttons": [
+      { "button_id": "btn_defect", "row": 0, "column": 0 },
+      { "button_id": "btn_normal", "row": 0, "column": 1 },
+      { "button_id": "btn_bg", "row": 0, "column": 2 },
+      { "button_id": "btn_save", "row": 0, "column": 3 },
+      { "button_id": "btn_poly", "row": 1, "column": 0 },
+      { "button_id": "btn_rect", "row": 1, "column": 1 },
+      { "button_id": "btn_prev", "row": 1, "column": 2 },
+      { "button_id": "btn_next", "row": 1, "column": 3 }
+    ],
+    "settings": {
+      "opacity": 0.95,
+      "show_labels": true,
+      "button_size": "compact",
+      "always_on_top": true,
+      "auto_enter_default": false
+    }
+  }
+]

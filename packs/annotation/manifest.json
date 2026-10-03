@@ -1,0 +1,8 @@
+{
+  "id": "annotation_pack",
+  "name": "图片与数据标注",
+  "version": "1.0.0",
+  "schema_version": 1,
+  "author": "QuickInput",
+  "description": "专为 Labelme、YOLO 图像标注、缺陷分类打造的高效工作流"
+}

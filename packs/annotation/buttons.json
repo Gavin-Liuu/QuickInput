@@ -1,0 +1,10 @@
+[
+  { "id": "btn_defect", "label": "⚠ 缺陷\n+下一张", "action_id": "act_defect_next", "color": "#D32F2F", "tooltip": "输入 defect 并跳到下一张" },
+  { "id": "btn_normal", "label": "✔ 正常\n+下一张", "action_id": "act_normal_next", "color": "#2E7D32", "tooltip": "输入 normal 并跳到下一张" },
+  { "id": "btn_bg", "label": "⬜ 背景\n+回车", "action_id": "act_background", "color": "#455A64", "tooltip": "输入 background" },
+  { "id": "btn_save", "label": "💾 保存\nCtrl+S", "action_id": "act_save_file", "color": "#1976D2", "tooltip": "保存标注 (Ctrl+S)" },
+  { "id": "btn_poly", "label": "⬡ 多边形\nCtrl+N", "action_id": "act_create_poly", "color": "#7B1FA2", "tooltip": "创建多边形" },
+  { "id": "btn_rect", "label": "▭ 矩形框\nCtrl+R", "action_id": "act_create_rect", "color": "#0288D1", "tooltip": "创建矩形" },
+  { "id": "btn_prev", "label": "◀ 上张\nLeft", "action_id": "act_prev_image", "color": "#546E7A", "tooltip": "上一张" },
+  { "id": "btn_next", "label": "▶ 下张\nRight", "action_id": "act_next_image", "color": "#546E7A", "tooltip": "下一张" }
+]

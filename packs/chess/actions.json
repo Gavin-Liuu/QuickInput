@@ -1,0 +1,16 @@
+[
+  { "id": "act_rb", "label": "红兵", "description": "输入 rb", "steps": [{ "type": "text", "value": "rb" }] },
+  { "id": "act_rp", "label": "红炮", "description": "输入 rp", "steps": [{ "type": "text", "value": "rp" }] },
+  { "id": "act_rm", "label": "红马", "description": "输入 rm", "steps": [{ "type": "text", "value": "rm" }] },
+  { "id": "act_rc", "label": "红车", "description": "输入 rc", "steps": [{ "type": "text", "value": "rc" }] },
+  { "id": "act_rs", "label": "红士", "description": "输入 rs", "steps": [{ "type": "text", "value": "rs" }] },
+  { "id": "act_rx", "label": "红相", "description": "输入 rx", "steps": [{ "type": "text", "value": "rx" }] },
+  { "id": "act_rshuai", "label": "红帅", "description": "输入 rshuai", "steps": [{ "type": "text", "value": "rshuai" }] },
+  { "id": "act_bz", "label": "黑卒", "description": "输入 bz", "steps": [{ "type": "text", "value": "bz" }] },
+  { "id": "act_bp", "label": "黑炮", "description": "输入 bp", "steps": [{ "type": "text", "value": "bp" }] },
+  { "id": "act_bm", "label": "黑马", "description": "输入 bm", "steps": [{ "type": "text", "value": "bm" }] },
+  { "id": "act_bc", "label": "黑车", "description": "输入 bc", "steps": [{ "type": "text", "value": "bc" }] },
+  { "id": "act_bs", "label": "黑士", "description": "输入 bs", "steps": [{ "type": "text", "value": "bs" }] },
+  { "id": "act_bx", "label": "黑象", "description": "输入 bx", "steps": [{ "type": "text", "value": "bx" }] },
+  { "id": "act_bj", "label": "黑将", "description": "输入 bj", "steps": [{ "type": "text", "value": "bj" }] }
+]

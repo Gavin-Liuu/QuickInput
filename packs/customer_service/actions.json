@@ -1,0 +1,50 @@
+[
+  {
+    "id": "act_cs_greeting",
+    "label": "问候语",
+    "description": "亲，您好！很高兴为您服务，请问有什么可以帮您？",
+    "steps": [
+      { "type": "paste", "value": "亲，您好！很高兴为您服务，请问有什么可以帮您的呢？🌹\n" }
+    ]
+  },
+  {
+    "id": "act_cs_query",
+    "label": "查单中",
+    "description": "正在为您核实订单信息",
+    "steps": [
+      { "type": "paste", "value": "已为您核实订单信息，正在为您加急联系物流仓库确认进度，请您稍候～\n" }
+    ]
+  },
+  {
+    "id": "act_cs_refund",
+    "label": "退款指引",
+    "description": "售后退换货指引",
+    "steps": [
+      { "type": "paste", "value": "亲，如需申请退款/换货，请在订单页面点击【申请售后】，选择对应退款原因即可，我们会在第一时间为您审核处理！\n" }
+    ]
+  },
+  {
+    "id": "act_cs_apology",
+    "label": "致歉安抚",
+    "description": "给您带来不便非常抱歉",
+    "steps": [
+      { "type": "paste", "value": "非常抱歉给您带来不便，我们深表歉意！针对您反馈的问题，已为您升级专员加急跟进！\n" }
+    ]
+  },
+  {
+    "id": "act_cs_thanks",
+    "label": "感谢道别",
+    "description": "感谢您的支持",
+    "steps": [
+      { "type": "paste", "value": "非常感谢您的理解与支持！如果后续还有任何问题随时联系我们，祝您生活愉快！❤️\n" }
+    ]
+  },
+  {
+    "id": "act_cs_record",
+    "label": "服务记录",
+    "description": "自动插入当前接待时间与递增咨询流水号",
+    "steps": [
+      { "type": "paste", "value": "【接待记录】客服已于 {{date}} {{time}} 接待咨询，工单编号: CS-{{counter}}。\n" }
+    ]
+  }
+]
