@@ -71,14 +71,10 @@ def test_chess_execution_with_auto_enter():
     assert "ENTER" in inj.sent_keys
 
 
-def test_chess_buttons_no_duplicate_characters():
+def test_chess_buttons_no_duplicate_characters(qapp):
     """Verify that chess buttons don't have duplicate piece characters (e.g. 车车rc)."""
-    import sys
-    from PyQt5 import QtWidgets
     from domain.button import Button, format_button_display_text
     from ui.floating_panel import ActionButtonWidget
-
-    app = QtWidgets.QApplication.instance() or QtWidgets.QApplication(sys.argv)
 
     base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
     chess_pack_dir = os.path.join(base_dir, "packs", "chess")

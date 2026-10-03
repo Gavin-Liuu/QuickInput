@@ -5,7 +5,7 @@ import os
 import sys
 import ctypes
 
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 from domain.action import Action
 from domain.button import Button
