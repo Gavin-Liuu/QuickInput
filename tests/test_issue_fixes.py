@@ -11,22 +11,16 @@
 
 import os
 import tempfile
-import pytest
-from PyQt5 import QtCore, QtGui, QtWidgets
-import win32con
-import win32gui
+from PyQt5 import QtCore, QtWidgets
 
 from domain.button import Button, format_button_display_text
-from domain.layout import Layout, LayoutSettings, LayoutButtonSlot
 from domain.action import Action, ActionStep
-from domain.profile import Profile
 from application.layout_manager import LayoutManager
 from application.action_executor import ActionExecutor
 from application.target_manager import TargetManager
 from storage.config_store import ConfigStore
 from platform_layer.base import BaseWindowManager
-from ui.floating_panel import FloatingPanel, ActionButtonWidget
-from ui.settings_dialog import SettingsDialog
+from ui.floating_panel import FloatingPanel
 from tests.test_executor import MockInputInjector, MockClipboardManager, MockWindowManager
 
 
@@ -35,7 +29,7 @@ def create_test_env(tmp_dir):
     lm = LayoutManager()
     
     # Create two layouts to test global search and layout switching
-    l1 = lm.create_layout_with_presets("layout_1", "第一布局", rows=2, columns=2)
+    lm.create_layout_with_presets("layout_1", "第一布局", rows=2, columns=2)
     l2 = lm.create_layout_with_presets("layout_2", "第二布局", rows=2, columns=2)
 
     # Add distinct buttons

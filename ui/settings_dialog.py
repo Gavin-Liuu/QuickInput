@@ -6,7 +6,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 import os
 from domain.action import Action, ActionStep
-from domain.button import Button, format_button_display_text
+from domain.button import Button
 from domain.layout import Layout
 from domain.profile import Profile
 from application.layout_manager import LayoutManager
