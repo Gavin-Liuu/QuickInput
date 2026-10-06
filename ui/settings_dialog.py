@@ -1665,3 +1665,11 @@ class SettingsDialog(QtWidgets.QDialog):
 
         self.config_store.save_config(cfg)
         self.accept()
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        try:
+            from ui.floating_panel import set_window_dark_titlebar
+            set_window_dark_titlebar(int(self.winId()))
+        except Exception:
+            pass

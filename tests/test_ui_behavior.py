@@ -723,3 +723,89 @@ def test_settings_dialog_chess_layout_no_duplicate_characters(qapp):
         assert "车 车" not in che_btn.text()
         dlg.close()
 
+
+def test_button_scaling_modes_no_overflow(qapp):
+    """Verify compact, standard, and touch button sizes fit within panel without overflowing."""
+    from ui.floating_panel import FloatingPanel
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        cs = ConfigStore(config_dir=tmp_dir)
+        cs.load_config()
+
+        for mode, exp_scale in [("compact", 1.0), ("standard", 1.25), ("touch", 1.5)]:
+            lm = LayoutManager()
+            lay = lm.create_layout_with_presets(f"lay_{mode}", f"布局_{mode}", rows=2, columns=7, button_size=mode)
+            lm.set_active_layout(f"lay_{mode}")
+
+            inj = MockInputInjector()
+            wm = MockWindowManager()
+            clip = MockClipboardManager()
+            tm = TargetManager(window_manager=wm)
+            ex = ActionExecutor(injector=inj, clipboard_mgr=clip, target_mgr=tm)
+
+            panel = FloatingPanel(lm, ex, tm, cs)
+            qapp.processEvents()
+
+            btn = panel.buttons_widgets[0]
+            # Verify button dimensions fit inside the grid layout
+            total_btn_w = lay.columns * btn.width() + (lay.columns - 1) * 3
+            avail_w = panel.width() - 24
+            assert total_btn_w <= avail_w, f"Mode {mode}: total button width {total_btn_w} > available {avail_w}"
+            panel.close()
+
+
+def test_action_button_rapid_flash_feedback(qapp):
+    """Verify rapid clicks on ActionButtonWidget never corrupt stylesheet with permanent flash border."""
+    import time
+    from domain.button import Button
+    from ui.floating_panel import ActionButtonWidget
+
+    b = Button(id="rapid_test", label="测试", action_id="a1", color="#E53935")
+    widget = ActionButtonWidget(b)
+
+    # Click 5 times in rapid succession
+    for _ in range(5):
+        widget.flash_feedback()
+
+    # Wait for all timers to expire
+    import time
+    for _ in range(20):
+        qapp.processEvents()
+        time.sleep(0.015)
+
+    assert "#00E676" not in widget.styleSheet()
+    assert widget.styleSheet() == widget._base_style
+
+
+def test_maximized_window_does_not_corrupt_layout_settings(qapp):
+    """Verify maximizing window does not corrupt saved layout width/height with desktop dimensions."""
+    from PyQt5 import QtCore
+    from ui.floating_panel import FloatingPanel
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        cs = ConfigStore(config_dir=tmp_dir)
+        cs.load_config()
+        lm = LayoutManager()
+        lay = lm.create_layout_with_presets("lay_guard", "防腐化", rows=2, columns=4)
+        lay.settings.window_width = 380
+        lay.settings.window_height = 140
+        lm.set_active_layout("lay_guard")
+
+        inj = MockInputInjector()
+        wm = MockWindowManager()
+        clip = MockClipboardManager()
+        tm = TargetManager(window_manager=wm)
+        ex = ActionExecutor(injector=inj, clipboard_mgr=clip, target_mgr=tm)
+
+        panel = FloatingPanel(lm, ex, tm, cs)
+        assert lay.settings.window_width == 380
+
+        # Simulate maximized window
+        panel.setWindowState(panel.windowState() | QtCore.Qt.WindowMaximized)
+        panel.save_window_config()
+
+        # Layout settings width must remain 380, NOT screen width
+        assert lay.settings.window_width == 380
+        assert lay.settings.window_height == 140
+        panel.close()
+

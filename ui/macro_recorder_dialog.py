@@ -632,3 +632,11 @@ class MacroRecorderDialog(QtWidgets.QDialog):
         if self.recorder.is_recording:
             self.recorder.cancel()
         super().closeEvent(event)
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        try:
+            from ui.floating_panel import set_window_dark_titlebar
+            set_window_dark_titlebar(int(self.winId()))
+        except Exception:
+            pass

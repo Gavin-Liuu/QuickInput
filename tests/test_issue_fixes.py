@@ -49,17 +49,17 @@ def create_test_env(tmp_dir):
     return cs, lm, inj, wm, clip, tm, ex
 
 
-def test_issue_1_floating_keyboard_aesthetic_attributes(qapp):
-    """1. Verify window uses translucent background and continuous container border matching floating_keyboard."""
+def test_issue_1_native_window_frame_attributes(qapp):
+    """1. Verify window does not use WA_TranslucentBackground or artificial rounded frame border."""
     with tempfile.TemporaryDirectory() as tmp_dir:
         cs, lm, inj, wm, clip, tm, ex = create_test_env(tmp_dir)
         panel = FloatingPanel(lm, ex, tm, cs)
 
-        # Translucent background is enabled for seamless floating card with drop shadow
-        assert panel.testAttribute(QtCore.Qt.WA_TranslucentBackground)
+        # Translucent background is disabled to allow standard native window frame rendering
+        assert not panel.testAttribute(QtCore.Qt.WA_TranslucentBackground)
         
-        # MainContainer border is unified and continuous, matching floating_keyboard
-        assert "border: 1px solid #363644" in panel.main_container.styleSheet()
+        # MainContainer border is 'none', not artificial segmented border
+        assert "border: none" in panel.main_container.styleSheet()
         assert not hasattr(panel, "search_box_frame") or not panel.search_box_frame.isVisible()
         panel.close()
 
