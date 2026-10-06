@@ -22,6 +22,92 @@ MA_NOACTIVATE = 3
 WS_EX_NOACTIVATE = 0x08000000
 
 
+def get_action_button_style(color_hex: str, font_size: int = 9) -> str:
+    """Generate high-tactile linear gradient stylesheet matching floating_keyboard."""
+    c = QtGui.QColor(color_hex or "#1976D2")
+    r, g, b = c.red(), c.green(), c.blue()
+    # Red chess pieces & variants
+    if r > 160 and g < 100 and b < 100:
+        return f"""
+            QPushButton {{
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #E53935, stop:1 #C62828);
+                color: #FFFFFF;
+                font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+                font-size: {font_size}px;
+                font-weight: bold;
+                border: 1px solid #B71C1C;
+                border-radius: 4px;
+                padding: 1px;
+            }}
+            QPushButton:hover {{
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #EF5350, stop:1 #D32F2F);
+                border: 1px solid #FF8A80;
+            }}
+            QPushButton:pressed {{
+                background: #9A0007;
+                border: 1px solid #600000;
+                padding-top: 2px;
+                padding-left: 1px;
+            }}
+        """
+    # Black / Obsidian chess pieces & dark variants
+    elif r < 90 and g < 100 and b < 110 and abs(r - g) < 30 and abs(g - b) < 30:
+        return f"""
+            QPushButton {{
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #37474F, stop:1 #212121);
+                color: #ECEFF1;
+                font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+                font-size: {font_size}px;
+                font-weight: bold;
+                border: 1px solid #263238;
+                border-radius: 4px;
+                padding: 1px;
+            }}
+            QPushButton:hover {{
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #455A64, stop:1 #2C383F);
+                border: 1px solid #90A4AE;
+            }}
+            QPushButton:pressed {{
+                background: #101518;
+                border: 1px solid #000000;
+                padding-top: 2px;
+                padding-left: 1px;
+            }}
+        """
+    else:
+        # Dynamic bevel gradient for arbitrary colors
+        top = c.lighter(115).name()
+        bottom = c.darker(118).name()
+        border = c.darker(135).name()
+        hover_top = c.lighter(130).name()
+        hover_bottom = c.lighter(105).name()
+        hover_border = c.lighter(140).name()
+        pressed_bg = c.darker(140).name()
+        pressed_border = c.darker(165).name()
+        return f"""
+            QPushButton {{
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 {top}, stop:1 {bottom});
+                color: #FFFFFF;
+                font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+                font-size: {font_size}px;
+                font-weight: bold;
+                border: 1px solid {border};
+                border-radius: 4px;
+                padding: 1px;
+            }}
+            QPushButton:hover {{
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 {hover_top}, stop:1 {hover_bottom});
+                border: 1px solid {hover_border};
+            }}
+            QPushButton:pressed {{
+                background: {pressed_bg};
+                border: 1px solid {pressed_border};
+                padding-top: 2px;
+                padding-left: 1px;
+            }}
+        """
+
+
 class ActionButtonWidget(QtWidgets.QPushButton):
     """A button that never accepts keyboard focus during panel operation."""
 
@@ -35,32 +121,12 @@ class ActionButtonWidget(QtWidgets.QPushButton):
         self.apply_scale(1.0)
 
     def apply_scale(self, scale: float):
-        width, height, font_size = 48, 32, 9
-        width = max(32, min(180, int(width * scale)))
-        height = max(26, min(100, int(height * scale)))
-        font = max(8, min(20, int(font_size * scale)))
+        width, height, font_size = 36, 30, 9
+        width = max(32, min(140, int(width * scale)))
+        height = max(28, min(90, int(height * scale)))
+        font = max(9, min(16, int(font_size * scale)))
         self.setFixedSize(width, height)
-        color = self.button_model.color or "#0A84FF"
-        self.setStyleSheet(f"""
-            QPushButton {{
-                background-color: {color};
-                color: #FFFFFF;
-                font-family: "Segoe UI Variable Text", "Segoe UI", "PingFang SC", "Microsoft YaHei UI", sans-serif;
-                font-size: {font}px;
-                font-weight: 600;
-                line-height: 1.1;
-                border: 1px solid rgba(255, 255, 255, 0.18);
-                border-radius: 6px;
-                padding: 1px 2px;
-            }}
-            QPushButton:hover {{
-                border: 1.5px solid rgba(255, 255, 255, 0.85);
-            }}
-            QPushButton:pressed {{
-                background-color: rgba(0, 0, 0, 0.38);
-                border: 1px solid rgba(255, 255, 255, 0.25);
-            }}
-        """)
+        self.setStyleSheet(get_action_button_style(self.button_model.color, font))
 
     def flash_feedback(self):
         original = self.styleSheet()
@@ -112,19 +178,16 @@ class FloatingPanel(QtWidgets.QWidget):
         self.focus_monitor_timer.start(100)
 
     def init_window_flags(self):
-        # Native Windows frame with minimize, maximize, and close behavior.
-        # Edge resizing and native hit-testing are managed by Windows.
         flags = (
-            QtCore.Qt.Window
-            | QtCore.Qt.WindowTitleHint
-            | QtCore.Qt.WindowSystemMenuHint
-            | QtCore.Qt.WindowMinimizeButtonHint
-            | QtCore.Qt.WindowMaximizeButtonHint
-            | QtCore.Qt.WindowCloseButtonHint
+            QtCore.Qt.FramelessWindowHint
+            | QtCore.Qt.WindowStaysOnTopHint
+            | QtCore.Qt.Tool
+            | QtCore.Qt.WindowDoesNotAcceptFocus
         )
         self.setWindowFlags(flags)
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground, True)
         self.setAttribute(QtCore.Qt.WA_ShowWithoutActivating, True)
-        self.setMinimumSize(220, 60)
+        self.setMinimumSize(80, 40)
         self.setWindowTitle("快捷输入工作台")
 
     def showEvent(self, event):
@@ -135,7 +198,7 @@ class FloatingPanel(QtWidgets.QWidget):
             ex_style = win32gui.GetWindowLong(hwnd, win32con.GWL_EXSTYLE)
             active_layout = self.layout_mgr.get_active_layout()
             keep_top = bool(active_layout.settings.always_on_top) if active_layout else True
-            ex_style |= WS_EX_NOACTIVATE
+            ex_style |= win32con.WS_EX_NOACTIVATE | win32con.WS_EX_TOOLWINDOW
             if keep_top:
                 ex_style |= win32con.WS_EX_TOPMOST
             else:
@@ -177,8 +240,8 @@ class FloatingPanel(QtWidgets.QWidget):
     def update_target_pill(self):
         info = self.target_mgr.get_target_info()
         proc = info.get("process_name") or info.get("title") or "未检测"
-        if len(proc) > 20:
-            proc = proc[:19] + "…"
+        if len(proc) > 16:
+            proc = proc[:15] + "…"
         locked = info.get("is_locked", False)
         self.target_lock_btn.setText(("🔒 " if locked else "🎯 ") + proc)
         self.target_lock_btn.setToolTip(
@@ -191,34 +254,42 @@ class FloatingPanel(QtWidgets.QWidget):
         self.main_container.setObjectName("MainContainer")
         self.main_container.setStyleSheet("""
             QFrame#MainContainer {
-                background-color: #1C1C1E;
-                border: none;
+                background-color: #181820;
+                border: 1px solid #363644;
+                border-radius: 8px;
             }
             QLabel {
-                color: #F5F5F7;
-                font-family: "Segoe UI Variable Text", "Segoe UI", "PingFang SC", "Microsoft YaHei UI", sans-serif;
+                color: #ECECF0;
+                font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
             }
         """)
 
-        self.container_layout = QtWidgets.QVBoxLayout(self.main_container)
-        self.container_layout.setContentsMargins(7, 5, 7, 5)
-        self.container_layout.setSpacing(5)
+        # Drop shadow effect matching floating_keyboard
+        shadow = QtWidgets.QGraphicsDropShadowEffect(self)
+        shadow.setBlurRadius(8)
+        shadow.setColor(QtGui.QColor(0, 0, 0, 160))
+        shadow.setOffset(0, 2)
+        self.main_container.setGraphicsEffect(shadow)
 
-        # 1. Header (Search button, inline search input, layout selector dropdown, settings)
+        self.container_layout = QtWidgets.QVBoxLayout(self.main_container)
+        self.container_layout.setContentsMargins(5, 3, 5, 3)
+        self.container_layout.setSpacing(2)
+
+        # 1. Header (Search, layout selector, orientation, auto-enter, settings, collapse, close)
         self.init_header(self.container_layout)
 
         # 2. Button Grid Area
         self.button_grid_widget = QtWidgets.QWidget(self)
         self.button_grid_layout = QtWidgets.QGridLayout(self.button_grid_widget)
         self.button_grid_layout.setContentsMargins(0, 1, 0, 1)
-        self.button_grid_layout.setSpacing(3)
+        self.button_grid_layout.setSpacing(2)
         self.container_layout.addWidget(self.button_grid_widget)
 
-        # 3. Footer (Opacity slider on left, target window lock on right; no persistent status text)
+        # 3. Footer (Status, opacity slider, target lock pill)
         self.init_footer(self.container_layout)
 
         root = QtWidgets.QVBoxLayout(self)
-        root.setContentsMargins(0, 0, 0, 0)
+        root.setContentsMargins(3, 3, 3, 3)
         root.addWidget(self.main_container)
         self.setLayout(root)
         self.rebuild_buttons()
@@ -227,9 +298,9 @@ class FloatingPanel(QtWidgets.QWidget):
         self.header_widget = QtWidgets.QWidget(self)
         layout = QtWidgets.QHBoxLayout(self.header_widget)
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(5)
+        layout.setSpacing(3)
 
-        # First control on left: Search button
+        # 1. Search toggle button
         self.search_toggle_btn = QtWidgets.QPushButton("🔍", self.header_widget)
         self.search_toggle_btn.setToolTip("搜索按钮 (点击展开/退出搜索)")
         self.search_toggle_btn.setFixedSize(26, 24)
@@ -238,24 +309,24 @@ class FloatingPanel(QtWidgets.QWidget):
         self.search_toggle_btn.clicked.connect(self.toggle_search_box)
         layout.addWidget(self.search_toggle_btn)
 
-        # Inline search input field (expands horizontally inside header, hidden initially)
+        # Inline search input
         self.search_input = QtWidgets.QLineEdit(self.header_widget)
         self.search_input.setFixedHeight(24)
         self.search_input.setPlaceholderText("全局搜索所有布局按钮… (Esc 退出)")
         self.search_input.setClearButtonEnabled(True)
         self.search_input.setStyleSheet("""
             QLineEdit {
-                background-color: rgba(255, 255, 255, 0.08);
-                color: #F5F5F7;
-                border: 1px solid rgba(255, 255, 255, 0.14);
+                background-color: #20202A;
+                color: #ECECF0;
+                border: 1px solid #3F3F52;
                 padding: 2px 8px;
-                border-radius: 6px;
-                font-family: "Segoe UI Variable Text", "Segoe UI", "PingFang SC", "Microsoft YaHei UI", sans-serif;
-                font-size: 11px;
+                border-radius: 4px;
+                font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+                font-size: 10px;
             }
             QLineEdit:focus {
-                border: 1.5px solid #0A84FF;
-                background-color: rgba(255, 255, 255, 0.12);
+                border: 1px solid #5C6BC0;
+                background-color: #272736;
             }
         """)
         self.search_input.textChanged.connect(self.filter_buttons)
@@ -269,40 +340,85 @@ class FloatingPanel(QtWidgets.QWidget):
         self.layout_combo.setFocusPolicy(QtCore.Qt.NoFocus)
         self.layout_combo.setStyleSheet("""
             QComboBox {
-                background-color: rgba(255, 255, 255, 0.08);
-                color: #F5F5F7;
-                border: 1px solid rgba(255, 255, 255, 0.10);
-                padding: 2px 8px;
-                border-radius: 6px;
-                font-family: "Segoe UI Variable Text", "Segoe UI", "PingFang SC", "Microsoft YaHei UI", sans-serif;
-                font-size: 11px;
+                background-color: #272734;
+                color: #ECECF0;
+                border: 1px solid #3F3F52;
+                padding: 2px 6px;
+                border-radius: 4px;
+                font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+                font-size: 10px;
                 font-weight: 500;
             }
             QComboBox:hover {
-                background-color: rgba(255, 255, 255, 0.13);
-                border-color: rgba(255, 255, 255, 0.22);
+                background-color: #38384A;
+                color: #FFFFFF;
+                border-color: #5C6BC0;
             }
             QComboBox::drop-down {
                 subcontrol-origin: padding;
-                subcontrol-position: top right;
-                width: 16px;
+                subcontrol-position: center right;
+                width: 14px;
                 border-left-width: 0px;
             }
+            QComboBox::down-arrow {
+                image: none;
+                border-left: 3px solid transparent;
+                border-right: 3px solid transparent;
+                border-top: 4px solid #8E8EA0;
+                margin-right: 3px;
+            }
             QComboBox QAbstractItemView {
-                background-color: #252528;
-                color: #F5F5F7;
-                border: 1px solid rgba(255, 255, 255, 0.12);
-                border-radius: 6px;
+                background-color: #20202C;
+                color: #ECECF0;
+                border: 1px solid #3F3F52;
+                border-radius: 4px;
                 padding: 4px;
-                selection-background-color: #0A84FF;
+                selection-background-color: #5C6BC0;
                 selection-color: #FFFFFF;
                 outline: none;
-                font-size: 11px;
+                font-size: 10px;
             }
         """)
         self.refresh_layout_combo()
         self.layout_combo.currentIndexChanged.connect(self._on_layout_combo_selected)
         layout.addWidget(self.layout_combo, 1)
+
+        # Quick layout orientation toggle button (⇄)
+        self.layout_toggle_btn = QtWidgets.QPushButton("⇄竖", self.header_widget)
+        self.layout_toggle_btn.setToolTip("快捷切换 横排 / 竖排 象棋布局")
+        self.layout_toggle_btn.setFixedSize(26, 24)
+        self.layout_toggle_btn.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.layout_toggle_btn.setStyleSheet(self.get_tool_btn_style())
+        self.layout_toggle_btn.clicked.connect(self.toggle_layout_orientation)
+        layout.addWidget(self.layout_toggle_btn)
+
+        # Auto enter checkbox
+        self.auto_enter_cb = QtWidgets.QCheckBox("⏎回车", self.header_widget)
+        self.auto_enter_cb.setToolTip("开启后，点击按钮输入字符后自动发送回车键 (Enter)")
+        self.auto_enter_cb.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.auto_enter_cb.setFixedHeight(24)
+        self.auto_enter_cb.setStyleSheet("""
+            QCheckBox {
+                color: #A0A0B2;
+                font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+                font-size: 9px;
+            }
+            QCheckBox::indicator {
+                width: 10px;
+                height: 10px;
+                border-radius: 2px;
+                border: 1px solid #555566;
+                background: #252530;
+            }
+            QCheckBox::indicator:checked {
+                background: #43A047;
+                border: 1px solid #66BB6A;
+            }
+        """)
+        active_lay = self.layout_mgr.get_active_layout()
+        self.auto_enter_cb.setChecked(bool(active_lay.settings.auto_enter_default) if active_lay else False)
+        self.auto_enter_cb.stateChanged.connect(self.on_auto_enter_changed)
+        layout.addWidget(self.auto_enter_cb)
 
         # Settings button
         self.settings_btn = QtWidgets.QPushButton("⚙", self.header_widget)
@@ -313,52 +429,55 @@ class FloatingPanel(QtWidgets.QWidget):
         self.settings_btn.clicked.connect(self.open_settings)
         layout.addWidget(self.settings_btn)
 
+        # Collapse / expand button
+        self.collapse_btn = QtWidgets.QPushButton("一", self.header_widget)
+        self.collapse_btn.setToolTip("折叠/展开键盘")
+        self.collapse_btn.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.collapse_btn.setFixedSize(18, 24)
+        self.collapse_btn.setStyleSheet(self.get_tool_btn_style())
+        self.collapse_btn.clicked.connect(self.toggle_collapse)
+        layout.addWidget(self.collapse_btn)
+
+        # Close button (hide to tray)
+        self.close_btn = QtWidgets.QPushButton("✕", self.header_widget)
+        self.close_btn.setToolTip("隐藏到系统托盘")
+        self.close_btn.setFixedSize(18, 24)
+        self.close_btn.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.close_btn.setStyleSheet("""
+            QPushButton {
+                background-color: transparent;
+                color: #8E8EA0;
+                font-family: "Microsoft YaHei", sans-serif;
+                font-size: 9px;
+                border-radius: 3px;
+                border: none;
+            }
+            QPushButton:hover {
+                background-color: #E53935;
+                color: #FFFFFF;
+            }
+        """)
+        self.close_btn.clicked.connect(self.hide_to_tray)
+        layout.addWidget(self.close_btn)
+
         parent_layout.addWidget(self.header_widget)
 
     def init_footer(self, parent_layout):
         self.footer_widget = QtWidgets.QWidget(self)
         layout = QtWidgets.QHBoxLayout(self.footer_widget)
-        layout.setContentsMargins(0, 2, 0, 0)
-        layout.setSpacing(6)
+        layout.setContentsMargins(0, 1, 0, 0)
+        layout.setSpacing(4)
 
-        # Left: Layout Opacity Slider
-        opacity_label = QtWidgets.QLabel("透明度", self.footer_widget)
-        opacity_label.setStyleSheet("color: #8E8E93; font-size: 10px; font-weight: 500;")
-        layout.addWidget(opacity_label)
-
-        self.opacity_slider = QtWidgets.QSlider(QtCore.Qt.Horizontal, self.footer_widget)
-        self.opacity_slider.setRange(30, 100)
-        self.opacity_slider.setFixedWidth(80)
-        self.opacity_slider.setFocusPolicy(QtCore.Qt.NoFocus)
-        self.opacity_slider.setStyleSheet("""
-            QSlider::groove:horizontal {
-                height: 4px;
-                background: rgba(255, 255, 255, 0.16);
-                border-radius: 2px;
-            }
-            QSlider::sub-page:horizontal {
-                background: #0A84FF;
-                border-radius: 2px;
-            }
-            QSlider::handle:horizontal {
-                background: #FFFFFF;
-                width: 12px;
-                height: 12px;
-                margin-top: -4px;
-                margin-bottom: -4px;
-                border-radius: 6px;
-            }
-            QSlider::handle:horizontal:hover {
-                background: #E5E5EA;
+        # Status text (turns green when keys injected: "已输入: 兵→rb")
+        self.status_label = QtWidgets.QLabel("就绪", self.footer_widget)
+        self.status_label.setStyleSheet("""
+            QLabel {
+                color: #7E7E94;
+                font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+                font-size: 9px;
             }
         """)
-        layout_obj = self.layout_mgr.get_active_layout()
-        curr_op = int((layout_obj.settings.opacity if layout_obj else 0.95) * 100)
-        self.opacity_slider.setValue(curr_op)
-        self.opacity_slider.setToolTip(f"透明度: {curr_op}%")
-        self.opacity_slider.valueChanged.connect(self._on_opacity_slider_changed)
-        self.opacity_slider.sliderReleased.connect(self.save_window_config)
-        layout.addWidget(self.opacity_slider)
+        layout.addWidget(self.status_label)
 
         # Temporary stop button shown only during macro execution
         self.stop_exec_btn = QtWidgets.QPushButton("⏹ 停止", self.footer_widget)
@@ -368,10 +487,10 @@ class FloatingPanel(QtWidgets.QWidget):
                 background-color: #FF453A;
                 color: #FFFFFF;
                 border: none;
-                border-radius: 5px;
-                padding: 2px 10px;
+                border-radius: 3px;
+                padding: 1px 6px;
                 font-weight: 600;
-                font-size: 10px;
+                font-size: 9px;
             }
             QPushButton:hover {
                 background-color: #D70015;
@@ -383,22 +502,62 @@ class FloatingPanel(QtWidgets.QWidget):
 
         layout.addStretch()
 
-        # Right: Target window pill and lock toggle
+        # Opacity slider
+        self.opacity_label = QtWidgets.QLabel("透:", self.footer_widget)
+        self.opacity_label.setStyleSheet("color: #7E7E94; font-size: 8px;")
+        layout.addWidget(self.opacity_label)
+
+        self.opacity_slider = QtWidgets.QSlider(QtCore.Qt.Horizontal, self.footer_widget)
+        self.opacity_slider.setRange(30, 100)
+        self.opacity_slider.setFixedWidth(38)
+        self.opacity_slider.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.opacity_slider.setStyleSheet("""
+            QSlider::groove:horizontal {
+                height: 2px;
+                background: #383848;
+                border-radius: 1px;
+            }
+            QSlider::sub-page:horizontal {
+                background: #5C6BC0;
+                border-radius: 1px;
+            }
+            QSlider::handle:horizontal {
+                background: #D0D0FF;
+                width: 6px;
+                margin-top: -3px;
+                margin-bottom: -3px;
+                border-radius: 3px;
+            }
+            QSlider::handle:horizontal:hover {
+                background: #FFFFFF;
+            }
+        """)
+        layout_obj = self.layout_mgr.get_active_layout()
+        curr_op = int((layout_obj.settings.opacity if layout_obj else 0.95) * 100)
+        self.opacity_slider.setValue(curr_op)
+        self.opacity_slider.setToolTip(f"透明度: {curr_op}%")
+        self.opacity_slider.valueChanged.connect(self._on_opacity_slider_changed)
+        self.opacity_slider.sliderReleased.connect(self.save_window_config)
+        layout.addWidget(self.opacity_slider)
+
+        # Target window pill and lock toggle
         self.target_lock_btn = QtWidgets.QPushButton("🎯 未检测", self.footer_widget)
         self.target_lock_btn.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.target_lock_btn.setFixedHeight(18)
         self.target_lock_btn.setStyleSheet("""
             QPushButton {
-                background-color: rgba(255, 255, 255, 0.07);
-                color: #A1A1A6;
-                border: 1px solid rgba(255, 255, 255, 0.10);
-                border-radius: 10px;
-                padding: 2px 8px;
-                font-family: "Segoe UI Variable Text", "Segoe UI", "PingFang SC", "Microsoft YaHei UI", sans-serif;
-                font-size: 10px;
+                background-color: #272734;
+                color: #8E8EA0;
+                border: 1px solid #3F3F52;
+                border-radius: 8px;
+                padding: 1px 6px;
+                font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+                font-size: 8.5px;
             }
             QPushButton:hover {
-                background-color: rgba(255, 255, 255, 0.13);
-                color: #F5F5F7;
+                background-color: #38384A;
+                color: #ECECF0;
+                border: 1px solid #5C6BC0;
             }
         """)
         self.target_lock_btn.clicked.connect(self.target_mgr.toggle_lock)
@@ -410,19 +569,21 @@ class FloatingPanel(QtWidgets.QWidget):
     def get_tool_btn_style():
         return """
             QPushButton {
-                background-color: rgba(255, 255, 255, 0.08);
-                color: #F5F5F7;
-                border: 1px solid rgba(255, 255, 255, 0.10);
-                border-radius: 6px;
+                background-color: #272734;
+                color: #B0B0C0;
+                font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+                font-size: 10px;
+                border: 1px solid #3F3F52;
+                border-radius: 4px;
                 padding: 0px;
-                font-family: "Segoe UI Variable Text", "Segoe UI", "PingFang SC", "Microsoft YaHei UI", sans-serif;
             }
             QPushButton:hover {
-                background-color: rgba(255, 255, 255, 0.15);
-                border-color: rgba(255, 255, 255, 0.24);
+                background-color: #38384A;
+                color: #FFFFFF;
+                border: 1px solid #5C6BC0;
             }
             QPushButton:pressed {
-                background-color: rgba(255, 255, 255, 0.05);
+                background-color: #1E1E28;
             }
         """
 
@@ -438,7 +599,12 @@ class FloatingPanel(QtWidgets.QWidget):
         self.layout_combo.blockSignals(True)
         self.layout_combo.clear()
         for lid, lay in self.layout_mgr.layouts.items():
-            self.layout_combo.addItem(lay.name, lid)
+            name = lay.name
+            if lid == "chess":
+                name = "♟ 象棋"
+            elif lid == "chess_vertical":
+                name = "♟ 象棋 (竖)"
+            self.layout_combo.addItem(name, lid)
         self.update_layout_combo_selection()
         self.layout_combo.blockSignals(False)
 
@@ -468,11 +634,43 @@ class FloatingPanel(QtWidgets.QWidget):
         self._current_layout_id = layout.id
 
         self.update_layout_combo_selection()
+
+        # Update layout orientation & auto_enter labels matching floating_keyboard
+        if hasattr(self, "layout_toggle_btn"):
+            if layout.id == "chess" or (layout.columns == 7 and layout.rows == 2):
+                self.layout_toggle_btn.setText("⇄竖")
+                self.layout_toggle_btn.setToolTip("快捷切换至竖排(2x7)布局")
+                if hasattr(self, "auto_enter_cb"):
+                    self.auto_enter_cb.setText("⏎回车")
+                if hasattr(self, "opacity_label"):
+                    self.opacity_label.show()
+                    self.opacity_slider.show()
+            elif layout.id == "chess_vertical" or (layout.columns == 2 and layout.rows == 7):
+                self.layout_toggle_btn.setText("⇄横")
+                self.layout_toggle_btn.setToolTip("快捷切换至横排(7x2)布局")
+                if hasattr(self, "auto_enter_cb"):
+                    self.auto_enter_cb.setText("⏎")
+                if hasattr(self, "opacity_label"):
+                    self.opacity_label.hide()
+                    self.opacity_slider.hide()
+            else:
+                self.layout_toggle_btn.setText("⇄")
+                self.layout_toggle_btn.setToolTip("切换布局")
+                if hasattr(self, "auto_enter_cb"):
+                    self.auto_enter_cb.setText("⏎回车")
+                if hasattr(self, "opacity_label"):
+                    self.opacity_label.show()
+                    self.opacity_slider.show()
+
         op_val = int(float(layout.settings.opacity) * 100)
         self.opacity_slider.blockSignals(True)
         self.opacity_slider.setValue(op_val)
         self.opacity_slider.setToolTip(f"透明度: {op_val}%")
         self.opacity_slider.blockSignals(False)
+        if hasattr(self, "auto_enter_cb"):
+            self.auto_enter_cb.blockSignals(True)
+            self.auto_enter_cb.setChecked(bool(layout.settings.auto_enter_default))
+            self.auto_enter_cb.blockSignals(False)
         self.setWindowOpacity(float(layout.settings.opacity))
         self._apply_topmost_setting()
         self.rebuild_buttons()
@@ -487,7 +685,7 @@ class FloatingPanel(QtWidgets.QWidget):
             sip.delete(self.button_grid_layout)
         self.button_grid_layout = QtWidgets.QGridLayout(self.button_grid_widget)
         self.button_grid_layout.setContentsMargins(0, 1, 0, 1)
-        self.button_grid_layout.setSpacing(3)
+        self.button_grid_layout.setSpacing(2)
 
         layout = self.layout_mgr.get_active_layout()
         if not layout:
@@ -505,19 +703,23 @@ class FloatingPanel(QtWidgets.QWidget):
             self.buttons_widgets.append(widget)
 
         self._auto_sizing = True
-        if layout.settings.window_width and layout.settings.window_height:
-            w = max(220, int(layout.settings.window_width))
-            h = max(60, int(layout.settings.window_height))
-            self.resize(w, h)
+        base_scale = {"compact": 1.0, "standard": 1.25, "touch": 1.5}.get(layout.settings.button_size, 1.0)
+        bw = int(40 * base_scale)
+        bh = int(30 * base_scale)
+        calc_w = max(220, layout.columns * (bw + 2) + 24)
+        calc_h = max(60, layout.rows * (bh + 2) + 72)
+
+        sw = layout.settings.window_width
+        sh = layout.settings.window_height
+        # Sanitize bloated dimensions (e.g. 1280x667 from earlier builds)
+        if sw and sh and sw < 900:
+            w = max(220, int(sw))
+            h = max(60, int(sh))
         else:
-            base_scale = {"compact": 1.0, "standard": 1.25, "touch": 1.5}.get(layout.settings.button_size, 1.0)
-            bw = int(48 * base_scale)
-            bh = int(30 * base_scale)
-            w = max(220, layout.columns * (bw + 3) + 24)
-            h = max(60, layout.rows * (bh + 3) + 72)
-            self.resize(w, h)
+            w, h = calc_w, calc_h
             layout.settings.window_width = w
             layout.settings.window_height = h
+        self.resize(w, h)
         self._auto_sizing = False
         self._apply_button_scale()
 
@@ -526,9 +728,9 @@ class FloatingPanel(QtWidgets.QWidget):
         if not layout or not self.buttons_widgets:
             return
         base_scale = {"compact": 1.0, "standard": 1.25, "touch": 1.5}.get(layout.settings.button_size, 1.0)
-        scale_x = (self.width() - 24) / max(1, layout.columns * 51)
-        scale_y = (self.height() - 72) / max(1, layout.rows * 33)
-        scale = max(0.72, min(2.5, min(scale_x, scale_y) * base_scale if scale_y > 0 else scale_x * base_scale))
+        scale_x = (self.width() - 24) / max(1, layout.columns * 42)
+        scale_y = (self.height() - 72) / max(1, layout.rows * 32)
+        scale = max(0.8, min(2.0, min(scale_x, scale_y) * base_scale if scale_y > 0 else scale_x * base_scale))
         for widget in self.buttons_widgets:
             widget.apply_scale(scale)
 
@@ -561,6 +763,14 @@ class FloatingPanel(QtWidgets.QWidget):
         if not action:
             return
 
+        # Visual feedback in status_label matching floating_keyboard
+        clean_text = btn_model.label.replace("\n", "→")
+        auto_enter = self.auto_enter_cb.isChecked() if hasattr(self, "auto_enter_cb") else bool(layout.settings.auto_enter_default)
+        if hasattr(self, "status_label"):
+            self.status_label.setText(f"已输入: {clean_text}" + ("+⏎" if auto_enter else ""))
+            self.status_label.setStyleSheet("color: #81C784; font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif; font-size: 9px; font-weight: bold;")
+            QtCore.QTimer.singleShot(1500, self._reset_status)
+
         # Layout-level confirmation
         if layout.settings.confirm_before_action:
             result = QtWidgets.QMessageBox.question(
@@ -572,8 +782,49 @@ class FloatingPanel(QtWidgets.QWidget):
             if result != QtWidgets.QMessageBox.Yes:
                 return
 
-        # Layout-level auto_enter_default passed to executor (not reading from button)
-        self.executor.execute_async(action, auto_enter_override=layout.settings.auto_enter_default)
+        self.executor.execute_async(action, auto_enter_override=auto_enter)
+
+    def _reset_status(self):
+        if hasattr(self, "status_label"):
+            self.status_label.setText("就绪")
+            self.status_label.setStyleSheet("color: #7E7E94; font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif; font-size: 9px;")
+
+    def toggle_collapse(self):
+        self._is_collapsed = not getattr(self, "_is_collapsed", False)
+        if self._is_collapsed:
+            self.button_grid_widget.hide()
+            self.footer_widget.hide()
+            self.collapse_btn.setText("十")
+            self.collapse_btn.setToolTip("展开键盘")
+        else:
+            self.button_grid_widget.show()
+            self.footer_widget.show()
+            self.collapse_btn.setText("一")
+            self.collapse_btn.setToolTip("折叠键盘")
+        self.adjustSize()
+
+    def toggle_layout_orientation(self):
+        curr_id = self.layout_mgr.active_layout_id
+        if curr_id == "chess":
+            if "chess_vertical" in self.layout_mgr.layouts:
+                self.layout_mgr.set_active_layout("chess_vertical")
+                return
+        elif curr_id == "chess_vertical":
+            if "chess" in self.layout_mgr.layouts:
+                self.layout_mgr.set_active_layout("chess")
+                return
+        # Fallback: cycle layouts
+        lids = list(self.layout_mgr.layouts.keys())
+        if lids:
+            idx = lids.index(curr_id) if curr_id in lids else 0
+            next_lid = lids[(idx + 1) % len(lids)]
+            self.layout_mgr.set_active_layout(next_lid)
+
+    def on_auto_enter_changed(self, state):
+        layout = self.layout_mgr.get_active_layout()
+        if layout:
+            layout.settings.auto_enter_default = (state == QtCore.Qt.Checked)
+            self.save_window_config()
 
     def _on_exec_started(self, action_id, total_steps):
         self.stop_exec_btn.setText(f"⏹ 停止 ({total_steps})")
@@ -775,17 +1026,20 @@ class FloatingPanel(QtWidgets.QWidget):
         if restore_pos:
             self.move(window.get("x", 350), window.get("y", 250))
         layout = self.layout_mgr.get_active_layout()
-        if layout and layout.settings.window_width and layout.settings.window_height:
-            self.resize(int(layout.settings.window_width), int(layout.settings.window_height))
-        elif layout:
+        if layout:
             base_scale = {"compact": 1.0, "standard": 1.25, "touch": 1.5}.get(layout.settings.button_size, 1.0)
-            bw = int(48 * base_scale)
+            bw = int(40 * base_scale)
             bh = int(30 * base_scale)
-            w = max(220, layout.columns * (bw + 3) + 24)
-            h = max(60, layout.rows * (bh + 3) + 72)
-            self.resize(w, h)
-            layout.settings.window_width = w
-            layout.settings.window_height = h
+            calc_w = max(220, layout.columns * (bw + 2) + 24)
+            calc_h = max(60, layout.rows * (bh + 2) + 72)
+            sw = layout.settings.window_width
+            sh = layout.settings.window_height
+            if sw and sh and sw < 900:
+                self.resize(max(220, int(sw)), max(60, int(sh)))
+            else:
+                self.resize(calc_w, calc_h)
+                layout.settings.window_width = calc_w
+                layout.settings.window_height = calc_h
         op = float(layout.settings.opacity) if layout else float(window.get("opacity", 0.95))
         self.setWindowOpacity(op)
         if hasattr(self, "opacity_slider"):
@@ -794,6 +1048,10 @@ class FloatingPanel(QtWidgets.QWidget):
             self.opacity_slider.setValue(op_val)
             self.opacity_slider.setToolTip(f"透明度: {op_val}%")
             self.opacity_slider.blockSignals(False)
+        if hasattr(self, "auto_enter_cb") and layout:
+            self.auto_enter_cb.blockSignals(True)
+            self.auto_enter_cb.setChecked(bool(layout.settings.auto_enter_default))
+            self.auto_enter_cb.blockSignals(False)
         self._apply_topmost_setting()
 
     def _apply_topmost_setting(self):
