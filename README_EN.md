@@ -8,9 +8,9 @@
 [![Tests](https://img.shields.io/badge/tests-91%20passed-brightgreen.svg)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-**QuickInput** is a lightweight, zero-focus-stealing floating action panel and productivity workbench tailored for Windows. Without touching code or JSON files, users can quickly inject text, dispatch keystrokes, execute keyboard shortcuts, paste dynamic rich-text templates, and run multi-step macros into any third-party target application (e.g., Labelme annotation tool, Notepad, Microsoft Word, Excel, web browsers, VS Code, customer service chat tools) with a single click.
+**QuickInput** is a lightweight, zero-focus-stealing floating action panel and productivity workbench tailored for Windows. Without touching code or JSON files, users can quickly inject text, dispatch keystrokes, execute keyboard shortcuts, paste dynamic rich-text templates, and run multi-step macros into any third-party target application (e.g., Labelme annotation tool, Notepad, Microsoft Word, Excel, web browsers, VS Code, workplace & chat tools) with a single click.
 
-It also retains full legacy support for the **Chinese Chess Dataset Annotation Keyboard**, featuring 14 piece codes (`rb`, `rp`, `bm`, `bc`, etc.) and optional automatic Enter confirmation out-of-the-box.
+The workbench provides a fully customizable visual layout studio and safe macro recorder, complete with built-in preset packs for data annotation, customer support scripts, developer quick actions, and fast notation recording.
 
 ---
 
@@ -55,29 +55,29 @@ It also retains full legacy support for the **Chinese Chess Dataset Annotation K
 
 ## 🎯 Built-in Preset Packs
 
-### 1. Chinese Chess Annotation (14 Pieces)
+### 1. Image & Data Annotation (Labelme / YOLO / Inspection)
+- **Defect + Next**: Types `defect` -> Enter -> Wait 50ms -> Right arrow key to advance.
+- **Normal + Next**: Types `normal` -> Enter -> Right arrow key.
+- **Shortcuts**: Save (`Ctrl+S`), Create Polygon (`Ctrl+N`), Create Rectangle (`Ctrl+R`), Prev/Next image.
+
+### 2. Customer Service & Sales Templates
+- Quick greetings, order lookups, refund guides, and farewells.
+- **Ticket Note Generator**: Inserts timestamped service logs with auto-incrementing serial IDs:
+  `[Service Note] Handled on {{date}} {{time}}, Ticket ID: CS-{{counter}}.`
+- Uses lossless clipboard injection that automatically restores your original clipboard content.
+
+### 3. Developer & DevOps Quick Actions
+- Git commands: `git status`, `git pull --rebase`, `git commit -m "fix: update {{date}}"`.
+- Docker commands: `docker ps -a`.
+- Code snippets: Insert `// TODO({{date}}): ` or `console.log("[DEBUG]", );` with caret auto-positioned inside quotes.
+
+### 4. Fast Notation & Symbol Entry (Chinese Chess, etc.)
 | Side | Display | Output Code | Naming Rule |
 | :--- | :--- | :--- | :--- |
 | **Red (7)** | 红兵 (`rb`), 红炮 (`rp`), 红马 (`rm`), 红车 (`rc`), 红士 (`rs`), 红相 (`rx`), 红帅 (`rshuai`) | `rb`, `rp`, `rm`, `rc`, `rs`, `rx`, `rshuai` | r + Pinyin initial |
 | **Black (7)** | 黑卒 (`bz`), 黑炮 (`bp`), 黑马 (`bm`), 黑车 (`bc`), 黑士 (`bs`), 黑象 (`bx`), 黑将 (`bj`) | `bz`, `bp`, `bm`, `bc`, `bs`, `bx`, `bj` | b + Pinyin initial |
 
 *Supports automatic Enter confirmation configured per-layout.*
-
-### 2. Image & Data Annotation (Labelme / YOLO / Inspection)
-- **Defect + Next**: Types `defect` -> Enter -> Wait 50ms -> Right arrow key to advance.
-- **Normal + Next**: Types `normal` -> Enter -> Right arrow key.
-- **Shortcuts**: Save (`Ctrl+S`), Create Polygon (`Ctrl+N`), Create Rectangle (`Ctrl+R`), Prev/Next image.
-
-### 3. Customer Service & Sales Templates
-- Quick greetings, order lookups, refund guides, and farewells.
-- **Ticket Note Generator**: Inserts timestamped service logs with auto-incrementing serial IDs:
-  `[Service Note] Handled on {{date}} {{time}}, Ticket ID: CS-{{counter}}.`
-- Uses lossless clipboard injection that automatically restores your original clipboard content.
-
-### 4. Developer & DevOps Quick Actions
-- Git commands: `git status`, `git pull --rebase`, `git commit -m "fix: update {{date}}"`.
-- Docker commands: `docker ps -a`.
-- Code snippets: Insert `// TODO({{date}}): ` or `console.log("[DEBUG]", );` with caret auto-positioned inside quotes.
 
 ---
 
@@ -163,7 +163,7 @@ Verified test suites include:
 - Target window auto-tracking and elevated UAC admin detection
 - Target window focus restore upon blur
 - Macro recorder key merging and debounce handling
-- Chinese chess 14-piece encoding and auto-enter regression suite
+- Preset pack character encoding and auto-enter validation suite
 - SendInput punctuation mapping and navigation key tests
 - Global hotkey safe registration and cleanup
 - Pixel-perfect screen edge snapping algorithms
