@@ -40,6 +40,8 @@ class LayoutSettings:
     confirm_before_action: bool = False
     window_width: Optional[int] = None
     window_height: Optional[int] = None
+    saved_rows: Optional[int] = None
+    saved_columns: Optional[int] = None
 
     def to_dict(self) -> Dict[str, Any]:
         data = {
@@ -54,12 +56,18 @@ class LayoutSettings:
             data["window_width"] = int(self.window_width)
         if self.window_height is not None:
             data["window_height"] = int(self.window_height)
+        if self.saved_rows is not None:
+            data["saved_rows"] = int(self.saved_rows)
+        if self.saved_columns is not None:
+            data["saved_columns"] = int(self.saved_columns)
         return data
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "LayoutSettings":
         w_w = data.get("window_width")
         w_h = data.get("window_height")
+        s_r = data.get("saved_rows")
+        s_c = data.get("saved_columns")
         return cls(
             opacity=float(data.get("opacity", 0.95)),
             show_labels=bool(data.get("show_labels", True)),
@@ -69,6 +77,8 @@ class LayoutSettings:
             confirm_before_action=bool(data.get("confirm_before_action", False)),
             window_width=int(w_w) if w_w is not None else None,
             window_height=int(w_h) if w_h is not None else None,
+            saved_rows=int(s_r) if s_r is not None else None,
+            saved_columns=int(s_c) if s_c is not None else None,
         )
 
 
@@ -83,6 +93,13 @@ class Layout:
     buttons: List[LayoutButtonSlot] = field(default_factory=list)
     settings: LayoutSettings = field(default_factory=LayoutSettings)
     description: str = ""
+
+    def sanitize_slots(self):
+        """Remove any button slots that fall outside the layout's grid dimensions."""
+        self.buttons = [
+            s for s in self.buttons
+            if 0 <= s.row < self.rows and 0 <= s.column < self.columns
+        ]
 
     def validate(self) -> List[str]:
         errors = []
@@ -99,6 +116,8 @@ class Layout:
                 errors.append("Button slot missing 'button_id'")
             if slot.row < 0 or slot.column < 0:
                 errors.append(f"Button slot for '{slot.button_id}' has negative coordinates ({slot.row}, {slot.column})")
+            if slot.row >= self.rows or slot.column >= self.columns:
+                errors.append(f"Button slot for '{slot.button_id}' is out of bounds ({slot.row}, {slot.column}) for {self.rows}x{self.columns}")
         return errors
 
     def get_slot_at(self, row: int, column: int) -> Optional[LayoutButtonSlot]:
@@ -143,6 +162,12 @@ class Layout:
         self.orientation = "vertical" if self.rows > self.columns else "horizontal"
         for slot in self.buttons:
             slot.row, slot.column = slot.column, slot.row
+        self.sanitize_slots()
+        if self.settings.saved_rows is not None and self.settings.saved_columns is not None:
+            self.settings.saved_rows, self.settings.saved_columns = (
+                self.settings.saved_columns,
+                self.settings.saved_rows,
+            )
         if self.settings.window_width is not None and self.settings.window_height is not None:
             self.settings.window_width, self.settings.window_height = (
                 max(220, self.settings.window_height),
@@ -150,6 +175,7 @@ class Layout:
             )
 
     def to_dict(self) -> Dict[str, Any]:
+        self.sanitize_slots()
         return {
             "id": self.id,
             "name": self.name,
@@ -163,16 +189,22 @@ class Layout:
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> "Layout":
+        rows = int(data.get("rows", 2))
+        columns = int(data.get("columns", 7))
         raw_buttons = data.get("buttons", [])
-        buttons = [LayoutButtonSlot.from_dict(b) for b in raw_buttons if isinstance(b, dict)]
+        buttons = [
+            LayoutButtonSlot.from_dict(b)
+            for b in raw_buttons
+            if isinstance(b, dict) and 0 <= b.get("row", 0) < rows and 0 <= b.get("column", 0) < columns
+        ]
         raw_settings = data.get("settings", {})
         settings = LayoutSettings.from_dict(raw_settings if isinstance(raw_settings, dict) else {})
         return cls(
             id=str(data.get("id", "")),
             name=str(data.get("name", "")),
             orientation=str(data.get("orientation", "horizontal")),
-            rows=int(data.get("rows", 2)),
-            columns=int(data.get("columns", 7)),
+            rows=rows,
+            columns=columns,
             buttons=buttons,
             settings=settings,
             description=str(data.get("description", "")),

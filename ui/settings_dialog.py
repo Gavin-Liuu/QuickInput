@@ -992,13 +992,33 @@ class SettingsDialog(QtWidgets.QDialog):
         if not layout:
             return
 
-        layout.rows = self.rows_spin.value()
-        layout.columns = self.cols_spin.value()
+        old_rows = layout.rows
+        old_cols = layout.columns
+        new_rows = self.rows_spin.value()
+        new_cols = self.cols_spin.value()
+        grid_changed = (new_rows != old_rows or new_cols != old_cols)
+
+        layout.rows = new_rows
+        layout.columns = new_cols
         layout.settings.button_size = ["compact", "standard", "touch"][self.size_combo.currentIndex()]
         layout.settings.opacity = self.opacity_slider.value() / 100.0
         layout.settings.always_on_top = self.always_on_top_chk.isChecked()
         layout.settings.confirm_before_action = self.confirm_action_chk.isChecked()
         layout.settings.auto_enter_default = self.auto_enter_chk.isChecked()
+
+        if grid_changed:
+            layout.sanitize_slots()
+            layout.settings.window_width = None
+            layout.settings.window_height = None
+            layout.settings.saved_rows = new_rows
+            layout.settings.saved_columns = new_cols
+            if self.selected_row is not None and self.selected_row >= new_rows:
+                self.selected_row = None
+            if self.selected_col is not None and self.selected_col >= new_cols:
+                self.selected_col = None
+            if self.selected_button_id and not any(s.button_id == self.selected_button_id for s in layout.buttons):
+                self.selected_button_id = None
+                self._clear_selection()
 
         # Re-render preview grid
         self._render_preview_grid()

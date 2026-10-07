@@ -586,6 +586,8 @@ class FloatingPanel(QtWidgets.QWidget):
             if old_lay and not self._auto_sizing:
                 old_lay.settings.window_width = self.width()
                 old_lay.settings.window_height = self.height()
+                old_lay.settings.saved_rows = old_lay.rows
+                old_lay.settings.saved_columns = old_lay.columns
         self._current_layout_id = layout.id
 
         self.update_layout_combo_selection()
@@ -613,8 +615,11 @@ class FloatingPanel(QtWidgets.QWidget):
         layout = self.layout_mgr.get_active_layout()
         if not layout:
             return
+        layout.sanitize_slots()
         self.setWindowOpacity(float(layout.settings.opacity))
         for slot in layout.buttons:
+            if slot.row >= layout.rows or slot.column >= layout.columns:
+                continue
             model = self.layout_mgr.get_button(slot.button_id)
             if not model:
                 continue
@@ -634,13 +639,20 @@ class FloatingPanel(QtWidgets.QWidget):
 
         sw = layout.settings.window_width
         sh = layout.settings.window_height
-        if sw and sh and 200 <= sw < 900:
+        mismatched_grid = (
+            layout.settings.saved_rows is not None
+            and layout.settings.saved_columns is not None
+            and (layout.settings.saved_rows != layout.rows or layout.settings.saved_columns != layout.columns)
+        )
+        if sw and sh and 200 <= sw < 900 and not mismatched_grid:
             w = max(220, int(sw))
             h = max(60, int(sh))
         else:
             w, h = calc_w, calc_h
             layout.settings.window_width = w
             layout.settings.window_height = h
+        layout.settings.saved_rows = layout.rows
+        layout.settings.saved_columns = layout.columns
         self.resize(w, h)
         self._auto_sizing = False
         self._apply_button_scale()
@@ -667,6 +679,8 @@ class FloatingPanel(QtWidgets.QWidget):
                 if layout:
                     layout.settings.window_width = self.width()
                     layout.settings.window_height = self.height()
+                    layout.settings.saved_rows = layout.rows
+                    layout.settings.saved_columns = layout.columns
             self._apply_button_scale()
 
     def resizeEvent(self, event):
@@ -677,6 +691,8 @@ class FloatingPanel(QtWidgets.QWidget):
                 if layout:
                     layout.settings.window_width = self.width()
                     layout.settings.window_height = self.height()
+                    layout.settings.saved_rows = layout.rows
+                    layout.settings.saved_columns = layout.columns
             self._apply_button_scale()
 
     def on_action_button_clicked(self, btn_model, btn_widget):
@@ -912,12 +928,19 @@ class FloatingPanel(QtWidgets.QWidget):
             calc_h = max(60, layout.rows * (bh + 3) + 72)
             sw = layout.settings.window_width
             sh = layout.settings.window_height
-            if sw and sh and 200 <= sw < 900:
+            mismatched_grid = (
+                layout.settings.saved_rows is not None
+                and layout.settings.saved_columns is not None
+                and (layout.settings.saved_rows != layout.rows or layout.settings.saved_columns != layout.columns)
+            )
+            if sw and sh and 200 <= sw < 900 and not mismatched_grid:
                 self.resize(max(220, int(sw)), max(60, int(sh)))
             else:
                 self.resize(calc_w, calc_h)
                 layout.settings.window_width = calc_w
                 layout.settings.window_height = calc_h
+            layout.settings.saved_rows = layout.rows
+            layout.settings.saved_columns = layout.columns
         op = float(layout.settings.opacity) if layout else float(window.get("opacity", 0.95))
         self.setWindowOpacity(op)
         if hasattr(self, "opacity_slider"):

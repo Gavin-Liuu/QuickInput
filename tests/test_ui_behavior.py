@@ -809,3 +809,54 @@ def test_maximized_window_does_not_corrupt_layout_settings(qapp):
         assert lay.settings.window_height == 140
         panel.close()
 
+
+def test_layout_dimension_change_prunes_slots_and_resizes_floating_panel(qapp):
+    """Verify changing layout from 2x4 to 1x2 prunes out-of-bounds button slots and resizes panel."""
+    from ui.floating_panel import FloatingPanel
+    from ui.settings_dialog import SettingsDialog
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        cs = ConfigStore(config_dir=tmp_dir)
+        cs.load_config()
+        lm = LayoutManager()
+        # Create a 2x4 layout with 8 buttons initially
+        lay = lm.create_layout_with_presets("copy_paste", "复制粘贴", rows=2, columns=4)
+        lay.settings.window_width = 500
+        lay.settings.window_height = 256
+        lm.set_active_layout("copy_paste")
+
+        inj = MockInputInjector()
+        wm = MockWindowManager()
+        clip = MockClipboardManager()
+        tm = TargetManager(window_manager=wm)
+        ex = ActionExecutor(injector=inj, clipboard_mgr=clip, target_mgr=tm)
+
+        panel = FloatingPanel(lm, ex, tm, cs)
+        assert len(panel.buttons_widgets) == 8
+
+        # Open settings dialog and change rows to 1, columns to 2
+        dlg = SettingsDialog(lm, ex, tm, cs)
+        dlg.rows_spin.setValue(1)
+        dlg.cols_spin.setValue(2)
+
+        # Slots must be sanitized to 2 slots, out-of-bounds buttons removed
+        assert lay.rows == 1
+        assert lay.columns == 2
+        assert len(lay.buttons) == 2
+        for s in lay.buttons:
+            assert s.row == 0
+            assert s.column in (0, 1)
+
+        # Save and close settings dialog
+        dlg.save_and_close()
+
+        # Floating panel rebuilds buttons
+        panel.rebuild_buttons()
+
+        # Panel must only display 2 buttons in a 1x2 grid, NOT 8 buttons in 2x4
+        assert len(panel.buttons_widgets) == 2
+        assert panel.width() == 220
+        assert panel.height() <= 120
+        panel.close()
+
+
