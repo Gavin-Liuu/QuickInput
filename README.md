@@ -1,5 +1,7 @@
 # 通用快捷输入工作台 (QuickInput) & 中国象棋专属悬浮键盘
 
+[English](README_EN.md) | [简体中文](README.md)
+
 [![Python Version](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/)
 [![GUI](https://img.shields.io/badge/GUI-PyQt5-green.svg)](https://riverbankcomputing.com/software/pyqt/)
 [![Windows SendInput](https://img.shields.io/badge/platform-Windows_SendInput-orange.svg)]()
@@ -131,7 +133,7 @@ FloatPoint/
 │   ├── CROSS_PLATFORM_SPEC.md# 后续 macOS/Linux 适配指南
 │   ├── LIMITATIONS.md       # 已知边界与限制
 │   └── TEST_REPORT.md       # 自动化与功能测试报告
-└── tests/                   # 38 项自动化单元测试与回归测试
+└── tests/                   # 91 项自动化单元测试与回归测试
 ```
 
 ---
