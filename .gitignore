@@ -1,14 +1,36 @@
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+ENV/
+
+# Distribution & Build
 build/
 dist/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Testing & Coverage
 .pytest_cache/
 .coverage
 htmlcov/
-.env
-venv/
-.venv/
+.tox/
+
+# Local User Configuration & Data
+config.json
+*.log
+
+# IDE & Editors
 .idea/
 .vscode/
-*.log
+*.sublime-project
+*.sublime-workspace
+.DS_Store
+Thumbs.db
+desktop.ini

@@ -3,7 +3,8 @@
 [![Python Version](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/)
 [![GUI](https://img.shields.io/badge/GUI-PyQt5-green.svg)](https://riverbankcomputing.com/software/pyqt/)
 [![Windows SendInput](https://img.shields.io/badge/platform-Windows_SendInput-orange.svg)]()
-[![Tests](https://img.shields.io/badge/tests-51%20passed-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/tests-91%20passed-brightgreen.svg)]()
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 **通用快捷输入工作台 (QuickInput)** 是一款专为 Windows 平台打造的高效、迷你悬浮动作面板。用户无需编辑代码或 JSON，即可在任何第三方目标软件（如 Labelme 标注工具、记事本、Word、Excel、浏览器、VS Code、客服聊天软件等）中，通过悬浮按钮快速注入文本、敲击单键、执行组合键、粘贴富文本模板、运行复杂宏动作，并在不同场景间一键秒级切换键盘布局。
 
@@ -88,11 +89,12 @@
 *(或者双击 `dist\QuickInput\QuickInput_Debug.bat` 在调试控制台下启动)*
 
 ### 方式 2：Python 源代码直接运行
-若在开发环境中，只需执行：
+若在开发环境中，推荐安装依赖后直接启动：
 ```bash
+pip install -r requirements.txt
 python main.py
 ```
-*(或者运行 `python floating_keyboard.py`，保持向下兼容)*
+*(或者直接双击 `start.bat` / 运行 `python floating_keyboard.py` 均可启动)*
 
 ### 方式 3：一键构建绿色便携版
 双击运行根目录下的 `build.bat` 或执行：

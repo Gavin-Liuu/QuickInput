@@ -2,22 +2,23 @@
 cd /d "%~dp0"
 
 echo ==============================================
-echo   Chess Floating Keyboard - Debug Mode
+echo   QuickInput Floating Keyboard - Debug Mode
 echo ==============================================
 echo.
 
 where python >nul 2>nul
 if %ERRORLEVEL% EQU 0 (
-    python floating_keyboard.py
+    python main.py
     goto FINISH
 )
 
-if exist "E:\apps\Anaconda3\python.exe" (
-    "E:\apps\Anaconda3\python.exe" floating_keyboard.py
+where py >nul 2>nul
+if %ERRORLEVEL% EQU 0 (
+    py -3 main.py
     goto FINISH
 )
 
-echo [ERROR] Python not found.
+echo [ERROR] Python not found in PATH.
 
 :FINISH
 echo.

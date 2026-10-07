@@ -10,28 +10,31 @@ if exist "%~dp0dist\QuickInput\QuickInput.exe" (
 :: Check pythonw in PATH
 where pythonw >nul 2>nul
 if %ERRORLEVEL% EQU 0 (
-    start "" pythonw floating_keyboard.py
+    start "" pythonw main.py
     exit /b 0
 )
 
-:: Check Anaconda3 pythonw directly
-if exist "E:\apps\Anaconda3\pythonw.exe" (
-    start "" "E:\apps\Anaconda3\pythonw.exe" floating_keyboard.py
+:: Check standard Windows pyw launcher
+where pyw >nul 2>nul
+if %ERRORLEVEL% EQU 0 (
+    start "" pyw main.py
     exit /b 0
 )
 
 :: Fallback to python in PATH
 where python >nul 2>nul
 if %ERRORLEVEL% EQU 0 (
-    start "" python floating_keyboard.py
+    start "" python main.py
     exit /b 0
 )
 
-:: Fallback to Anaconda3 python directly
-if exist "E:\apps\Anaconda3\python.exe" (
-    start "" "E:\apps\Anaconda3\python.exe" floating_keyboard.py
+:: Fallback to py launcher
+where py >nul 2>nul
+if %ERRORLEVEL% EQU 0 (
+    start "" py main.py
     exit /b 0
 )
 
-echo [ERROR] Python was not found in PATH or at E:\apps\Anaconda3\python.exe
+echo [ERROR] Python was not found in PATH.
+echo Please install Python 3.10+ or run build.bat to generate the portable executable.
 pause
