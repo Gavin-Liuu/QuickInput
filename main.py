@@ -167,20 +167,23 @@ def main():
     window_mgr.set_self_hwnd(int(panel.winId()))
     panel.show()
 
-    # 6. Global Hotkeys
-    def toggle_visible():
-        if panel.isVisible():
-            panel.save_window_config()
-            panel.hide()
-        else:
-            panel.showNormal()
-            # The panel is intentionally non-activating; showing it must not
-            # move the user's typing focus away from the target application.
-            panel.raise_()
+    # 6. Global Hotkeys (Qt Queued Signal Bridge for Thread-Safe Execution)
+    class HotkeyBridge(QtCore.QObject):
+        toggle_requested = QtCore.pyqtSignal()
 
+    hotkey_bridge = HotkeyBridge()
+    hotkey_bridge.toggle_requested.connect(panel.toggle_visibility, QtCore.Qt.QueuedConnection)
+
+    def register_toggle_hotkey(hotkey_str: str):
+        if not hotkey_mgr:
+            return
+        hotkey_mgr.unregister_named_hotkey("toggle_visible")
+        if hotkey_str:
+            hotkey_mgr.register_named_hotkey("toggle_visible", hotkey_str, hotkey_bridge.toggle_requested.emit)
+
+    panel.apply_toggle_hotkey = register_toggle_hotkey
     hk_toggle = cfg.get("hotkeys", {}).get("toggle_visible", "ALT+Q")
-    if hk_toggle:
-        hotkey_mgr.register_hotkey(hk_toggle, toggle_visible)
+    register_toggle_hotkey(hk_toggle)
 
     hk_stop = cfg.get("hotkeys", {}).get("emergency_stop", "ESC")
     # If emergency_stop has modifiers (e.g. CTRL+ALT+S), register it globally.
@@ -204,7 +207,7 @@ def main():
     tray = SystemTrayIcon(
         layout_mgr=layout_mgr,
         target_mgr=target_mgr,
-        on_toggle_visible=toggle_visible,
+        on_toggle_visible=panel.toggle_visibility,
         on_open_settings=open_settings,
         on_quit=quit_app,
     )

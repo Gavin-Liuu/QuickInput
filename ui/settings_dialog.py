@@ -18,16 +18,17 @@ from storage.pack_store import PackStore
 from .macro_recorder_dialog import MacroRecorderDialog
 from application.macro_recorder import MacroRecorder
 
-COLOR_PRESETS = [
-    ("#1976D2", "蓝色"),
-    ("#E53935", "朱红"),
-    ("#37474F", "深灰"),
-    ("#2E7D32", "绿色"),
-    ("#7B1FA2", "紫色"),
-    ("#FB8C00", "橙色"),
-    ("#0284C7", "青天蓝"),
-    ("#4F46E5", "靛蓝"),
+COLOR_PRESET_KEYS = [
+    ("#1976D2", "color_blue"),
+    ("#E53935", "color_red"),
+    ("#37474F", "color_gray"),
+    ("#2E7D32", "color_green"),
+    ("#7B1FA2", "color_purple"),
+    ("#FB8C00", "color_orange"),
+    ("#0284C7", "color_sky"),
+    ("#4F46E5", "color_indigo"),
 ]
+COLOR_PRESETS = [("#1976D2", "蓝色"), ("#E53935", "朱红"), ("#37474F", "深灰"), ("#2E7D32", "绿色"), ("#7B1FA2", "紫色"), ("#FB8C00", "橙色"), ("#0284C7", "青天蓝"), ("#4F46E5", "靛蓝")]
 
 
 class KeyCaptureDialog(QtWidgets.QDialog):
@@ -41,7 +42,7 @@ class KeyCaptureDialog(QtWidgets.QDialog):
     def __init__(self, initial_key: str = "", parent=None):
         super().__init__(parent)
         self.setWindowTitle(tr("key_capture_title"))
-        self.setFixedSize(440, 230)
+        self.setFixedSize(380, 160)
         self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
         self.setStyleSheet("""
             QDialog {
@@ -144,7 +145,7 @@ class KeyCaptureDialog(QtWidgets.QDialog):
 
     def _on_ok_clicked(self):
         if not self.key_edit.text().strip():
-            QtWidgets.QMessageBox.warning(self, "提示", "请先在上方按下需要录制的按键或组合快捷键。")
+            QtWidgets.QMessageBox.warning(self, tr("prompt_notice"), tr("prompt_record_key_first"))
             return
         self.accept()
 
@@ -232,7 +233,7 @@ class NewLayoutDialog(QtWidgets.QDialog):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("新建布局")
+        self.setWindowTitle(tr("prompt_new_layout_title"))
         self.setMinimumWidth(380)
         self.setStyleSheet("""
             QDialog {
@@ -278,28 +279,28 @@ class NewLayoutDialog(QtWidgets.QDialog):
         layout.setContentsMargins(16, 16, 16, 16)
 
         self.name_edit = QtWidgets.QLineEdit(self)
-        self.name_edit.setText("新建布局")
-        layout.addRow("布局名称", self.name_edit)
+        self.name_edit.setText(tr("prompt_new_layout_default"))
+        layout.addRow(tr("layout_select_label"), self.name_edit)
 
         self.rows_spin = QtWidgets.QSpinBox(self)
         self.rows_spin.setRange(1, 20)
         self.rows_spin.setValue(2)
-        layout.addRow("行数", self.rows_spin)
+        layout.addRow(tr("rows_label"), self.rows_spin)
 
         self.cols_spin = QtWidgets.QSpinBox(self)
         self.cols_spin.setRange(1, 20)
         self.cols_spin.setValue(4)
-        layout.addRow("列数", self.cols_spin)
+        layout.addRow(tr("cols_label"), self.cols_spin)
 
         self.size_combo = QtWidgets.QComboBox(self)
-        self.size_combo.addItems(["紧凑", "标准", "触屏大按钮"])
-        layout.addRow("默认按钮尺寸", self.size_combo)
+        self.size_combo.addItems([tr("size_compact"), tr("size_standard"), tr("size_touch")])
+        layout.addRow(tr("btn_size_label"), self.size_combo)
 
         btn_box = QtWidgets.QDialogButtonBox(
             QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel, self
         )
-        btn_box.button(QtWidgets.QDialogButtonBox.Ok).setText("确认创建")
-        btn_box.button(QtWidgets.QDialogButtonBox.Cancel).setText("取消")
+        btn_box.button(QtWidgets.QDialogButtonBox.Ok).setText(tr("btn_ok"))
+        btn_box.button(QtWidgets.QDialogButtonBox.Cancel).setText(tr("btn_cancel_settings"))
         btn_box.accepted.connect(self.accept)
         btn_box.rejected.connect(self.reject)
         layout.addRow(btn_box)
@@ -307,7 +308,7 @@ class NewLayoutDialog(QtWidgets.QDialog):
     def get_values(self):
         size_key = ["compact", "standard", "touch"][self.size_combo.currentIndex()]
         return (
-            self.name_edit.text().strip() or "新建布局",
+            self.name_edit.text().strip() or tr("prompt_new_layout_default"),
             "horizontal",
             self.rows_spin.value(),
             self.cols_spin.value(),
@@ -393,7 +394,7 @@ class SettingsDialog(QtWidgets.QDialog):
         self.selected_col: Optional[int] = None
         self.selected_button_id: Optional[str] = None
 
-        self.setWindowTitle("快捷输入工作台 · 设置与布局中心")
+        self.setWindowTitle(tr("settings_title"))
         flags = (
             QtCore.Qt.Window
             | QtCore.Qt.WindowTitleHint
@@ -709,81 +710,86 @@ class SettingsDialog(QtWidgets.QDialog):
 
         # Top layout selector & actions
         top_bar = QtWidgets.QHBoxLayout()
-        top_bar.addWidget(QtWidgets.QLabel("当前布局:", tab))
+        self.lbl_curr_layout = QtWidgets.QLabel(tr("layout_select_label"), tab)
+        top_bar.addWidget(self.lbl_curr_layout)
         self.layout_selector = QtWidgets.QComboBox(tab)
         self.layout_selector.setMinimumWidth(180)
         self.layout_selector.currentIndexChanged.connect(self._on_layout_selected)
         top_bar.addWidget(self.layout_selector, 1)
 
-        self.new_layout_btn = QtWidgets.QPushButton("＋ 新建布局", tab)
+        self.new_layout_btn = QtWidgets.QPushButton(tr("btn_new_layout"), tab)
         self.new_layout_btn.clicked.connect(self._new_layout)
         top_bar.addWidget(self.new_layout_btn)
 
-        self.copy_layout_btn = QtWidgets.QPushButton("复制当前布局", tab)
+        self.copy_layout_btn = QtWidgets.QPushButton(tr("btn_copy_layout"), tab)
         self.copy_layout_btn.clicked.connect(self._copy_layout)
         top_bar.addWidget(self.copy_layout_btn)
 
-        self.rename_layout_btn = QtWidgets.QPushButton("重命名", tab)
+        self.rename_layout_btn = QtWidgets.QPushButton(tr("btn_rename_layout"), tab)
         self.rename_layout_btn.clicked.connect(self._rename_layout)
         top_bar.addWidget(self.rename_layout_btn)
 
-        self.delete_layout_btn = QtWidgets.QPushButton("删除布局", tab)
+        self.delete_layout_btn = QtWidgets.QPushButton(tr("btn_del_layout"), tab)
         self.delete_layout_btn.clicked.connect(self._delete_layout)
         top_bar.addWidget(self.delete_layout_btn)
 
-        self.reset_layout_btn = QtWidgets.QPushButton("恢复预设", tab)
-        self.reset_layout_btn.setToolTip("将当前布局重置为官方预设初始状态")
+        self.reset_layout_btn = QtWidgets.QPushButton(tr("btn_reset_preset"), tab)
+        self.reset_layout_btn.setToolTip(tr("btn_reset_preset_tip"))
         self.reset_layout_btn.clicked.connect(self._reset_current_layout_to_preset)
         top_bar.addWidget(self.reset_layout_btn)
         tab_layout.addLayout(top_bar)
 
         # Layout-level properties box (rows, cols, size, opacity, auto-enter, confirm)
-        layout_box = QtWidgets.QGroupBox("布局属性与全局默认值 (当前布局)", tab)
-        l_form = QtWidgets.QGridLayout(layout_box)
+        self.layout_box = QtWidgets.QGroupBox(tr("layout_props_title"), tab)
+        l_form = QtWidgets.QGridLayout(self.layout_box)
         l_form.setHorizontalSpacing(14)
         l_form.setVerticalSpacing(8)
 
         # Row 0: Rows, Columns, Button Size
-        l_form.addWidget(QtWidgets.QLabel("行数:"), 0, 0)
-        self.rows_spin = QtWidgets.QSpinBox(layout_box)
+        self.lbl_rows = QtWidgets.QLabel(tr("rows_label"))
+        l_form.addWidget(self.lbl_rows, 0, 0)
+        self.rows_spin = QtWidgets.QSpinBox(self.layout_box)
         self.rows_spin.setRange(1, 20)
         self.rows_spin.valueChanged.connect(self._layout_property_changed)
         l_form.addWidget(self.rows_spin, 0, 1)
 
-        l_form.addWidget(QtWidgets.QLabel("列数:"), 0, 2)
-        self.cols_spin = QtWidgets.QSpinBox(layout_box)
+        self.lbl_cols = QtWidgets.QLabel(tr("cols_label"))
+        l_form.addWidget(self.lbl_cols, 0, 2)
+        self.cols_spin = QtWidgets.QSpinBox(self.layout_box)
         self.cols_spin.setRange(1, 20)
         self.cols_spin.valueChanged.connect(self._layout_property_changed)
         l_form.addWidget(self.cols_spin, 0, 3)
 
-        l_form.addWidget(QtWidgets.QLabel("按钮尺寸:"), 0, 4)
-        self.size_combo = QtWidgets.QComboBox(layout_box)
-        self.size_combo.addItems(["紧凑", "标准", "触屏大按钮"])
+        self.lbl_btn_size = QtWidgets.QLabel(tr("btn_size_label"))
+        l_form.addWidget(self.lbl_btn_size, 0, 4)
+        self.size_combo = QtWidgets.QComboBox(self.layout_box)
+        self.size_combo.addItems([tr("size_compact"), tr("size_standard"), tr("size_touch")])
         self.size_combo.currentIndexChanged.connect(self._layout_property_changed)
         l_form.addWidget(self.size_combo, 0, 5)
 
         # Row 1: Opacity, Always On Top, Confirm, Auto-Enter
-        l_form.addWidget(QtWidgets.QLabel("透明度:"), 1, 0)
-        self.opacity_slider = QtWidgets.QSlider(QtCore.Qt.Horizontal, layout_box)
+        self.lbl_opacity = QtWidgets.QLabel(tr("opacity_slider_label"))
+        l_form.addWidget(self.lbl_opacity, 1, 0)
+        self.opacity_slider = QtWidgets.QSlider(QtCore.Qt.Horizontal, self.layout_box)
         self.opacity_slider.setRange(30, 100)
         self.opacity_slider.valueChanged.connect(self._layout_property_changed)
         l_form.addWidget(self.opacity_slider, 1, 1)
 
-        self.always_on_top_chk = QtWidgets.QCheckBox("保持在顶层", layout_box)
+        self.always_on_top_chk = QtWidgets.QCheckBox(tr("always_on_top_chk"), self.layout_box)
         self.always_on_top_chk.stateChanged.connect(self._layout_property_changed)
         l_form.addWidget(self.always_on_top_chk, 1, 2)
 
-        self.confirm_action_chk = QtWidgets.QCheckBox("执行前确认", layout_box)
-        self.confirm_action_chk.setToolTip("开启后，点击当前布局内任何按钮执行动作前均弹出确认对话框")
+        self.confirm_action_chk = QtWidgets.QCheckBox(tr("confirm_action_chk"), self.layout_box)
+        self.confirm_action_chk.setToolTip(tr("confirm_action_tip"))
         self.confirm_action_chk.stateChanged.connect(self._layout_property_changed)
         l_form.addWidget(self.confirm_action_chk, 1, 3)
 
-        self.auto_enter_chk = QtWidgets.QCheckBox("动作结束后发送 Enter", layout_box)
-        self.auto_enter_chk.setToolTip("开启后，当前布局所有动作执行完毕后自动追加一个 Enter 回车键")
+        self.auto_enter_chk = QtWidgets.QCheckBox(tr("auto_enter_chk"), self.layout_box)
+        self.auto_enter_chk.setToolTip(tr("auto_enter_tip"))
         self.auto_enter_chk.stateChanged.connect(self._layout_property_changed)
         l_form.addWidget(self.auto_enter_chk, 1, 4, 1, 2)
 
-        tab_layout.addWidget(layout_box)
+        tab_layout.addWidget(self.layout_box)
 
         # Main Splitter: Left Preview vs Right Button & Action Editor
         splitter = QtWidgets.QSplitter(QtCore.Qt.Horizontal, tab)
@@ -801,46 +807,43 @@ class SettingsDialog(QtWidgets.QDialog):
         preview_header.setSpacing(4)
 
         top_preview_bar = QtWidgets.QHBoxLayout()
-        preview_lbl = QtWidgets.QLabel("布局预览:", left_widget)
-        preview_lbl.setToolTip("点击按钮即可选中编辑；支持拖动按钮与其他槽位调换位置")
-        top_preview_bar.addWidget(preview_lbl)
-        preview_hint = QtWidgets.QLabel("（点击选中 / 拖动调换）", left_widget)
-        preview_hint.setStyleSheet("color: #8E8E93; font-size: 11px;")
-        top_preview_bar.addWidget(preview_hint)
+        self.preview_lbl = QtWidgets.QLabel(tr("preview_lbl"), left_widget)
+        self.preview_lbl.setToolTip(tr("preview_tip"))
+        top_preview_bar.addWidget(self.preview_lbl)
+        self.preview_hint = QtWidgets.QLabel(tr("preview_hint"), left_widget)
+        self.preview_hint.setStyleSheet("color: #8E8E93; font-size: 11px;")
+        top_preview_bar.addWidget(self.preview_hint)
         top_preview_bar.addStretch()
 
-        self.transpose_btn = QtWidgets.QPushButton("⇄ 行列转换", left_widget)
-        self.transpose_btn.setToolTip("转换行列（转置布局），行列数互换")
+        self.transpose_btn = QtWidgets.QPushButton(tr("btn_transpose"), left_widget)
+        self.transpose_btn.setToolTip(tr("btn_transpose_tip"))
         self.transpose_btn.clicked.connect(self._transpose_layout)
         top_preview_bar.addWidget(self.transpose_btn)
 
-        self.clear_slot_btn = QtWidgets.QPushButton("清空槽位", left_widget)
-        self.clear_slot_btn.setToolTip("删除当前选中槽位的按钮并保留空槽位")
+        self.clear_slot_btn = QtWidgets.QPushButton(tr("btn_clear_slot"), left_widget)
+        self.clear_slot_btn.setToolTip(tr("btn_clear_slot_tip"))
         self.clear_slot_btn.clicked.connect(self._clear_selected_slot)
         top_preview_bar.addWidget(self.clear_slot_btn)
         preview_header.addLayout(top_preview_bar)
 
         slot_nav_bar = QtWidgets.QHBoxLayout()
-        slot_nav_bar.addWidget(QtWidgets.QLabel("槽位微调:", left_widget))
-        self.move_up_btn = QtWidgets.QPushButton("▲ 上移", left_widget)
-        self.move_up_btn.setToolTip("将选中按钮与上一行对应槽位交换")
-        self.move_up_btn.clicked.connect(lambda: self._move_slot(-1, 0))
-        slot_nav_bar.addWidget(self.move_up_btn)
+        self.lbl_slot_adjust = QtWidgets.QLabel(tr("slot_adjust_label"), left_widget)
+        slot_nav_bar.addWidget(self.lbl_slot_adjust)
+        self.slot_up_btn = QtWidgets.QPushButton(tr("btn_slot_up"), left_widget)
+        self.slot_up_btn.clicked.connect(lambda: self._move_slot(-1, 0))
+        slot_nav_bar.addWidget(self.slot_up_btn)
 
-        self.move_down_btn = QtWidgets.QPushButton("▼ 下移", left_widget)
-        self.move_down_btn.setToolTip("将选中按钮与下一行对应槽位交换")
-        self.move_down_btn.clicked.connect(lambda: self._move_slot(1, 0))
-        slot_nav_bar.addWidget(self.move_down_btn)
+        self.slot_down_btn = QtWidgets.QPushButton(tr("btn_slot_down"), left_widget)
+        self.slot_down_btn.clicked.connect(lambda: self._move_slot(1, 0))
+        slot_nav_bar.addWidget(self.slot_down_btn)
 
-        self.move_left_btn = QtWidgets.QPushButton("◀ 左移", left_widget)
-        self.move_left_btn.setToolTip("将选中按钮与左侧槽位交换")
-        self.move_left_btn.clicked.connect(lambda: self._move_slot(0, -1))
-        slot_nav_bar.addWidget(self.move_left_btn)
+        self.slot_left_btn = QtWidgets.QPushButton(tr("btn_slot_left"), left_widget)
+        self.slot_left_btn.clicked.connect(lambda: self._move_slot(0, -1))
+        slot_nav_bar.addWidget(self.slot_left_btn)
 
-        self.move_right_btn = QtWidgets.QPushButton("▶ 右移", left_widget)
-        self.move_right_btn.setToolTip("将选中按钮与右侧槽位交换")
-        self.move_right_btn.clicked.connect(lambda: self._move_slot(0, 1))
-        slot_nav_bar.addWidget(self.move_right_btn)
+        self.slot_right_btn = QtWidgets.QPushButton(tr("btn_slot_right"), left_widget)
+        self.slot_right_btn.clicked.connect(lambda: self._move_slot(0, 1))
+        slot_nav_bar.addWidget(self.slot_right_btn)
         slot_nav_bar.addStretch()
         preview_header.addLayout(slot_nav_bar)
 
@@ -875,35 +878,39 @@ class SettingsDialog(QtWidgets.QDialog):
         right_layout.setSpacing(6)
 
         # Button properties box
-        btn_prop_box = QtWidgets.QGroupBox("选中按钮属性", right_widget)
-        bp_grid = QtWidgets.QGridLayout(btn_prop_box)
+        self.btn_prop_box = QtWidgets.QGroupBox(tr("btn_props_title"), right_widget)
+        bp_grid = QtWidgets.QGridLayout(self.btn_prop_box)
         bp_grid.setSpacing(6)
 
-        self.selected_info_label = QtWidgets.QLabel("未选中按钮（请在左侧预览中点击按钮）", btn_prop_box)
+        self.selected_info_label = QtWidgets.QLabel(tr("no_btn_selected"), self.btn_prop_box)
         self.selected_info_label.setStyleSheet("color: #0A84FF; font-weight: 600; font-size: 12px;")
-        bp_grid.addWidget(QtWidgets.QLabel("槽位状态:"), 0, 0)
+        self.lbl_slot_status = QtWidgets.QLabel(tr("slot_status_label"))
+        bp_grid.addWidget(self.lbl_slot_status, 0, 0)
         bp_grid.addWidget(self.selected_info_label, 0, 1, 1, 3)
 
-        bp_grid.addWidget(QtWidgets.QLabel("显示文字:"), 1, 0)
-        self.btn_label_edit = QtWidgets.QLineEdit(btn_prop_box)
-        self.btn_label_edit.setPlaceholderText("例如: 车\\nrc 或 保存")
-        self.btn_label_edit.setToolTip("按钮显示的文字标签，支持换行（输入 \\n 可表示换行）")
+        self.lbl_display_text = QtWidgets.QLabel(tr("btn_text_label"))
+        bp_grid.addWidget(self.lbl_display_text, 1, 0)
+        self.btn_label_edit = QtWidgets.QLineEdit(self.btn_prop_box)
+        self.btn_label_edit.setPlaceholderText(tr("btn_text_placeholder"))
+        self.btn_label_edit.setToolTip(tr("btn_text_tip"))
         self.btn_label_edit.textChanged.connect(self._button_property_changed)
         bp_grid.addWidget(self.btn_label_edit, 1, 1)
 
-        bp_grid.addWidget(QtWidgets.QLabel("按钮颜色:"), 1, 2)
-        self.btn_color_combo = QtWidgets.QComboBox(btn_prop_box)
-        for hex_code, color_name in COLOR_PRESETS:
-            self.btn_color_combo.addItem(color_name, hex_code)
+        self.lbl_btn_color = QtWidgets.QLabel(tr("btn_color_label"))
+        bp_grid.addWidget(self.lbl_btn_color, 1, 2)
+        self.btn_color_combo = QtWidgets.QComboBox(self.btn_prop_box)
+        for hex_code, color_key in COLOR_PRESET_KEYS:
+            self.btn_color_combo.addItem(tr(color_key), hex_code)
         self.btn_color_combo.currentIndexChanged.connect(self._button_property_changed)
         bp_grid.addWidget(self.btn_color_combo, 1, 3)
 
-        bp_grid.addWidget(QtWidgets.QLabel("悬浮提示:"), 2, 0)
-        self.btn_tooltip_edit = QtWidgets.QLineEdit(btn_prop_box)
+        self.lbl_btn_tooltip = QtWidgets.QLabel(tr("btn_tooltip_label"))
+        bp_grid.addWidget(self.lbl_btn_tooltip, 2, 0)
+        self.btn_tooltip_edit = QtWidgets.QLineEdit(self.btn_prop_box)
         self.btn_tooltip_edit.textChanged.connect(self._button_property_changed)
         bp_grid.addWidget(self.btn_tooltip_edit, 2, 1, 1, 3)
 
-        right_layout.addWidget(btn_prop_box)
+        right_layout.addWidget(self.btn_prop_box)
 
         # Macro steps box
         self.steps_box = QtWidgets.QGroupBox(tr("action_steps_title"), right_widget)
@@ -929,7 +936,7 @@ class SettingsDialog(QtWidgets.QDialog):
         self.record_macro_btn.setStyleSheet(
             "QPushButton { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #FF453A, stop:1 #D70015); color: #FFFFFF; font-weight: 600; border-radius: 5px; border: 1px solid #B00010; padding: 5px 10px; } QPushButton:hover { background: #FF5B52; }"
         )
-        self.record_macro_btn.setToolTip("实时录制键盘与鼠标操作")
+        self.record_macro_btn.setToolTip(tr("btn_record_macro_tip"))
         self.record_macro_btn.clicked.connect(self._record_macro)
         step_grid.addWidget(self.record_macro_btn, 0, 0)
 
@@ -957,12 +964,12 @@ class SettingsDialog(QtWidgets.QDialog):
         step_grid.addWidget(self.del_step_btn, 1, 1)
 
         self.move_up_btn = QtWidgets.QPushButton(tr("btn_move_up"), self.steps_box)
-        self.move_up_btn.setToolTip("将当前选中的动作步骤上移一位")
+        self.move_up_btn.setToolTip(tr("btn_move_up_tip"))
         self.move_up_btn.clicked.connect(lambda: self._move_step(-1))
         step_grid.addWidget(self.move_up_btn, 1, 2)
 
         self.move_down_btn = QtWidgets.QPushButton(tr("btn_move_down"), self.steps_box)
-        self.move_down_btn.setToolTip("将当前选中的动作步骤下移一位")
+        self.move_down_btn.setToolTip(tr("btn_move_down_tip"))
         self.move_down_btn.clicked.connect(lambda: self._move_step(1))
         step_grid.addWidget(self.move_down_btn, 1, 3)
 
@@ -970,42 +977,42 @@ class SettingsDialog(QtWidgets.QDialog):
         right_layout.addWidget(self.steps_box, 2)
 
         # App binding box for current layout
-        binding_box = QtWidgets.QGroupBox("应用绑定 (切到指定软件时自动启用当前布局)", right_widget)
-        b_layout = QtWidgets.QVBoxLayout(binding_box)
+        self.binding_box = QtWidgets.QGroupBox(tr("app_binding_title"), right_widget)
+        b_layout = QtWidgets.QVBoxLayout(self.binding_box)
         b_layout.setSpacing(6)
 
-        self.profile_table = QtWidgets.QTableWidget(binding_box)
+        self.profile_table = QtWidgets.QTableWidget(self.binding_box)
         self.profile_table.setMinimumHeight(90)
         self.profile_table.setColumnCount(2)
-        self.profile_table.setHorizontalHeaderLabels(["目标进程名", "窗口标题包含"])
+        self.profile_table.setHorizontalHeaderLabels([tr("bind_col_process"), tr("bind_col_title")])
         self.profile_table.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
         self.profile_table.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
         b_layout.addWidget(self.profile_table)
 
         b_btns1 = QtWidgets.QHBoxLayout()
-        bind_curr = QtWidgets.QPushButton("🎯 绑定最近目标应用", binding_box)
-        bind_curr.setToolTip("绑定打开设置前最近一次聚焦的外部应用程序")
-        bind_curr.clicked.connect(self._add_current_target_profile)
-        b_btns1.addWidget(bind_curr)
+        self.bind_curr_btn = QtWidgets.QPushButton(tr("btn_bind_current"), self.binding_box)
+        self.bind_curr_btn.setToolTip(tr("btn_bind_current_tip"))
+        self.bind_curr_btn.clicked.connect(self._add_current_target_profile)
+        b_btns1.addWidget(self.bind_curr_btn)
 
-        bind_pick = QtWidgets.QPushButton("🪟 从打开的窗口选择", binding_box)
-        bind_pick.setToolTip("从当前运行中的全部窗口列表中选择一个应用绑定")
-        bind_pick.clicked.connect(self._add_from_running_windows)
-        b_btns1.addWidget(bind_pick)
+        self.bind_pick_btn = QtWidgets.QPushButton(tr("btn_bind_pick"), self.binding_box)
+        self.bind_pick_btn.setToolTip(tr("btn_bind_pick_tip"))
+        self.bind_pick_btn.clicked.connect(self._add_from_running_windows)
+        b_btns1.addWidget(self.bind_pick_btn)
 
-        bind_custom = QtWidgets.QPushButton("＋ 手动输入", binding_box)
-        bind_custom.clicked.connect(self._add_custom_profile)
-        b_btns1.addWidget(bind_custom)
+        self.bind_custom_btn = QtWidgets.QPushButton(tr("btn_bind_custom"), self.binding_box)
+        self.bind_custom_btn.clicked.connect(self._add_custom_profile)
+        b_btns1.addWidget(self.bind_custom_btn)
         b_layout.addLayout(b_btns1)
 
         b_btns2 = QtWidgets.QHBoxLayout()
-        bind_del = QtWidgets.QPushButton("删除选中绑定", binding_box)
-        bind_del.clicked.connect(self._delete_profile)
-        b_btns2.addWidget(bind_del)
+        self.bind_del_btn = QtWidgets.QPushButton(tr("btn_bind_delete"), self.binding_box)
+        self.bind_del_btn.clicked.connect(self._delete_profile)
+        b_btns2.addWidget(self.bind_del_btn)
         b_btns2.addStretch()
         b_layout.addLayout(b_btns2)
 
-        right_layout.addWidget(binding_box)
+        right_layout.addWidget(self.binding_box)
 
         right_scroll.setWidget(right_widget)
         splitter.addWidget(right_scroll)
@@ -1020,7 +1027,7 @@ class SettingsDialog(QtWidgets.QDialog):
         tab_scroll.viewport().setStyleSheet("background-color: #1E1E20;")
         tab.setStyleSheet("background-color: #1E1E20;")
         tab_scroll.setWidget(tab)
-        self.tabs.addTab(tab_scroll, "布局与按钮")
+        self.tabs.addTab(tab_scroll, tr("tab_layouts"))
 
     def _build_general_and_diag_tab(self):
         tab_scroll = QtWidgets.QScrollArea(self.tabs)
@@ -1048,59 +1055,63 @@ class SettingsDialog(QtWidgets.QDialog):
         if idx >= 0:
             self.language_combo.setCurrentIndex(idx)
         self.language_combo.currentIndexChanged.connect(self._on_language_changed)
-        lang_form.addRow(tr("language_label"), self.language_combo)
+        self.lbl_language = QtWidgets.QLabel(tr("language_label"))
+        lang_form.addRow(self.lbl_language, self.language_combo)
         layout.addWidget(self.lang_box)
 
         # 2. Hotkeys & Global Options
-        hotkey_box = QtWidgets.QGroupBox(tr("hotkey_group_title"), tab)
-        hk_form = QtWidgets.QFormLayout(hotkey_box)
+        self.hotkey_box = QtWidgets.QGroupBox(tr("hotkey_group_title"), tab)
+        hk_form = QtWidgets.QFormLayout(self.hotkey_box)
         hk_form.setSpacing(10)
 
-        self.auto_profile_switch_chk = QtWidgets.QCheckBox("根据前台活动窗口自动切换布局", hotkey_box)
-        hk_form.addRow("场景切换", self.auto_profile_switch_chk)
+        self.auto_profile_switch_chk = QtWidgets.QCheckBox(tr("auto_profile_switch_chk"), self.hotkey_box)
+        self.lbl_auto_profile = QtWidgets.QLabel(tr("auto_profile_switch_label"))
+        hk_form.addRow(self.lbl_auto_profile, self.auto_profile_switch_chk)
 
-        self.toggle_hotkey_edit = QtWidgets.QLineEdit(hotkey_box)
-        self.toggle_hotkey_edit.setPlaceholderText("例如 ALT+Q")
-        hk_form.addRow("显示/隐藏工作台", self.toggle_hotkey_edit)
+        self.toggle_hotkey_edit = QtWidgets.QLineEdit(self.hotkey_box)
+        self.toggle_hotkey_edit.setPlaceholderText(tr("toggle_hotkey_placeholder"))
+        self.lbl_toggle_hotkey = QtWidgets.QLabel(tr("toggle_hotkey_label"))
+        hk_form.addRow(self.lbl_toggle_hotkey, self.toggle_hotkey_edit)
 
-        self.stop_hotkey_edit = QtWidgets.QLineEdit(hotkey_box)
-        self.stop_hotkey_edit.setPlaceholderText("例如 ESC")
-        hk_form.addRow("紧急停止宏快捷键", self.stop_hotkey_edit)
-        layout.addWidget(hotkey_box)
+        self.stop_hotkey_edit = QtWidgets.QLineEdit(self.hotkey_box)
+        self.stop_hotkey_edit.setPlaceholderText(tr("stop_hotkey_placeholder"))
+        self.lbl_stop_hotkey = QtWidgets.QLabel(tr("stop_hotkey_label"))
+        hk_form.addRow(self.lbl_stop_hotkey, self.stop_hotkey_edit)
+        layout.addWidget(self.hotkey_box)
 
-        # 2. Backup & Restore
-        data_box = QtWidgets.QGroupBox("配置备份与恢复", tab)
-        d_layout = QtWidgets.QHBoxLayout(data_box)
-        backup_btn = QtWidgets.QPushButton("备份当前配置", data_box)
-        backup_btn.clicked.connect(self._backup_config)
-        d_layout.addWidget(backup_btn)
+        # 3. Backup & Restore
+        self.data_box = QtWidgets.QGroupBox(tr("backup_group_title"), tab)
+        d_layout = QtWidgets.QHBoxLayout(self.data_box)
+        self.backup_btn = QtWidgets.QPushButton(tr("btn_backup"), self.data_box)
+        self.backup_btn.clicked.connect(self._backup_config)
+        d_layout.addWidget(self.backup_btn)
         d_layout.addStretch()
-        layout.addWidget(data_box)
+        layout.addWidget(self.data_box)
 
-        # 3. Diagnostics
-        diag_box = QtWidgets.QGroupBox("系统诊断与最近执行日志", tab)
-        diag_layout = QtWidgets.QVBoxLayout(diag_box)
+        # 4. Diagnostics
+        self.diag_box = QtWidgets.QGroupBox(tr("diag_group_title"), tab)
+        diag_layout = QtWidgets.QVBoxLayout(self.diag_box)
 
-        self.target_info_label = QtWidgets.QLabel("目标检测: 未检测", diag_box)
+        self.target_info_label = QtWidgets.QLabel(tr("target_info_prefix", info=tr("target_undetected")), self.diag_box)
         diag_layout.addWidget(self.target_info_label)
 
-        self.log_table = QtWidgets.QTableWidget(diag_box)
+        self.log_table = QtWidgets.QTableWidget(self.diag_box)
         self.log_table.setMinimumHeight(100)
         self.log_table.setColumnCount(4)
-        self.log_table.setHorizontalHeaderLabels(["时间", "动作 ID", "状态", "说明"])
+        self.log_table.setHorizontalHeaderLabels([tr("log_col_time"), tr("log_col_action"), tr("log_col_status"), tr("log_col_desc")])
         self.log_table.horizontalHeader().setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeToContents)
         self.log_table.horizontalHeader().setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeToContents)
         self.log_table.horizontalHeader().setSectionResizeMode(2, QtWidgets.QHeaderView.ResizeToContents)
         self.log_table.horizontalHeader().setSectionResizeMode(3, QtWidgets.QHeaderView.Stretch)
         diag_layout.addWidget(self.log_table, 1)
 
-        refresh_diag_btn = QtWidgets.QPushButton("刷新诊断信息", diag_box)
-        refresh_diag_btn.clicked.connect(self._refresh_diag)
-        diag_layout.addWidget(refresh_diag_btn)
+        self.refresh_diag_btn = QtWidgets.QPushButton(tr("btn_refresh_diag"), self.diag_box)
+        self.refresh_diag_btn.clicked.connect(self._refresh_diag)
+        diag_layout.addWidget(self.refresh_diag_btn)
 
-        layout.addWidget(diag_box, 1)
+        layout.addWidget(self.diag_box, 1)
         tab_scroll.setWidget(tab)
-        self.tabs.addTab(tab_scroll, "常规与诊断")
+        self.tabs.addTab(tab_scroll, tr("tab_general"))
 
         # Load global settings
         cfg = self.config_store.load_config()
@@ -1117,15 +1128,21 @@ class SettingsDialog(QtWidgets.QDialog):
 
     def _refresh_diag(self):
         info = self.target_mgr.get_target_info()
+        is_en = get_current_language() == "en"
+        target_str = "Target" if is_en else "目标窗口"
+        proc_str = "Process" if is_en else "进程"
+        handle_str = "Handle" if is_en else "句柄"
+        locked_str = "Locked" if is_en else "锁定"
         self.target_info_label.setText(
-            f"目标窗口: {info.get('title', '')} | 进程: {info.get('process_name', '')} | PID: {info.get('process_id', '')} | 句柄: {info.get('handle', '')} | 锁定: {info.get('is_locked', False)}"
+            f"{target_str}: {info.get('title', '')} | {proc_str}: {info.get('process_name', '')} | PID: {info.get('process_id', '')} | {handle_str}: {info.get('handle', '')} | {locked_str}: {info.get('is_locked', False)}"
         )
         logs = getattr(self.executor, "execution_logs", [])
         self.log_table.setRowCount(len(logs))
         for row, entry in enumerate(reversed(logs)):
             self.log_table.setItem(row, 0, QtWidgets.QTableWidgetItem(entry.get("timestamp", "")))
             self.log_table.setItem(row, 1, QtWidgets.QTableWidgetItem(entry.get("action_id", "")))
-            ok_item = QtWidgets.QTableWidgetItem("成功" if entry.get("success") else "失败")
+            status_text = ("Success" if is_en else "成功") if entry.get("success") else ("Failed" if is_en else "失败")
+            ok_item = QtWidgets.QTableWidgetItem(status_text)
             ok_item.setForeground(QtGui.QColor("#10B981" if entry.get("success") else "#EF4444"))
             self.log_table.setItem(row, 2, ok_item)
             self.log_table.setItem(row, 3, QtWidgets.QTableWidgetItem(entry.get("message", "")))
@@ -1327,7 +1344,7 @@ class SettingsDialog(QtWidgets.QDialog):
                     )
                     empty_btn.setText("＋")
                     empty_btn.setFixedSize(width, height)
-                    empty_btn.setToolTip("点击创建此槽位按钮，或将其他按钮拖放到此处")
+                    empty_btn.setToolTip("点击创建此槽位按钮，或将其他按钮拖放到此处" if get_current_language() == "zh" else "Click to create button here, or drag another button here")
                     empty_btn.setStyleSheet("""
                         QPushButton {
                             background-color: rgba(255, 255, 255, 0.02);
@@ -1364,9 +1381,11 @@ class SettingsDialog(QtWidgets.QDialog):
         if button:
             clean_lbl = button.label.replace("\n", " ")
             if row is not None and col is not None:
-                self.selected_info_label.setText(f"第 {row + 1} 行，第 {col + 1} 列 (文字: {clean_lbl})")
+                self.selected_info_label.setText(
+                    tr("slot_info_occupied", row=row + 1, col=col + 1, id=clean_lbl)
+                )
             else:
-                self.selected_info_label.setText(f"文字: {clean_lbl}")
+                self.selected_info_label.setText(f"ID: {clean_lbl}")
             self.btn_label_edit.setEnabled(True)
             self.btn_label_edit.setText(button.label.replace("\n", "\\n"))
             self.btn_tooltip_edit.setEnabled(True)
@@ -1414,7 +1433,7 @@ class SettingsDialog(QtWidgets.QDialog):
         self.selected_row = None
         self.selected_col = None
         self.selected_button_id = None
-        self.selected_info_label.setText("未选中按钮（请在左侧预览中点击按钮）")
+        self.selected_info_label.setText(tr("no_btn_selected"))
         self.btn_label_edit.setEnabled(False)
         self.btn_label_edit.clear()
         self.btn_tooltip_edit.setEnabled(False)
@@ -1427,8 +1446,9 @@ class SettingsDialog(QtWidgets.QDialog):
         layout = self._current_layout()
         if not layout:
             return
+        lbl_prefix = "Btn" if get_current_language() == "en" else "按钮"
         btn = self.layout_mgr.create_button_for_slot(
-            layout.id, row, col, label=f"按钮 {len(layout.buttons) + 1}"
+            layout.id, row, col, label=f"{lbl_prefix} {len(layout.buttons) + 1}"
         )
         if btn:
             self.selected_row = row
@@ -1486,7 +1506,9 @@ class SettingsDialog(QtWidgets.QDialog):
 
         if self.selected_row is not None and self.selected_col is not None:
             clean_lbl = button.label.replace("\n", " ")
-            self.selected_info_label.setText(f"第 {self.selected_row + 1} 行，第 {self.selected_col + 1} 列 (文字: {clean_lbl})")
+            self.selected_info_label.setText(
+                tr("slot_info_occupied", row=self.selected_row + 1, col=self.selected_col + 1, id=clean_lbl)
+            )
 
         # Update preview button widget directly in place without grid rebuild
         coord = (self.selected_row, self.selected_col)
@@ -1532,15 +1554,22 @@ class SettingsDialog(QtWidgets.QDialog):
                 else step.name
             )
             type_display = {
-                "paste": tr("btn_add_text"),
-                "text": tr("btn_add_text"),
-                "key": "按键",
-                "hotkey": "组合键",
-                "delay": "延时等待",
+                "paste": tr("step_type_paste"),
+                "text": tr("step_type_paste"),
+                "key": tr("step_type_key"),
+                "hotkey": tr("step_type_hotkey"),
+                "delay": tr("step_type_delay"),
             }.get(step.type, step.type)
             type_item = QtWidgets.QTableWidgetItem(type_display)
             val_item = QtWidgets.QTableWidgetItem(str(value))
-            desc_item = QtWidgets.QTableWidgetItem(tr("action_steps_title"))
+            desc_text = {
+                "paste": tr("step_desc_paste"),
+                "text": tr("step_desc_paste"),
+                "key": tr("step_desc_key"),
+                "hotkey": tr("step_desc_hotkey"),
+                "delay": tr("step_desc_delay"),
+            }.get(step.type, tr("action_steps_title"))
+            desc_item = QtWidgets.QTableWidgetItem(desc_text)
             self.steps_table.setItem(row, 0, type_item)
             self.steps_table.setItem(row, 1, val_item)
             self.steps_table.setItem(row, 2, desc_item)
@@ -1553,12 +1582,12 @@ class SettingsDialog(QtWidgets.QDialog):
     def _add_step(self, kind: str):
         action = self._current_action()
         if not action:
-            QtWidgets.QMessageBox.information(self, "提示", "请先在预览中选择一个按钮。")
+            QtWidgets.QMessageBox.information(self, tr("prompt_notice"), tr("no_btn_selected"))
             return
         step = None
         if kind == "paste":
             val, ok = QtWidgets.QInputDialog.getMultiLineText(
-                self, tr("btn_add_text"), "输入要输入的文本内容 (将通过剪贴板极速无损粘贴):"
+                self, tr("btn_add_text"), "输入文本内容 (剪贴板无损粘贴):" if get_current_language() == "zh" else "Enter text content (Lossless clipboard paste):"
             )
             if ok and val:
                 step = ActionStep(type="paste", value=val)
@@ -1576,7 +1605,9 @@ class SettingsDialog(QtWidgets.QDialog):
                     else:
                         step = ActionStep(type="key", key=val)
         elif kind == "delay":
-            ms, ok = QtWidgets.QInputDialog.getInt(self, "添加等待步骤", "输入等待毫秒数 (ms):", 200, 10, 30000)
+            ms, ok = QtWidgets.QInputDialog.getInt(
+                self, tr("btn_add_delay"), "输入等待毫秒数 (ms):" if get_current_language() == "zh" else "Enter delay in milliseconds (ms):", 200, 10, 30000
+            )
             if ok:
                 step = ActionStep(type="delay", ms=ms)
 
@@ -1607,13 +1638,15 @@ class SettingsDialog(QtWidgets.QDialog):
                         step.keys = []
         elif step.type in ("paste", "text"):
             val, ok = QtWidgets.QInputDialog.getMultiLineText(
-                self, "编辑文本步骤", "文本内容:", text=step.value
+                self, tr("btn_edit_step"), "文本内容:" if get_current_language() == "zh" else "Text content:", text=step.value
             )
             if ok:
                 step.value = val
                 step.type = "paste"
         elif step.type == "delay":
-            ms, ok = QtWidgets.QInputDialog.getInt(self, "编辑等待步骤", "毫秒数:", value=step.ms, min=10, max=30000)
+            ms, ok = QtWidgets.QInputDialog.getInt(
+                self, tr("btn_edit_step"), "毫秒数:" if get_current_language() == "zh" else "Milliseconds:", value=step.ms, min=10, max=30000
+            )
             if ok:
                 step.ms = ms
         self._refresh_steps(action)
@@ -1637,7 +1670,7 @@ class SettingsDialog(QtWidgets.QDialog):
     def _record_macro(self):
         action = self._current_action()
         if not action:
-            QtWidgets.QMessageBox.information(self, "提示", "请先在左侧预览中选择一个按钮。")
+            QtWidgets.QMessageBox.information(self, tr("prompt_notice"), tr("no_btn_selected"))
             return
         dialog = MacroRecorderDialog(
             MacroRecorder(), executor=self.executor, target_mgr=self.target_mgr, parent=self
@@ -1666,15 +1699,19 @@ class SettingsDialog(QtWidgets.QDialog):
         if not proc:
             QtWidgets.QMessageBox.warning(
                 self,
-                "未检测到外部应用",
-                "当前未捕获到外部目标应用！\n\n请在外部软件窗口（如 Notepad、浏览器等）中点击一次，或点击“🪟 从打开的窗口选择”直接指定应用。",
+                tr("prompt_warning"),
+                "当前未捕获到外部目标应用！\n\n请在外部软件窗口中点击一次，或从运行中的窗口列表中直接选择。"
+                if get_current_language() == "zh" else
+                "No external target application detected!\n\nPlease focus an external window first or pick from running windows.",
             )
             return
         title = info.get("title", "")
         res = QtWidgets.QMessageBox.question(
             self,
-            "确认绑定应用",
-            f"检测到最近使用的外部应用：\n\n• 进程名：{proc}\n• 窗口标题：{title or '(无标题)'}\n\n是否将该应用绑定到当前布局【{layout.name}】？",
+            tr("prompt_confirm"),
+            f"检测到最近使用的外部应用：\n\n• 进程名：{proc}\n• 窗口标题：{title or '(无标题)'}\n\n是否将该应用绑定到当前布局【{layout.name}】？"
+            if get_current_language() == "zh" else
+            f"Detected recent external application:\n\n• Process: {proc}\n• Title: {title or '(No title)'}\n\nBind this app to layout [{layout.name}]?",
             QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
             QtWidgets.QMessageBox.Yes,
         )
@@ -1685,7 +1722,7 @@ class SettingsDialog(QtWidgets.QDialog):
         self.layout_mgr.register_profile(profile)
         self._refresh_profiles_for_current_layout()
         QtWidgets.QMessageBox.information(
-            self, "绑定成功", f"已成功将应用 {proc} 绑定到当前布局【{layout.name}】！"
+            self, tr("prompt_notice"), f"已成功将应用 {proc} 绑定到当前布局【{layout.name}】！" if get_current_language() == "zh" else f"Successfully bound {proc} to layout [{layout.name}]!"
         )
 
     def _add_from_running_windows(self):
@@ -1718,7 +1755,7 @@ class SettingsDialog(QtWidgets.QDialog):
             pass
 
         if not windows_list:
-            QtWidgets.QMessageBox.information(self, "提示", "未找到可绑定的运行中外部窗口。")
+            QtWidgets.QMessageBox.information(self, tr("prompt_notice"), "未找到可绑定的运行中外部窗口。" if get_current_language() == "zh" else "No running external windows found to bind.")
             return
 
         seen = set()
@@ -1731,7 +1768,7 @@ class SettingsDialog(QtWidgets.QDialog):
 
         items = [disp for _, _, disp in unique_windows]
         chosen, ok = QtWidgets.QInputDialog.getItem(
-            self, "选择要绑定的应用程序", "请从当前打开的应用列表中选择：", items, 0, False
+            self, tr("btn_bind_pick"), "请从当前打开的应用列表中选择：" if get_current_language() == "zh" else "Select from open applications:", items, 0, False
         )
         if not ok or not chosen:
             return
@@ -1743,17 +1780,21 @@ class SettingsDialog(QtWidgets.QDialog):
         self.layout_mgr.register_profile(profile)
         self._refresh_profiles_for_current_layout()
         QtWidgets.QMessageBox.information(
-            self, "绑定成功", f"已成功将应用 {proc} 绑定到当前布局【{layout.name}】！"
+            self, tr("prompt_notice"), f"已成功将应用 {proc} 绑定到当前布局【{layout.name}】！" if get_current_language() == "zh" else f"Successfully bound {proc} to layout [{layout.name}]!"
         )
 
     def _add_custom_profile(self):
         layout = self._current_layout()
         if not layout:
             return
-        proc, ok1 = QtWidgets.QInputDialog.getText(self, "添加应用绑定", "目标进程名 (例如 notepad.exe):")
+        proc, ok1 = QtWidgets.QInputDialog.getText(
+            self, tr("btn_bind_custom"), "目标进程名 (例如 notepad.exe):" if get_current_language() == "zh" else "Process name (e.g. notepad.exe):"
+        )
         if not ok1 or not proc.strip():
             return
-        title, ok2 = QtWidgets.QInputDialog.getText(self, "添加应用绑定", "窗口标题包含字符 (可选，留空匹配所有):")
+        title, ok2 = QtWidgets.QInputDialog.getText(
+            self, tr("btn_bind_custom"), "窗口标题包含字符 (可选，留空匹配所有):" if get_current_language() == "zh" else "Window title filter (Optional, leave blank to match all):"
+        )
         p_id = f"profile_{len(self.layout_mgr.profiles) + 1}"
         profile = Profile(
             id=p_id,
@@ -1801,7 +1842,7 @@ class SettingsDialog(QtWidgets.QDialog):
         if not source:
             return
         name, ok = QtWidgets.QInputDialog.getText(
-            self, "复制布局", "新布局名称:", text=source.name + " 副本"
+            self, tr("prompt_copy_layout_title"), tr("prompt_new_layout_label"), text=source.name + tr("prompt_copy_layout_suffix")
         )
         if not ok or not name.strip():
             return
@@ -1820,7 +1861,7 @@ class SettingsDialog(QtWidgets.QDialog):
         if not layout:
             return
         name, ok = QtWidgets.QInputDialog.getText(
-            self, "重命名布局", "新布局名称:", text=layout.name
+            self, tr("prompt_rename_layout_title"), tr("prompt_new_layout_label"), text=layout.name
         )
         if ok and name.strip():
             layout.name = name.strip()
@@ -1830,10 +1871,11 @@ class SettingsDialog(QtWidgets.QDialog):
     def _delete_layout(self):
         layout = self._current_layout()
         if not layout or len(self.layout_mgr.layouts) <= 1:
-            QtWidgets.QMessageBox.warning(self, "无法删除", "系统至少必须保留一个布局。")
+            QtWidgets.QMessageBox.warning(self, tr("prompt_warning"), tr("prompt_del_layout_min"))
             return
         if QtWidgets.QMessageBox.question(
-            self, "删除布局", f"确定删除布局“{layout.name}”吗？关联的独立按钮也将被清理。"
+            self, tr("prompt_confirm"), tr("prompt_del_layout_confirm", name=layout.name),
+            QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
         ) != QtWidgets.QMessageBox.Yes:
             return
         self.layout_mgr.delete_layout(layout.id)
@@ -1864,14 +1906,14 @@ class SettingsDialog(QtWidgets.QDialog):
 
         if not found_layout:
             QtWidgets.QMessageBox.information(
-                self, "提示", f"当前布局“{layout.name}”无官方预设包，无法恢复预设。"
+                self, tr("prompt_notice"), tr("prompt_reset_preset_nonpreset")
             )
             return
 
         res = QtWidgets.QMessageBox.question(
             self,
-            "恢复官方预设",
-            f"确定要将布局“{layout.name}”重置为官方预设初始状态吗？\n当前对该布局槽位的修改将被覆盖。",
+            tr("prompt_confirm"),
+            tr("prompt_reset_preset_confirm", name=layout.name),
             QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
             QtWidgets.QMessageBox.No,
         )
@@ -1889,16 +1931,15 @@ class SettingsDialog(QtWidgets.QDialog):
         if idx >= 0:
             self.layout_selector.setCurrentIndex(idx)
         self._load_active_layout()
-        QtWidgets.QMessageBox.information(self, "完成", f"已成功将“{layout.name}”恢复为官方预设！")
+        QtWidgets.QMessageBox.information(self, tr("prompt_notice"), f"已成功将“{layout.name}”恢复为官方预设！" if get_current_language() == "zh" else f"Layout [{layout.name}] successfully reset to presets!")
 
     def _backup_config(self):
         path = self.config_store.create_backup()
         if path:
-            QtWidgets.QMessageBox.information(self, "配置备份成功", f"配置已备份至：\n{path}")
+            QtWidgets.QMessageBox.information(self, tr("prompt_notice"), tr("prompt_backup_success", path=path))
         else:
-            QtWidgets.QMessageBox.warning(self, "备份失败", "无法创建配置备份。")
+            QtWidgets.QMessageBox.warning(self, tr("prompt_warning"), "无法创建配置备份。" if get_current_language() == "zh" else "Failed to create configuration backup.")
 
-    
     def _on_language_changed(self, index):
         new_lang = self.language_combo.itemData(index)
         if new_lang and new_lang != get_current_language():
@@ -1907,40 +1948,199 @@ class SettingsDialog(QtWidgets.QDialog):
             cfg.setdefault("settings", {})["language"] = new_lang
             self.config_store.save_config(cfg)
             self.retranslate_ui()
+            if self.parent() and hasattr(self.parent(), "retranslate_ui"):
+                self.parent().retranslate_ui()
 
     def retranslate_ui(self):
         self.setWindowTitle(tr("settings_title"))
         self.tabs.setTabText(0, tr("tab_layouts"))
         self.tabs.setTabText(1, tr("tab_general"))
-        if hasattr(self, "lang_box"):
-            self.lang_box.setTitle(tr("language_group_title"))
+
+        # Top bar
+        if hasattr(self, "lbl_curr_layout"):
+            self.lbl_curr_layout.setText(tr("layout_select_label"))
+        if hasattr(self, "new_layout_btn"):
+            self.new_layout_btn.setText(tr("btn_new_layout"))
+        if hasattr(self, "copy_layout_btn"):
+            self.copy_layout_btn.setText(tr("btn_copy_layout"))
+        if hasattr(self, "rename_layout_btn"):
+            self.rename_layout_btn.setText(tr("btn_rename_layout"))
+        if hasattr(self, "delete_layout_btn"):
+            self.delete_layout_btn.setText(tr("btn_del_layout"))
+        if hasattr(self, "reset_layout_btn"):
+            self.reset_layout_btn.setText(tr("btn_reset_preset"))
+            self.reset_layout_btn.setToolTip(tr("btn_reset_preset_tip"))
+
+        # Layout Properties
+        if hasattr(self, "layout_box"):
+            self.layout_box.setTitle(tr("layout_props_title"))
+        if hasattr(self, "lbl_rows"):
+            self.lbl_rows.setText(tr("rows_label"))
+        if hasattr(self, "lbl_cols"):
+            self.lbl_cols.setText(tr("cols_label"))
+        if hasattr(self, "lbl_btn_size"):
+            self.lbl_btn_size.setText(tr("btn_size_label"))
+        if hasattr(self, "size_combo"):
+            idx = self.size_combo.currentIndex()
+            self.size_combo.blockSignals(True)
+            self.size_combo.clear()
+            self.size_combo.addItems([tr("size_compact"), tr("size_standard"), tr("size_touch")])
+            if idx >= 0:
+                self.size_combo.setCurrentIndex(idx)
+            self.size_combo.blockSignals(False)
+        if hasattr(self, "lbl_opacity"):
+            self.lbl_opacity.setText(tr("opacity_slider_label"))
+        if hasattr(self, "always_on_top_chk"):
+            self.always_on_top_chk.setText(tr("always_on_top_chk"))
+        if hasattr(self, "confirm_action_chk"):
+            self.confirm_action_chk.setText(tr("confirm_action_chk"))
+            self.confirm_action_chk.setToolTip(tr("confirm_action_tip"))
+        if hasattr(self, "auto_enter_chk"):
+            self.auto_enter_chk.setText(tr("auto_enter_chk"))
+            self.auto_enter_chk.setToolTip(tr("auto_enter_tip"))
+
+        # Preview Header
+        if hasattr(self, "preview_lbl"):
+            self.preview_lbl.setText(tr("preview_lbl"))
+            self.preview_lbl.setToolTip(tr("preview_tip"))
+        if hasattr(self, "preview_hint"):
+            self.preview_hint.setText(tr("preview_hint"))
+        if hasattr(self, "transpose_btn"):
+            self.transpose_btn.setText(tr("btn_transpose"))
+            self.transpose_btn.setToolTip(tr("btn_transpose_tip"))
+        if hasattr(self, "clear_slot_btn"):
+            self.clear_slot_btn.setText(tr("btn_clear_slot"))
+            self.clear_slot_btn.setToolTip(tr("btn_clear_slot_tip"))
+        if hasattr(self, "lbl_slot_adjust"):
+            self.lbl_slot_adjust.setText(tr("slot_adjust_label"))
+        if hasattr(self, "slot_up_btn"):
+            self.slot_up_btn.setText(tr("btn_slot_up"))
+        if hasattr(self, "slot_down_btn"):
+            self.slot_down_btn.setText(tr("btn_slot_down"))
+        if hasattr(self, "slot_left_btn"):
+            self.slot_left_btn.setText(tr("btn_slot_left"))
+        if hasattr(self, "slot_right_btn"):
+            self.slot_right_btn.setText(tr("btn_slot_right"))
+
+        # Button Properties
+        if hasattr(self, "btn_prop_box"):
+            self.btn_prop_box.setTitle(tr("btn_props_title"))
+        if hasattr(self, "lbl_slot_status"):
+            self.lbl_slot_status.setText(tr("slot_status_label"))
+        if hasattr(self, "lbl_display_text"):
+            self.lbl_display_text.setText(tr("btn_text_label"))
+        if hasattr(self, "btn_label_edit"):
+            self.btn_label_edit.setPlaceholderText(tr("btn_text_placeholder"))
+            self.btn_label_edit.setToolTip(tr("btn_text_tip"))
+        if hasattr(self, "lbl_btn_color"):
+            self.lbl_btn_color.setText(tr("btn_color_label"))
+        if hasattr(self, "btn_color_combo"):
+            c_idx = self.btn_color_combo.currentIndex()
+            self.btn_color_combo.blockSignals(True)
+            self.btn_color_combo.clear()
+            for hex_code, color_key in COLOR_PRESET_KEYS:
+                self.btn_color_combo.addItem(tr(color_key), hex_code)
+            if c_idx >= 0:
+                self.btn_color_combo.setCurrentIndex(c_idx)
+            self.btn_color_combo.blockSignals(False)
+        if hasattr(self, "lbl_btn_tooltip"):
+            self.lbl_btn_tooltip.setText(tr("btn_tooltip_label"))
+
+        # Action Steps
         if hasattr(self, "steps_box"):
             self.steps_box.setTitle(tr("action_steps_title"))
         if hasattr(self, "steps_table"):
             self.steps_table.setHorizontalHeaderLabels([tr("step_col_type"), tr("step_col_param"), tr("step_col_desc")])
-        if hasattr(self, "save_btn"):
-            self.save_btn.setText(tr("btn_save_settings"))
-        if hasattr(self, "cancel_btn"):
-            self.cancel_btn.setText(tr("btn_cancel_settings"))
         if hasattr(self, "record_macro_btn"):
             self.record_macro_btn.setText(tr("btn_record_macro"))
+            self.record_macro_btn.setToolTip(tr("btn_record_macro_tip"))
         if hasattr(self, "add_text_btn"):
             self.add_text_btn.setText(tr("btn_add_text"))
+            self.add_text_btn.setToolTip(tr("btn_add_text_tip"))
         if hasattr(self, "add_key_btn"):
             self.add_key_btn.setText(tr("btn_add_key"))
+            self.add_key_btn.setToolTip(tr("btn_add_key_tip"))
         if hasattr(self, "add_delay_btn"):
             self.add_delay_btn.setText(tr("btn_add_delay"))
+            self.add_delay_btn.setToolTip(tr("btn_add_delay_tip"))
         if hasattr(self, "edit_step_btn"):
             self.edit_step_btn.setText(tr("btn_edit_step"))
         if hasattr(self, "del_step_btn"):
             self.del_step_btn.setText(tr("btn_del_step"))
         if hasattr(self, "move_up_btn"):
             self.move_up_btn.setText(tr("btn_move_up"))
+            self.move_up_btn.setToolTip(tr("btn_move_up_tip"))
         if hasattr(self, "move_down_btn"):
             self.move_down_btn.setText(tr("btn_move_down"))
-        if hasattr(self, "transpose_btn"):
-            self.transpose_btn.setText(tr("btn_transpose"))
-            self.transpose_btn.setToolTip(tr("btn_transpose_tip"))
+            self.move_down_btn.setToolTip(tr("btn_move_down_tip"))
+
+        # App Binding
+        if hasattr(self, "binding_box"):
+            self.binding_box.setTitle(tr("app_binding_title"))
+        if hasattr(self, "profile_table"):
+            self.profile_table.setHorizontalHeaderLabels([tr("bind_col_process"), tr("bind_col_title")])
+        if hasattr(self, "bind_curr_btn"):
+            self.bind_curr_btn.setText(tr("btn_bind_current"))
+            self.bind_curr_btn.setToolTip(tr("btn_bind_current_tip"))
+        if hasattr(self, "bind_pick_btn"):
+            self.bind_pick_btn.setText(tr("btn_bind_pick"))
+            self.bind_pick_btn.setToolTip(tr("btn_bind_pick_tip"))
+        if hasattr(self, "bind_custom_btn"):
+            self.bind_custom_btn.setText(tr("btn_bind_custom"))
+        if hasattr(self, "bind_del_btn"):
+            self.bind_del_btn.setText(tr("btn_bind_delete"))
+
+        # General & Diagnostics
+        if hasattr(self, "lang_box"):
+            self.lang_box.setTitle(tr("language_group_title"))
+        if hasattr(self, "lbl_language"):
+            self.lbl_language.setText(tr("language_label"))
+        if hasattr(self, "hotkey_box"):
+            self.hotkey_box.setTitle(tr("hotkey_group_title"))
+        if hasattr(self, "lbl_auto_profile"):
+            self.lbl_auto_profile.setText(tr("auto_profile_switch_label"))
+        if hasattr(self, "auto_profile_switch_chk"):
+            self.auto_profile_switch_chk.setText(tr("auto_profile_switch_chk"))
+        if hasattr(self, "lbl_toggle_hotkey"):
+            self.lbl_toggle_hotkey.setText(tr("toggle_hotkey_label"))
+        if hasattr(self, "toggle_hotkey_edit"):
+            self.toggle_hotkey_edit.setPlaceholderText(tr("toggle_hotkey_placeholder"))
+        if hasattr(self, "lbl_stop_hotkey"):
+            self.lbl_stop_hotkey.setText(tr("stop_hotkey_label"))
+        if hasattr(self, "stop_hotkey_edit"):
+            self.stop_hotkey_edit.setPlaceholderText(tr("stop_hotkey_placeholder"))
+        if hasattr(self, "data_box"):
+            self.data_box.setTitle(tr("backup_group_title"))
+        if hasattr(self, "backup_btn"):
+            self.backup_btn.setText(tr("btn_backup"))
+        if hasattr(self, "diag_box"):
+            self.diag_box.setTitle(tr("diag_group_title"))
+        if hasattr(self, "log_table"):
+            self.log_table.setHorizontalHeaderLabels([tr("log_col_time"), tr("log_col_action"), tr("log_col_status"), tr("log_col_desc")])
+        if hasattr(self, "refresh_diag_btn"):
+            self.refresh_diag_btn.setText(tr("btn_refresh_diag"))
+
+        # Bottom buttons
+        if hasattr(self, "save_btn"):
+            self.save_btn.setText(tr("btn_save_settings"))
+        if hasattr(self, "cancel_btn"):
+            self.cancel_btn.setText(tr("btn_cancel_settings"))
+
+        # Refresh step table & selection status info
+        if hasattr(self, "steps_table"):
+            self._refresh_steps(self._current_action())
+        if hasattr(self, "selected_info_label"):
+            button = self.layout_mgr.get_button(self.selected_button_id) if self.selected_button_id else None
+            if button:
+                clean_lbl = button.label.replace("\n", " ")
+                if self.selected_row is not None and self.selected_col is not None:
+                    self.selected_info_label.setText(
+                        tr("slot_info_occupied", row=self.selected_row + 1, col=self.selected_col + 1, id=clean_lbl)
+                    )
+                else:
+                    self.selected_info_label.setText(f"ID: {clean_lbl}")
+            else:
+                self.selected_info_label.setText(tr("no_btn_selected"))
 
     def save_and_close(self):
         cfg = self.config_store.load_config()

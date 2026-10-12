@@ -62,18 +62,34 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
         "en": "General & Diagnostics",
     },
 
-    # Settings - Layouts Tab
+    # Settings - Layouts Tab - Top bar
     "layout_select_label": {
-        "zh": "当前编辑布局:",
+        "zh": "当前布局:",
         "en": "Current Layout:",
     },
     "btn_new_layout": {
-        "zh": "＋ 新建布局…",
-        "en": "+ New Layout…",
+        "zh": "＋ 新建布局",
+        "en": "+ New Layout",
+    },
+    "btn_copy_layout": {
+        "zh": "复制当前布局",
+        "en": "Duplicate Layout",
+    },
+    "btn_rename_layout": {
+        "zh": "重命名",
+        "en": "Rename",
     },
     "btn_del_layout": {
         "zh": "删除布局",
         "en": "Delete Layout",
+    },
+    "btn_reset_preset": {
+        "zh": "恢复预设",
+        "en": "Reset Preset",
+    },
+    "btn_reset_preset_tip": {
+        "zh": "将当前布局重置为官方预设初始状态",
+        "en": "Reset current layout to official preset defaults",
     },
     "btn_export_pack": {
         "zh": "导出场景包…",
@@ -83,33 +99,23 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
         "zh": "导入场景包…",
         "en": "Import Pack…",
     },
-    "preview_box_title": {
-        "zh": "布局预览 (点击网格编辑按钮，拖拽可交换位置)",
-        "en": "Layout Preview (Click to edit button, drag to swap)",
-    },
-    "btn_transpose": {
-        "zh": "⇄ 行列转换",
-        "en": "⇄ Transpose",
-    },
-    "btn_transpose_tip": {
-        "zh": "旋转转换布局的行数与列数（转置网格）",
-        "en": "Transpose layout rows and columns",
-    },
+
+    # Settings - Layout Properties Box
     "layout_props_title": {
-        "zh": "布局属性与全局默认值",
-        "en": "Layout Properties & Global Defaults",
+        "zh": "布局属性与全局默认值 (当前布局)",
+        "en": "Layout Properties & Defaults (Current)",
     },
     "rows_label": {
-        "zh": "行数 (1-20)",
-        "en": "Rows (1-20)",
+        "zh": "行数:",
+        "en": "Rows:",
     },
     "cols_label": {
-        "zh": "列数 (1-20)",
-        "en": "Columns (1-20)",
+        "zh": "列数:",
+        "en": "Columns:",
     },
     "btn_size_label": {
-        "zh": "默认按钮尺寸",
-        "en": "Default Button Size",
+        "zh": "按钮尺寸:",
+        "en": "Button Size:",
     },
     "size_compact": {
         "zh": "紧凑",
@@ -124,41 +130,157 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
         "en": "Touch / Large",
     },
     "opacity_slider_label": {
-        "zh": "窗口透明度",
-        "en": "Window Opacity",
+        "zh": "透明度:",
+        "en": "Opacity:",
     },
     "always_on_top_chk": {
-        "zh": "窗口置顶",
+        "zh": "保持在顶层",
         "en": "Always on Top",
     },
     "confirm_action_chk": {
-        "zh": "执行危险操作前弹窗二次确认",
-        "en": "Confirm before executing risky actions",
+        "zh": "执行前确认",
+        "en": "Confirm Before Action",
+    },
+    "confirm_action_tip": {
+        "zh": "开启后，点击当前布局内任何按钮执行动作前均弹出确认对话框",
+        "en": "Show confirmation dialog before executing any action in this layout",
     },
     "auto_enter_chk": {
-        "zh": "发送动作后默认自动追加回车 (Enter)",
-        "en": "Auto append Enter after action by default",
+        "zh": "动作结束后发送 Enter",
+        "en": "Send Enter on Completion",
+    },
+    "auto_enter_tip": {
+        "zh": "开启后，当前布局所有动作执行完毕后自动追加一个 Enter 回车键",
+        "en": "Automatically append an Enter key when action finishes",
     },
 
-    # Button Properties
+    # Settings - Layout Preview
+    "preview_lbl": {
+        "zh": "布局预览:",
+        "en": "Preview:",
+    },
+    "preview_hint": {
+        "zh": "（点击选中 / 拖动调换）",
+        "en": "(Click to select / Drag to swap)",
+    },
+    "preview_tip": {
+        "zh": "点击按钮即可选中编辑；支持拖动按钮与其他槽位调换位置",
+        "en": "Click button to select & edit; drag to swap slots",
+    },
+    "btn_transpose": {
+        "zh": "⇄ 行列转换",
+        "en": "⇄ Transpose",
+    },
+    "btn_transpose_tip": {
+        "zh": "转换行列（转置布局），行列数互换",
+        "en": "Transpose layout rows and columns",
+    },
+    "btn_clear_slot": {
+        "zh": "清空槽位",
+        "en": "Clear Slot",
+    },
+    "btn_clear_slot_tip": {
+        "zh": "删除当前选中槽位的按钮并保留空槽位",
+        "en": "Delete button in selected slot keeping it empty",
+    },
+    "slot_adjust_label": {
+        "zh": "槽位微调:",
+        "en": "Nudge Slot:",
+    },
+    "btn_slot_up": {
+        "zh": "▲ 上移",
+        "en": "▲ Up",
+    },
+    "btn_slot_down": {
+        "zh": "▼ 下移",
+        "en": "▼ Down",
+    },
+    "btn_slot_left": {
+        "zh": "◀ 左移",
+        "en": "◀ Left",
+    },
+    "btn_slot_right": {
+        "zh": "▶ 右移",
+        "en": "▶ Right",
+    },
+
+    # Button Properties Box
     "btn_props_title": {
         "zh": "选中按钮属性",
         "en": "Selected Button Properties",
     },
+    "slot_status_label": {
+        "zh": "槽位状态:",
+        "en": "Slot Status:",
+    },
+    "no_btn_selected": {
+        "zh": "未选中按钮（请在左侧预览中点击按钮）",
+        "en": "No button selected (Click a slot in preview)",
+    },
+    "slot_info_occupied": {
+        "zh": "第 {row} 行，第 {col} 列 (按钮 ID: {id})",
+        "en": "Row {row}, Col {col} (Button ID: {id})",
+    },
+    "slot_info_empty": {
+        "zh": "第 {row} 行，第 {col} 列 (空槽位，添加下方动作即可新建)",
+        "en": "Row {row}, Col {col} (Empty slot, add steps below)",
+    },
     "btn_text_label": {
-        "zh": "显示文字",
-        "en": "Display Text",
+        "zh": "显示文字:",
+        "en": "Display Text:",
+    },
+    "btn_text_placeholder": {
+        "zh": "例如: 保存 或 Ctrl+S",
+        "en": "e.g. Save or Ctrl+S",
+    },
+    "btn_text_tip": {
+        "zh": "按钮显示的文字标签，支持换行（输入 \\n 可表示换行）",
+        "en": "Button display label, supports \\n for newline",
     },
     "btn_color_label": {
-        "zh": "按钮颜色",
-        "en": "Button Color",
+        "zh": "按钮颜色:",
+        "en": "Button Color:",
     },
     "btn_tooltip_label": {
-        "zh": "悬停提示",
-        "en": "Tooltip",
+        "zh": "悬浮提示:",
+        "en": "Tooltip:",
     },
 
-    # Action Steps Box (Renamed from Macro Steps)
+    # Preset Color Names
+    "color_blue": {
+        "zh": "蓝色",
+        "en": "Blue",
+    },
+    "color_red": {
+        "zh": "红色",
+        "en": "Red",
+    },
+    "color_gray": {
+        "zh": "灰色",
+        "en": "Gray",
+    },
+    "color_green": {
+        "zh": "绿色",
+        "en": "Green",
+    },
+    "color_purple": {
+        "zh": "紫色",
+        "en": "Purple",
+    },
+    "color_orange": {
+        "zh": "橙色",
+        "en": "Orange",
+    },
+    "color_sky": {
+        "zh": "天蓝",
+        "en": "Sky Blue",
+    },
+    "color_indigo": {
+        "zh": "靛蓝",
+        "en": "Indigo",
+    },
+
+    # Action Steps Box
     "action_steps_title": {
         "zh": "动作步骤",
         "en": "Action Steps",
@@ -175,33 +297,69 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
         "zh": "说明",
         "en": "Description",
     },
+    "step_type_paste": {
+        "zh": "文本",
+        "en": "Text",
+    },
+    "step_type_key": {
+        "zh": "按键",
+        "en": "Key",
+    },
+    "step_type_hotkey": {
+        "zh": "组合键",
+        "en": "Hotkey",
+    },
+    "step_type_delay": {
+        "zh": "等待",
+        "en": "Delay",
+    },
+    "step_desc_paste": {
+        "zh": "快速文本输入",
+        "en": "Fast text input",
+    },
+    "step_desc_key": {
+        "zh": "敲击单键",
+        "en": "Press single key",
+    },
+    "step_desc_hotkey": {
+        "zh": "快捷组合键",
+        "en": "Shortcut combo",
+    },
+    "step_desc_delay": {
+        "zh": "等待毫秒",
+        "en": "Wait milliseconds",
+    },
     "btn_record_macro": {
         "zh": "⏺ 录制宏…",
         "en": "⏺ Record Macro…",
+    },
+    "btn_record_macro_tip": {
+        "zh": "实时录制键盘与鼠标操作",
+        "en": "Record keyboard and mouse actions in real-time",
     },
     "btn_add_text": {
         "zh": "＋ 文本",
         "en": "+ Text",
     },
     "btn_add_text_tip": {
-        "zh": "添加文本输入步骤 (剪贴板极速无损粘贴)",
-        "en": "Add text input step (Lossless clipboard paste)",
+        "zh": "添加文本输入步骤 (剪贴板粘贴)",
+        "en": "Add text input step (Clipboard paste)",
     },
     "btn_add_key": {
         "zh": "＋ 按键",
         "en": "+ Key",
     },
     "btn_add_key_tip": {
-        "zh": "点击录制单键或组合快捷键 (支持 Enter、Ctrl、Alt、Shift 任意组合)",
-        "en": "Click to record key or hotkey (supports Enter, Ctrl, Alt, Shift combinations)",
+        "zh": "添加按键或组合快捷键",
+        "en": "Add key or shortcut combination",
     },
     "btn_add_delay": {
         "zh": "＋ 等待",
         "en": "+ Delay",
     },
     "btn_add_delay_tip": {
-        "zh": "添加延时等待毫秒步骤",
-        "en": "Add delay (milliseconds) step",
+        "zh": "添加延时等待 (毫秒)",
+        "en": "Add delay (ms)",
     },
     "btn_edit_step": {
         "zh": "编辑步骤",
@@ -215,9 +373,17 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
         "zh": "▲ 上移",
         "en": "▲ Move Up",
     },
+    "btn_move_up_tip": {
+        "zh": "将当前选中的动作步骤上移一位",
+        "en": "Move selected step up",
+    },
     "btn_move_down": {
         "zh": "▼ 下移",
         "en": "▼ Move Down",
+    },
+    "btn_move_down_tip": {
+        "zh": "将当前选中的动作步骤下移一位",
+        "en": "Move selected step down",
     },
 
     # App Binding Box
@@ -226,20 +392,32 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
         "en": "App Binding (Auto switch to current layout when target focused)",
     },
     "bind_col_process": {
-        "zh": "进程名",
+        "zh": "目标进程名",
         "en": "Process Name",
     },
     "bind_col_title": {
         "zh": "窗口标题包含",
-        "en": "Window Title Contains",
+        "en": "Window Title Filter",
     },
     "btn_bind_current": {
-        "zh": "🎯 绑定目标应用",
-        "en": "🎯 Bind Target App",
+        "zh": "🎯 绑定最近目标应用",
+        "en": "🎯 Bind Recent App",
+    },
+    "btn_bind_current_tip": {
+        "zh": "绑定打开设置前最近一次聚焦的外部应用程序",
+        "en": "Bind the target window active before opening settings",
+    },
+    "btn_bind_pick": {
+        "zh": "🪟 从打开的窗口选择",
+        "en": "🪟 Select Window",
+    },
+    "btn_bind_pick_tip": {
+        "zh": "从当前运行中的全部窗口列表中选择一个应用绑定",
+        "en": "Choose an application from currently running windows",
     },
     "btn_bind_custom": {
-        "zh": "＋ 手动添加进程",
-        "en": "+ Add Process Manually",
+        "zh": "＋ 手动输入",
+        "en": "+ Add Manually",
     },
     "btn_bind_delete": {
         "zh": "删除选中绑定",
@@ -252,8 +430,8 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
         "en": "Interface Language & General Settings",
     },
     "language_label": {
-        "zh": "界面语言 (Language)",
-        "en": "Interface Language",
+        "zh": "界面语言:",
+        "en": "Language:",
     },
     "lang_zh": {
         "zh": "简体中文 (Chinese Simplified)",
@@ -268,20 +446,28 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
         "en": "Global Hotkeys & Automation",
     },
     "auto_profile_switch_label": {
-        "zh": "场景切换",
-        "en": "Scene Switching",
+        "zh": "场景切换:",
+        "en": "Auto Switch:",
     },
     "auto_profile_switch_chk": {
         "zh": "根据前台活动窗口自动切换布局",
         "en": "Auto switch layout based on foreground window",
     },
     "toggle_hotkey_label": {
-        "zh": "显示/隐藏工作台",
-        "en": "Show/Hide Workbench",
+        "zh": "显示/隐藏工作台:",
+        "en": "Show/Hide Workbench:",
+    },
+    "toggle_hotkey_placeholder": {
+        "zh": "例如 ALT+Q",
+        "en": "e.g. ALT+Q",
     },
     "stop_hotkey_label": {
-        "zh": "紧急停止宏快捷键",
-        "en": "Emergency Stop Hotkey",
+        "zh": "紧急停止宏快捷键:",
+        "en": "Emergency Stop Hotkey:",
+    },
+    "stop_hotkey_placeholder": {
+        "zh": "例如 ESC",
+        "en": "e.g. ESC",
     },
     "backup_group_title": {
         "zh": "配置备份与恢复",
@@ -295,7 +481,7 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
         "zh": "系统诊断与最近执行日志",
         "en": "System Diagnostics & Execution Logs",
     },
-    "target_diag_label": {
+    "target_info_prefix": {
         "zh": "目标检测: {info}",
         "en": "Target Detection: {info}",
     },
@@ -328,18 +514,18 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
         "en": "Cancel",
     },
 
-    # Key Capture Dialog
+    # Key Capture Dialog (Elegant & Concise)
     "key_capture_title": {
-        "zh": "按键与组合键录制",
-        "en": "Key & Hotkey Recording",
+        "zh": "按键录制",
+        "en": "Key Recording",
     },
     "key_capture_instruction": {
-        "zh": "请在下方直接按下按键或快捷组合键：\n(提示：按 Enter 键会直接录制为 Enter 键，请在确认无误后点击下方【确定】按钮保存)",
-        "en": "Press any key or shortcut combination below:\n(Note: Pressing Enter will record the Enter key. Click [OK] with mouse when done)",
+        "zh": "请按下目标按键或组合快捷键：",
+        "en": "Press desired key or shortcut combination:",
     },
     "key_capture_input_placeholder": {
-        "zh": "在此按下任意按键或组合键 (例如 ALT+= 或 ENTER)…",
-        "en": "Press any key or hotkey here (e.g. ALT+= or ENTER)…",
+        "zh": "等待按键输入… (例如 Ctrl+S 或 Enter)",
+        "en": "Waiting for keypress… (e.g. Ctrl+S or Enter)",
     },
     "btn_ok": {
         "zh": "确定",
@@ -348,6 +534,68 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
     "btn_clear": {
         "zh": "清除",
         "en": "Clear",
+    },
+
+    # Prompts & Message Boxes
+    "prompt_notice": {
+        "zh": "提示",
+        "en": "Notice",
+    },
+    "prompt_warning": {
+        "zh": "警告",
+        "en": "Warning",
+    },
+    "prompt_confirm": {
+        "zh": "确认",
+        "en": "Confirm",
+    },
+    "prompt_record_key_first": {
+        "zh": "请先录制或输入要添加的按键/快捷键！",
+        "en": "Please record or enter a key/shortcut first!",
+    },
+    "prompt_new_layout_title": {
+        "zh": "新建布局",
+        "en": "New Layout",
+    },
+    "prompt_new_layout_label": {
+        "zh": "请输入新布局名称:",
+        "en": "Enter new layout name:",
+    },
+    "prompt_new_layout_default": {
+        "zh": "新建布局",
+        "en": "New Layout",
+    },
+    "prompt_copy_layout_title": {
+        "zh": "复制布局",
+        "en": "Duplicate Layout",
+    },
+    "prompt_copy_layout_suffix": {
+        "zh": " (副本)",
+        "en": " (Copy)",
+    },
+    "prompt_rename_layout_title": {
+        "zh": "重命名布局",
+        "en": "Rename Layout",
+    },
+    "prompt_del_layout_confirm": {
+        "zh": "确定要删除布局 '{name}' 吗？此操作无法撤销。",
+        "en": "Are you sure you want to delete layout '{name}'? This cannot be undone.",
+    },
+    "prompt_del_layout_min": {
+        "zh": "至少需要保留一个布局，无法删除！",
+        "en": "At least one layout must be kept, cannot delete!",
+    },
+    "prompt_reset_preset_confirm": {
+        "zh": "确定将布局 '{name}' 重置为官方默认预设吗？自定义修改将丢失。",
+        "en": "Reset layout '{name}' to default preset? Custom modifications will be lost.",
+    },
+    "prompt_reset_preset_nonpreset": {
+        "zh": "当前布局不是内置官方预设，无法自动重置！",
+        "en": "Current layout is not a built-in preset and cannot be reset!",
+    },
+    "prompt_backup_success": {
+        "zh": "配置已成功备份至:\n{path}",
+        "en": "Configuration successfully backed up to:\n{path}",
     },
 }
 

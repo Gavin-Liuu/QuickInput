@@ -955,6 +955,17 @@ class FloatingPanel(QtWidgets.QWidget):
         self.refresh_layout_combo()
         self.rebuild_buttons()
         self.apply_config(restore_pos=False)
+        if hasattr(self, "apply_toggle_hotkey"):
+            self.apply_toggle_hotkey(self.config.get("hotkeys", {}).get("toggle_visible", "ALT+Q"))
+
+    def toggle_visibility(self):
+        """Safely toggle floating panel visibility on the Qt main thread."""
+        if self.isVisible() and not self.isMinimized():
+            self.save_window_config()
+            self.hide()
+        else:
+            self.showNormal()
+            self.raise_()
 
     def hide_to_tray(self):
         """Hide the panel while keeping the process and tray menu alive."""
