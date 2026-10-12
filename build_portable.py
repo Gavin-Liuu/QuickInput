@@ -59,9 +59,12 @@ def build():
     if os.path.exists(BUILD_DIR):
         shutil.rmtree(BUILD_DIR, ignore_errors=True)
 
-    print("[2/5] Running PyInstaller with modular exclusions...")
+    clean_venv_py = os.path.join(BASE_DIR, ".venv_clean", "Scripts", "python.exe")
+    target_py = clean_venv_py if os.path.exists(clean_venv_py) else sys.executable
+    print(f"[2/5] Running PyInstaller with modular exclusions using: {target_py}")
+
     cmd = [
-        sys.executable,
+        target_py,
         "-m",
         "PyInstaller",
         "--noconfirm",
@@ -113,18 +116,23 @@ def build():
                 except Exception:
                     pass
 
-    # Prune unused platform plugins (keep only qwindows.dll)
-    platforms_dir = os.path.join(output_dir, "PyQt5", "Qt5", "plugins", "platforms")
-    if not os.path.exists(platforms_dir):
-        platforms_dir = os.path.join(output_dir, "platforms")
-    if os.path.exists(platforms_dir):
-        for pfile in os.listdir(platforms_dir):
-            if pfile != "qwindows.dll" and pfile.endswith(".dll"):
-                try:
-                    os.remove(os.path.join(platforms_dir, pfile))
-                    print(f"  Removed unused platform plugin: {pfile}")
-                except Exception:
-                    pass
+        # Prune unused platform plugins (keep only qwindows.dll)
+        if os.path.basename(root) == "platforms":
+            for pfile in files:
+                if pfile != "qwindows.dll" and pfile.endswith(".dll"):
+                    try:
+                        os.remove(os.path.join(root, pfile))
+                        print(f"  Removed unused platform plugin: {pfile}")
+                    except Exception:
+                        pass
+        elif os.path.basename(root) == "imageformats":
+            for ifile in files:
+                if ifile.startswith(("qwebp", "qtiff", "qwbmp", "qtga")):
+                    try:
+                        os.remove(os.path.join(root, ifile))
+                        print(f"  Removed unused image format plugin: {ifile}")
+                    except Exception:
+                        pass
 
     print(f"[4/5] Copying packs and release helpers to {output_dir}...")
     dest_packs = os.path.join(output_dir, "packs")

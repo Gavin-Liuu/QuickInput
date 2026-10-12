@@ -15,7 +15,7 @@ from application.layout_manager import LayoutManager
 from application.action_executor import ActionExecutor
 from application.target_manager import TargetManager
 from storage.config_store import ConfigStore
-from domain.i18n import tr
+from domain.i18n import tr, get_layout_display_name
 from .settings_dialog import SettingsDialog
 from .qt_signals import ExecutorSignals
 
@@ -602,7 +602,8 @@ class FloatingPanel(QtWidgets.QWidget):
         self.layout_combo.blockSignals(True)
         self.layout_combo.clear()
         for lid, lay in self.layout_mgr.layouts.items():
-            self.layout_combo.addItem(lay.name, lid)
+            disp_name = get_layout_display_name(lid, lay.name)
+            self.layout_combo.addItem(disp_name, lid)
         self.update_layout_combo_selection()
         self.layout_combo.blockSignals(False)
 
@@ -913,7 +914,7 @@ class FloatingPanel(QtWidgets.QWidget):
         self._remove_topmost_temporarily()
 
         self._settings_dialog = SettingsDialog(
-            self.layout_mgr, self.executor, self.target_mgr, self.config_store, parent=None
+            self.layout_mgr, self.executor, self.target_mgr, self.config_store, parent=self
         )
         self._settings_dialog.setWindowModality(QtCore.Qt.NonModal)
         self._settings_dialog.finished.connect(self._on_settings_closed)
@@ -944,6 +945,7 @@ class FloatingPanel(QtWidgets.QWidget):
         self.opacity_label.setText(tr("opacity_label"))
         curr_op = self.opacity_slider.value()
         self.opacity_slider.setToolTip(f"{tr('opacity_label')}: {curr_op}%")
+        self.refresh_layout_combo()
         self.update_target_pill()
 
     def _on_settings_closed(self, result):

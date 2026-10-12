@@ -597,6 +597,96 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
         "zh": "配置已成功备份至:\n{path}",
         "en": "Configuration successfully backed up to:\n{path}",
     },
+
+    # Preset Layout Names
+    "layout_name_word": {
+        "zh": "微软 Word 常用排版",
+        "en": "Microsoft Word Document",
+    },
+    "layout_name_programmer": {
+        "zh": "程序员常用命令",
+        "en": "Developer & Shell Commands",
+    },
+    "layout_name_annotation": {
+        "zh": "图片标注",
+        "en": "Image Annotation",
+    },
+    "layout_name_customer_service": {
+        "zh": "客服话术",
+        "en": "Customer Service Quick Replies",
+    },
+
+    # Tray Menu
+    "tray_tooltip": {
+        "zh": "快捷输入工作台｜左键显示/隐藏，右键菜单可退出",
+        "en": "QuickInput | Click to Show/Hide, Right-click for menu",
+    },
+    "tray_toggle": {
+        "zh": "显示/隐藏工作台 (Alt+Q)",
+        "en": "Show/Hide Workbench (Alt+Q)",
+    },
+    "tray_switch_layout": {
+        "zh": "切换当前布局",
+        "en": "Switch Layout",
+    },
+    "tray_unlock_target": {
+        "zh": "🔓 解锁目标窗口",
+        "en": "🔓 Unlock Target Window",
+    },
+    "tray_lock_target": {
+        "zh": "🔒 锁定当前目标窗口",
+        "en": "🔒 Lock Current Target Window",
+    },
+    "tray_settings": {
+        "zh": "⚙ 设置与布局中心...",
+        "en": "⚙ Settings & Layout Center...",
+    },
+    "tray_quit": {
+        "zh": "退出程序",
+        "en": "Quit Application",
+    },
+
+    # Binding & Dialog Prompts
+    "bind_no_external_target": {
+        "zh": "当前未捕获到外部目标应用！\n\n请在外部软件窗口中点击一次，或从运行中的窗口列表中直接选择。",
+        "en": "No external target application currently captured!\n\nPlease click an external application window once, or select from running windows.",
+    },
+    "bind_confirm_target": {
+        "zh": "检测到最近使用的外部应用：\n\n• 进程名：{proc}\n• 窗口标题：{title}\n\n是否将该应用绑定到当前布局【{layout}】？",
+        "en": "Detected recent external application:\n\n• Process: {proc}\n• Window Title: {title}\n\nBind this application to layout [{layout}]?",
+    },
+    "bind_success_notice": {
+        "zh": "已成功将应用 {proc} 绑定到当前布局【{layout}】！",
+        "en": "Successfully bound {proc} to layout [{layout}]!",
+    },
+    "bind_no_running_windows": {
+        "zh": "未找到可绑定的运行中外部窗口。",
+        "en": "No running external windows found to bind.",
+    },
+    "bind_select_running_title": {
+        "zh": "请从当前打开的应用列表中选择：",
+        "en": "Select from open applications:",
+    },
+    "bind_custom_proc_prompt": {
+        "zh": "目标进程名 (例如 notepad.exe):",
+        "en": "Target process name (e.g. notepad.exe):",
+    },
+    "bind_custom_title_prompt": {
+        "zh": "窗口标题包含字符 (可选，留空匹配所有):",
+        "en": "Window title filter (Optional, leave blank to match all):",
+    },
+    "reset_preset_success": {
+        "zh": "已成功将“{layout}”恢复为官方预设！",
+        "en": "Layout [{layout}] successfully reset to presets!",
+    },
+    "backup_failed": {
+        "zh": "无法创建配置备份。",
+        "en": "Failed to create configuration backup.",
+    },
+    "empty_slot_tooltip": {
+        "zh": "点击创建此槽位按钮，或将其他按钮拖放到此处",
+        "en": "Click to create button here, or drag another button here",
+    },
 }
 
 
@@ -626,3 +716,12 @@ def tr(key: str, lang: Optional[str] = None, **kwargs) -> str:
         except Exception:
             return text
     return text
+
+
+def get_layout_display_name(lid: str, default_name: str = "") -> str:
+    """Return localized display name for a preset layout if available, or its custom name."""
+    key = f"layout_name_{lid}"
+    val = tr(key)
+    if val != key:
+        return val
+    return default_name or lid

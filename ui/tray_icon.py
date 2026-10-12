@@ -5,6 +5,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from typing import Callable
 from application.layout_manager import LayoutManager
 from application.target_manager import TargetManager
+from domain.i18n import tr, get_layout_display_name
 
 
 class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
@@ -59,7 +60,7 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
         # Create icon
         icon = self._create_icon()
         self.setIcon(icon)
-        self.setToolTip("快捷输入工作台｜左键显示/隐藏，右键菜单可退出")
+        self.setToolTip(tr("tray_tooltip"))
 
         self.activated.connect(self._on_tray_activated)
         self.build_menu()
@@ -89,33 +90,34 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
         self.tray_menu.clear()
 
         # 1. Toggle visibility
-        toggle_action = self.tray_menu.addAction("显示/隐藏工作台 (Alt+Q)")
+        toggle_action = self.tray_menu.addAction(tr("tray_toggle"))
         toggle_action.triggered.connect(self.on_toggle_visible)
 
         # 2. Layout submenu
-        layout_submenu = self.tray_menu.addMenu("切换当前布局")
+        layout_submenu = self.tray_menu.addMenu(tr("tray_switch_layout"))
         for lid, lay in self.layout_mgr.layouts.items():
-            act = layout_submenu.addAction(lay.name)
+            disp_name = get_layout_display_name(lid, lay.name)
+            act = layout_submenu.addAction(disp_name)
             act.setCheckable(True)
             act.setChecked(lid == self.layout_mgr.active_layout_id)
             act.triggered.connect(lambda ch, l_id=lid: self.layout_mgr.set_active_layout(l_id))
 
         # 3. Lock/Unlock target
         target_info = self.target_mgr.get_target_info()
-        lock_text = "🔓 解锁目标窗口" if target_info.get("is_locked") else "🔒 锁定当前目标窗口"
+        lock_text = tr("tray_unlock_target") if target_info.get("is_locked") else tr("tray_lock_target")
         lock_action = self.tray_menu.addAction(lock_text)
         lock_action.triggered.connect(self.target_mgr.toggle_lock)
 
         self.tray_menu.addSeparator()
 
         # 4. Settings
-        settings_action = self.tray_menu.addAction("⚙ 设置与布局中心...")
+        settings_action = self.tray_menu.addAction(tr("tray_settings"))
         settings_action.triggered.connect(self.on_open_settings)
 
         self.tray_menu.addSeparator()
 
         # 5. Quit
-        quit_action = self.tray_menu.addAction("退出程序")
+        quit_action = self.tray_menu.addAction(tr("tray_quit"))
         quit_action.triggered.connect(self.on_quit)
 
     def _on_tray_activated(self, reason):

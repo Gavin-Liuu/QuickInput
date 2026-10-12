@@ -9,7 +9,7 @@ from domain.action import Action, ActionStep
 from domain.button import Button
 from domain.layout import Layout
 from domain.profile import Profile
-from domain.i18n import tr, get_current_language, set_current_language
+from domain.i18n import tr, get_current_language, set_current_language, get_layout_display_name
 from application.layout_manager import LayoutManager
 from application.action_executor import ActionExecutor
 from application.target_manager import TargetManager
@@ -808,7 +808,8 @@ class SettingsDialog(QtWidgets.QDialog):
         self.layout_selector.blockSignals(True)
         self.layout_selector.clear()
         for lid, layout in self.layout_mgr.layouts.items():
-            self.layout_selector.addItem(layout.name, lid)
+            disp_name = get_layout_display_name(lid, layout.name)
+            self.layout_selector.addItem(disp_name, lid)
         index = self.layout_selector.findData(self.layout_mgr.active_layout_id)
         if index >= 0:
             self.layout_selector.setCurrentIndex(index)
@@ -997,7 +998,7 @@ class SettingsDialog(QtWidgets.QDialog):
                     )
                     empty_btn.setText("＋")
                     empty_btn.setFixedSize(width, height)
-                    empty_btn.setToolTip("点击创建此槽位按钮，或将其他按钮拖放到此处" if get_current_language() == "zh" else "Click to create button here, or drag another button here")
+                    empty_btn.setToolTip(tr("empty_slot_tooltip"))
                     empty_btn.setStyleSheet("""
                         QPushButton {
                             background-color: rgba(255, 255, 255, 0.02);
@@ -1353,18 +1354,14 @@ class SettingsDialog(QtWidgets.QDialog):
             QtWidgets.QMessageBox.warning(
                 self,
                 tr("prompt_warning"),
-                "当前未捕获到外部目标应用！\n\n请在外部软件窗口中点击一次，或从运行中的窗口列表中直接选择。"
-                if get_current_language() == "zh" else
-                "No external target application detected!\n\nPlease focus an external window first or pick from running windows.",
+                tr("bind_no_external_target"),
             )
             return
         title = info.get("title", "")
         res = QtWidgets.QMessageBox.question(
             self,
             tr("prompt_confirm"),
-            f"检测到最近使用的外部应用：\n\n• 进程名：{proc}\n• 窗口标题：{title or '(无标题)'}\n\n是否将该应用绑定到当前布局【{layout.name}】？"
-            if get_current_language() == "zh" else
-            f"Detected recent external application:\n\n• Process: {proc}\n• Title: {title or '(No title)'}\n\nBind this app to layout [{layout.name}]?",
+            tr("bind_confirm_target", proc=proc, title=title or '(No title)', layout=layout.name),
             QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No,
             QtWidgets.QMessageBox.Yes,
         )
@@ -1375,7 +1372,7 @@ class SettingsDialog(QtWidgets.QDialog):
         self.layout_mgr.register_profile(profile)
         self._refresh_profiles_for_current_layout()
         QtWidgets.QMessageBox.information(
-            self, tr("prompt_notice"), f"已成功将应用 {proc} 绑定到当前布局【{layout.name}】！" if get_current_language() == "zh" else f"Successfully bound {proc} to layout [{layout.name}]!"
+            self, tr("prompt_notice"), tr("bind_success_notice", proc=proc, layout=layout.name)
         )
 
     def _add_from_running_windows(self):
@@ -1408,7 +1405,7 @@ class SettingsDialog(QtWidgets.QDialog):
             pass
 
         if not windows_list:
-            QtWidgets.QMessageBox.information(self, tr("prompt_notice"), "未找到可绑定的运行中外部窗口。" if get_current_language() == "zh" else "No running external windows found to bind.")
+            QtWidgets.QMessageBox.information(self, tr("prompt_notice"), tr("bind_no_running_windows"))
             return
 
         seen = set()
@@ -1421,7 +1418,7 @@ class SettingsDialog(QtWidgets.QDialog):
 
         items = [disp for _, _, disp in unique_windows]
         chosen, ok = QtWidgets.QInputDialog.getItem(
-            self, tr("btn_bind_pick"), "请从当前打开的应用列表中选择：" if get_current_language() == "zh" else "Select from open applications:", items, 0, False
+            self, tr("btn_bind_pick"), tr("bind_select_running_title"), items, 0, False
         )
         if not ok or not chosen:
             return
@@ -1433,7 +1430,7 @@ class SettingsDialog(QtWidgets.QDialog):
         self.layout_mgr.register_profile(profile)
         self._refresh_profiles_for_current_layout()
         QtWidgets.QMessageBox.information(
-            self, tr("prompt_notice"), f"已成功将应用 {proc} 绑定到当前布局【{layout.name}】！" if get_current_language() == "zh" else f"Successfully bound {proc} to layout [{layout.name}]!"
+            self, tr("prompt_notice"), tr("bind_success_notice", proc=proc, layout=layout.name)
         )
 
     def _add_custom_profile(self):
@@ -1441,12 +1438,12 @@ class SettingsDialog(QtWidgets.QDialog):
         if not layout:
             return
         proc, ok1 = QtWidgets.QInputDialog.getText(
-            self, tr("btn_bind_custom"), "目标进程名 (例如 notepad.exe):" if get_current_language() == "zh" else "Process name (e.g. notepad.exe):"
+            self, tr("btn_bind_custom"), tr("bind_custom_proc_prompt")
         )
         if not ok1 or not proc.strip():
             return
         title, ok2 = QtWidgets.QInputDialog.getText(
-            self, tr("btn_bind_custom"), "窗口标题包含字符 (可选，留空匹配所有):" if get_current_language() == "zh" else "Window title filter (Optional, leave blank to match all):"
+            self, tr("btn_bind_custom"), tr("bind_custom_title_prompt")
         )
         p_id = f"profile_{len(self.layout_mgr.profiles) + 1}"
         profile = Profile(
@@ -1584,14 +1581,14 @@ class SettingsDialog(QtWidgets.QDialog):
         if idx >= 0:
             self.layout_selector.setCurrentIndex(idx)
         self._load_active_layout()
-        QtWidgets.QMessageBox.information(self, tr("prompt_notice"), f"已成功将“{layout.name}”恢复为官方预设！" if get_current_language() == "zh" else f"Layout [{layout.name}] successfully reset to presets!")
+        QtWidgets.QMessageBox.information(self, tr("prompt_notice"), tr("reset_preset_success", layout=layout.name))
 
     def _backup_config(self):
         path = self.config_store.create_backup()
         if path:
             QtWidgets.QMessageBox.information(self, tr("prompt_notice"), tr("prompt_backup_success", path=path))
         else:
-            QtWidgets.QMessageBox.warning(self, tr("prompt_warning"), "无法创建配置备份。" if get_current_language() == "zh" else "Failed to create configuration backup.")
+            QtWidgets.QMessageBox.warning(self, tr("prompt_warning"), tr("backup_failed"))
 
     def _on_language_changed(self, index):
         new_lang = self.language_combo.itemData(index)
@@ -1792,8 +1789,10 @@ class SettingsDialog(QtWidgets.QDialog):
                     )
                 else:
                     self.selected_info_label.setText(f"ID: {clean_lbl}")
-            else:
-                self.selected_info_label.setText(tr("no_btn_selected"))
+        if hasattr(self, "layout_selector"):
+            self._refresh_layout_selector()
+        if hasattr(self, "target_info_label"):
+            self._refresh_diag()
 
     def save_and_close(self):
         cfg = self.config_store.load_config()
