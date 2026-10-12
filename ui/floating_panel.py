@@ -954,9 +954,16 @@ class FloatingPanel(QtWidgets.QWidget):
         self.retranslate_ui()
         self.refresh_layout_combo()
         self.rebuild_buttons()
-        self.apply_config(restore_pos=False)
-        if hasattr(self, "apply_toggle_hotkey"):
-            self.apply_toggle_hotkey(self.config.get("hotkeys", {}).get("toggle_visible", "ALT+Q"))
+        hk = self.config.get("hotkeys", {}).get("toggle_visible", "ALT+Q")
+        if hasattr(self, "_toggle_hotkey_handler") and self._toggle_hotkey_handler:
+            self._toggle_hotkey_handler(hk)
+        elif hasattr(self, "apply_toggle_hotkey") and callable(self.apply_toggle_hotkey):
+            self.apply_toggle_hotkey(hk)
+
+    def set_toggle_hotkey_handler(self, handler):
+        """Set thread-safe handler for registering/updating global toggle hotkey."""
+        self._toggle_hotkey_handler = handler
+        self.apply_toggle_hotkey = handler
 
     def toggle_visibility(self):
         """Safely toggle floating panel visibility on the Qt main thread."""

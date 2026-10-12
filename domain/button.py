@@ -11,6 +11,29 @@ def format_button_display_text(icon: str = "", label: str = "") -> str:
     return label if label else (icon or "")
 
 
+COLOR_PRESET_KEYS = [
+    ("#1976D2", "color_blue"),
+    ("#E53935", "color_red"),
+    ("#37474F", "color_gray"),
+    ("#2E7D32", "color_green"),
+    ("#7B1FA2", "color_purple"),
+    ("#FB8C00", "color_orange"),
+    ("#0284C7", "color_sky"),
+    ("#4F46E5", "color_indigo"),
+]
+
+COLOR_PRESETS = [
+    ("#1976D2", "蓝色"),
+    ("#E53935", "朱红"),
+    ("#37474F", "深灰"),
+    ("#2E7D32", "绿色"),
+    ("#7B1FA2", "紫色"),
+    ("#FB8C00", "橙色"),
+    ("#0284C7", "青天蓝"),
+    ("#4F46E5", "靛蓝"),
+]
+
+
 @dataclass
 class Button:
     """Represents a button on the floating keyboard panel."""

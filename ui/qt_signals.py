@@ -14,3 +14,9 @@ class ExecutorSignals(QtCore.QObject):
 class TargetSignals(QtCore.QObject):
     """Signals emitted when target window changes."""
     target_changed = QtCore.pyqtSignal(dict)
+
+
+class HotkeySignalBridge(QtCore.QObject):
+    """Signals emitted by background Windows global hotkey thread to safely trigger Qt UI actions."""
+    toggle_requested = QtCore.pyqtSignal()
+    emergency_stop_requested = QtCore.pyqtSignal()

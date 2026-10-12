@@ -22,6 +22,7 @@ from application.action_executor import ActionExecutor
 from application.layout_manager import LayoutManager
 from storage.config_store import ConfigStore
 from storage.pack_store import PackStore
+from application.context import AppContext
 from ui.floating_panel import FloatingPanel
 from ui.tray_icon import SystemTrayIcon
 
@@ -121,83 +122,37 @@ def main():
     else:
         base_dir = os.path.dirname(os.path.abspath(__file__))
 
-    # 3. Platform & Core Services
-    injector = WindowsInputInjector()
-    window_mgr = WindowsWindowManager()
-    clipboard_mgr = WindowsClipboardManager(injector=injector)
-    target_mgr = TargetManager(window_manager=window_mgr)
-    hotkey_mgr = WindowsGlobalHotkeyManager()
-    executor = ActionExecutor(
-        injector=injector,
-        clipboard_mgr=clipboard_mgr,
-        target_mgr=target_mgr,
-    )
-    config_store = ConfigStore()
-    cfg = config_store.load_config()
+    # 3. Application Context & Core Services
+    ctx = AppContext.create_default(base_dir=base_dir)
+    cfg = ctx.initialize()
 
-    # 4. Layout Manager Initialization
-    layout_mgr = LayoutManager()
-
-    # First load built-in packs
-    load_default_packs(layout_mgr, base_dir)
-
-    # Then overlay user config if present
-    populate_from_config(layout_mgr, cfg)
-
-    # Initialize UI language from config
-    from domain.i18n import set_current_language
-    app_lang = cfg.get("settings", {}).get("language", "zh")
-    set_current_language(app_lang)
-
-    # If active layout not set or not found, default to 'word'
-    if not layout_mgr.active_layout_id or layout_mgr.active_layout_id not in layout_mgr.layouts:
-        if "word" in layout_mgr.layouts:
-            layout_mgr.set_active_layout("word")
-        elif layout_mgr.layouts:
-            layout_mgr.set_active_layout(next(iter(layout_mgr.layouts.keys())))
-
-    # 5. Floating Panel UI
+    # 4. Floating Panel UI
     panel = FloatingPanel(
-        layout_mgr=layout_mgr,
-        executor=executor,
-        target_mgr=target_mgr,
-        config_store=config_store,
-        hotkey_mgr=hotkey_mgr,
+        layout_mgr=ctx.layout_mgr,
+        executor=ctx.executor,
+        target_mgr=ctx.target_mgr,
+        config_store=ctx.config_store,
+        hotkey_mgr=ctx.hotkey_mgr,
     )
-    window_mgr.set_self_hwnd(int(panel.winId()))
+    ctx.bind_panel(panel)
     panel.show()
 
-    # 6. Global Hotkeys (Qt Queued Signal Bridge for Thread-Safe Execution)
-    class HotkeyBridge(QtCore.QObject):
-        toggle_requested = QtCore.pyqtSignal()
-
-    hotkey_bridge = HotkeyBridge()
-    hotkey_bridge.toggle_requested.connect(panel.toggle_visibility, QtCore.Qt.QueuedConnection)
-
-    def register_toggle_hotkey(hotkey_str: str):
-        if not hotkey_mgr:
-            return
-        hotkey_mgr.unregister_named_hotkey("toggle_visible")
-        if hotkey_str:
-            hotkey_mgr.register_named_hotkey("toggle_visible", hotkey_str, hotkey_bridge.toggle_requested.emit)
-
-    panel.apply_toggle_hotkey = register_toggle_hotkey
+    # 5. Global Hotkeys
     hk_toggle = cfg.get("hotkeys", {}).get("toggle_visible", "ALT+Q")
-    register_toggle_hotkey(hk_toggle)
+    ctx.register_toggle_hotkey(hk_toggle)
 
     hk_stop = cfg.get("hotkeys", {}).get("emergency_stop", "ESC")
     # If emergency_stop has modifiers (e.g. CTRL+ALT+S), register it globally.
     # Bare keys like ESC are handled dynamically by FloatingPanel only while macros run.
     if hk_stop and ("+" in hk_stop):
-        hotkey_mgr.register_named_hotkey("emergency_stop_permanent", hk_stop, executor.cancel_current)
+        ctx.hotkey_mgr.register_named_hotkey("emergency_stop_permanent", hk_stop, ctx.executor.cancel_current)
 
-    # 7. System Tray Icon
+    # 6. System Tray Icon
     def open_settings():
         panel.open_settings()
 
     def quit_app():
-        executor.cancel_current()
-        hotkey_mgr.unregister_all()
+        ctx.cleanup()
         panel._allow_close = True
         panel.save_window_config()
         panel.close()
@@ -205,8 +160,8 @@ def main():
         app.quit()
 
     tray = SystemTrayIcon(
-        layout_mgr=layout_mgr,
-        target_mgr=target_mgr,
+        layout_mgr=ctx.layout_mgr,
+        target_mgr=ctx.target_mgr,
         on_toggle_visible=panel.toggle_visibility,
         on_open_settings=open_settings,
         on_quit=quit_app,
@@ -216,8 +171,7 @@ def main():
     try:
         sys.exit(app.exec_())
     finally:
-        executor.cancel_current()
-        hotkey_mgr.unregister_all()
+        ctx.cleanup()
         if mutex:
             ctypes.windll.kernel32.CloseHandle(mutex)
 
