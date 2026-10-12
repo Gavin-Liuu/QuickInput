@@ -43,7 +43,7 @@ def load_default_packs(layout_mgr: LayoutManager, base_dir: str):
     if not os.path.exists(packs_dir):
         return
 
-    for pack_name in ["chess", "annotation", "customer_service", "programmer"]:
+    for pack_name in ["word", "annotation", "customer_service", "programmer"]:
         p_dir = os.path.join(packs_dir, pack_name)
         if os.path.isdir(p_dir):
             ok, msg, data = PackStore.import_pack(p_dir)
@@ -144,10 +144,17 @@ def main():
     # Then overlay user config if present
     populate_from_config(layout_mgr, cfg)
 
-    # If active layout not set or not found, default to 'chess'
+    # Initialize UI language from config
+    from domain.i18n import set_current_language
+    app_lang = cfg.get("settings", {}).get("language", "zh")
+    set_current_language(app_lang)
+
+    # If active layout not set or not found, default to 'word'
     if not layout_mgr.active_layout_id or layout_mgr.active_layout_id not in layout_mgr.layouts:
-        if "chess" in layout_mgr.layouts:
-            layout_mgr.set_active_layout("chess")
+        if "word" in layout_mgr.layouts:
+            layout_mgr.set_active_layout("word")
+        elif layout_mgr.layouts:
+            layout_mgr.set_active_layout(next(iter(layout_mgr.layouts.keys())))
 
     # 5. Floating Panel UI
     panel = FloatingPanel(

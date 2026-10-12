@@ -10,7 +10,7 @@ a = Analysis(
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=[],
+    excludes=['PyQt5.QtQuick', 'PyQt5.QtQml', 'PyQt5.QtPdf', 'PyQt5.QtPdfWidgets', 'PyQt5.QtNetwork', 'PyQt5.QtSql', 'PyQt5.QtMultimedia', 'PyQt5.QtMultimediaWidgets', 'PyQt5.QtXml', 'PyQt5.QtXmlPatterns', 'PyQt5.QtTest', 'PyQt5.QtDesigner', 'PyQt5.QtOpenGL', 'PyQt5.QtPrintSupport', 'PyQt5.Qt3DCore', 'PyQt5.Qt3DRender', 'PyQt5.Qt3DInput', 'PyQt5.Qt3DLogic', 'PyQt5.Qt3DAnimation', 'PyQt5.Qt3DExtras', 'PyQt5.QtSensors', 'PyQt5.QtSerialPort', 'PyQt5.QtWebSockets', 'PyQt5.QtBluetooth', 'PyQt5.QtPositioning', 'PyQt5.QtLocation', 'PyQt5.QtNfc', 'PyQt5.QtRemoteObjects', 'PyQt5.QtPurchasing', 'tkinter', 'unittest', 'pydoc', 'xmlrpc', 'sqlite3', 'http.server', 'email'],
     noarchive=False,
     optimize=0,
 )

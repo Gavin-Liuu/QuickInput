@@ -54,7 +54,7 @@ class ConfigStore:
                 "button_size": "compact",
                 "collapsed": False,
             },
-            "active_layout_id": "chess",
+            "active_layout_id": "word",
             "hotkeys": {
                 "toggle_visible": "ALT+Q",
                 "emergency_stop": "ESC",
@@ -63,6 +63,7 @@ class ConfigStore:
                 "auto_profile_switch": True,
                 "target_mode": "auto",
                 "record_delays": True,
+                "language": "zh",
             },
             "layouts": {},
             "buttons": {},

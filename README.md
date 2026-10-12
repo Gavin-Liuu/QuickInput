@@ -5,12 +5,12 @@
 [![Python Version](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/)
 [![GUI](https://img.shields.io/badge/GUI-PyQt5-green.svg)](https://riverbankcomputing.com/software/pyqt/)
 [![Windows SendInput](https://img.shields.io/badge/platform-Windows_SendInput-orange.svg)]()
-[![Tests](https://img.shields.io/badge/tests-91%20passed-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/tests-92%20passed-brightgreen.svg)]()
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 **通用快捷输入工作台 (QuickInput)** 是一款专为 Windows 平台打造的高效、轻量级免夺焦悬浮动作面板。用户无需编辑代码或 JSON，即可在任何第三方目标软件（如 Labelme 标注工具、记事本、Word、Excel、浏览器、VS Code、各类工作/聊天软件等）中，通过悬浮按钮快速注入文本、敲击单键、执行组合键、粘贴富文本模板、运行复杂宏动作，并在不同场景间一键秒级切换键盘布局。
 
-软件提供直观的布局设计中心与安全可视化的宏录制器，开箱内置多套常用场景包（图片标注、客服话术、程序员指令、记谱符号等），支持高度自定义与随时扩展。
+软件提供直观的布局设计中心与安全可视化的宏录制器，开箱内置多套常用场景包（图片标注、客服话术、程序员指令、微软 Word 常用排版等），支持中英双语界面与高度自定义扩展。
 
 ---
 
@@ -64,13 +64,12 @@
 - 插入 `// TODO({{date}}): ` 注释
 - 插入 `console.log("[DEBUG]", );` 并自动将光标回退 2 格定位在括号内。
 
-### 4. 符号录入与棋牌记谱 (中国象棋等)
-| 阵营 | 按钮显示 | 点击输出字符 | 编码规则 |
-| :--- | :--- | :--- | :--- |
-| **红方 (7)** | 红兵 (`rb`), 红炮 (`rp`), 红马 (`rm`), 红车 (`rc`), 红士 (`rs`), 红相 (`rx`), 红帅 (`rshuai`) | `rb`, `rp`, `rm`, `rc`, `rs`, `rx`, `rshuai` | r + 拼音首字母 |
-| **黑方 (7)** | 黑卒 (`bz`), 黑炮 (`bp`), 黑马 (`bm`), 黑车 (`bc`), 黑士 (`bs`), 黑象 (`bx`), 黑将 (`bj`) | `bz`, `bp`, `bm`, `bc`, `bs`, `bx`, `bj` | b + 拼音首字母 |
-
-*支持在布局属性中开启“动作结束后发送 Enter”，便于连续记谱录入。*
+### 4. 微软 Word 常用排版与工具
+- **插入公式**：`Alt+=`，一键唤出 Word 官方公式编辑工具。
+- **插入日期与时间**：`Alt+Shift+D` + 空格 + `Alt+Shift+T`，快速插入当前系统日期与时间。
+- **设置行距**：功能区菜单快捷导航 `Alt` -> `H` -> `P` -> `G` 打开段落设置，接着 `Alt+N` 定位行距类型，`Alt+A` 定位行距值。
+- **仿宋_GB2312 字体**：通过 `Ctrl+D` 打开字体对话框，自动填入 `仿宋_GB2312` 并确认，快速切换公文标准字体。
+- **格式刷与排版**：支持格式复制 (`Ctrl+Shift+C`) / 格式粘贴 (`Ctrl+Shift+V`)、快速保存 (`Ctrl+S`)、居中对齐 (`Ctrl+E`)、两端对齐 (`Ctrl+J`)、一级标题 (`Ctrl+Alt+1`)、插入分页符 (`Ctrl+Enter`)。
 
 ---
 
@@ -133,7 +132,7 @@ FloatPoint/
 │   ├── CROSS_PLATFORM_SPEC.md# 后续 macOS/Linux 适配指南
 │   ├── LIMITATIONS.md       # 已知边界与限制
 │   └── TEST_REPORT.md       # 自动化与功能测试报告
-└── tests/                   # 91 项自动化单元测试与回归测试
+└── tests/                   # 92 项自动化单元测试与回归测试
 ```
 
 ---

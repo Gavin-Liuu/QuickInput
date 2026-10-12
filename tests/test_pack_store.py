@@ -63,11 +63,11 @@ def test_export_and_import_pack():
 
 
 def test_builtin_packs_valid():
-    """Verify that all 4 built-in packs (chess, annotation, customer_service, programmer) are valid."""
+    """Verify that all 4 built-in packs (word, annotation, customer_service, programmer) are valid."""
     base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
     packs_dir = os.path.join(base_dir, "packs")
 
-    for p in ["chess", "annotation", "customer_service", "programmer"]:
+    for p in ["word", "annotation", "customer_service", "programmer"]:
         p_path = os.path.join(packs_dir, p)
         assert os.path.isdir(p_path), f"Builtin pack {p} missing"
         ok, msg, data = PackStore.import_pack(p_path)

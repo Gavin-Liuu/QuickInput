@@ -1,0 +1,52 @@
+[
+  {
+    "id": "word",
+    "name": "Word 常用排版",
+    "orientation": "horizontal",
+    "rows": 2,
+    "columns": 4,
+    "description": "Microsoft Word 常用高效办公排版快捷动作 (公式、时间、行距、仿宋GB2312、格式刷等)",
+    "buttons": [
+      { "button_id": "btn_word_formula", "row": 0, "column": 0 },
+      { "button_id": "btn_word_date_time", "row": 0, "column": 1 },
+      { "button_id": "btn_word_line_spacing", "row": 0, "column": 2 },
+      { "button_id": "btn_word_fangsong", "row": 0, "column": 3 },
+      { "button_id": "btn_word_format_copy", "row": 1, "column": 0 },
+      { "button_id": "btn_word_format_paste", "row": 1, "column": 1 },
+      { "button_id": "btn_word_center", "row": 1, "column": 2 },
+      { "button_id": "btn_word_save", "row": 1, "column": 3 }
+    ],
+    "settings": {
+      "opacity": 0.95,
+      "show_labels": true,
+      "button_size": "compact",
+      "always_on_top": true,
+      "auto_enter_default": false
+    }
+  },
+  {
+    "id": "word_tools",
+    "name": "Word 扩展工具",
+    "orientation": "horizontal",
+    "rows": 2,
+    "columns": 4,
+    "description": "Microsoft Word 扩展编辑与版面管理快捷动作",
+    "buttons": [
+      { "button_id": "btn_word_formula", "row": 0, "column": 0 },
+      { "button_id": "btn_word_heading_1", "row": 0, "column": 1 },
+      { "button_id": "btn_word_justify", "row": 0, "column": 2 },
+      { "button_id": "btn_word_line_spacing", "row": 0, "column": 3 },
+      { "button_id": "btn_word_page_break", "row": 1, "column": 0 },
+      { "button_id": "btn_word_find_replace", "row": 1, "column": 1 },
+      { "button_id": "btn_word_fangsong", "row": 1, "column": 2 },
+      { "button_id": "btn_word_save", "row": 1, "column": 3 }
+    ],
+    "settings": {
+      "opacity": 0.95,
+      "show_labels": true,
+      "button_size": "compact",
+      "always_on_top": true,
+      "auto_enter_default": false
+    }
+  }
+]

@@ -9,6 +9,7 @@ from domain.action import Action, ActionStep
 from domain.button import Button
 from domain.layout import Layout
 from domain.profile import Profile
+from domain.i18n import tr, get_current_language, set_current_language
 from application.layout_manager import LayoutManager
 from application.action_executor import ActionExecutor
 from application.target_manager import TargetManager
@@ -27,6 +28,203 @@ COLOR_PRESETS = [
     ("#0284C7", "青天蓝"),
     ("#4F46E5", "靛蓝"),
 ]
+
+
+class KeyCaptureDialog(QtWidgets.QDialog):
+    """Dialog for capturing individual keypresses or hotkey combinations.
+
+    CRITICAL: Pressing Enter/Return or Space does NOT close/accept the dialog!
+    It is recorded as the key itself into the key capture display.
+    Only explicitly clicking the OK button confirms and saves the key.
+    """
+
+    def __init__(self, initial_key: str = "", parent=None):
+        super().__init__(parent)
+        self.setWindowTitle(tr("key_capture_title"))
+        self.setFixedSize(440, 230)
+        self.setWindowFlags(self.windowFlags() & ~QtCore.Qt.WindowContextHelpButtonHint)
+        self.setStyleSheet("""
+            QDialog {
+                background-color: #1A1A20;
+                color: #F0F0F5;
+                font-family: "Segoe UI Variable Text", "Segoe UI", "PingFang SC", "Microsoft YaHei UI", sans-serif;
+            }
+            QLabel {
+                color: #D8D8E5;
+                font-size: 12px;
+            }
+            QLineEdit {
+                background: #141418;
+                color: #00E676;
+                font-family: "Consolas", "Segoe UI", monospace;
+                font-size: 16px;
+                font-weight: 700;
+                border: 2px solid #0A84FF;
+                border-radius: 6px;
+                padding: 6px 10px;
+            }
+            QPushButton {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #2C2C36, stop:1 #22222A);
+                color: #F0F0F5;
+                border: 1px solid #3A3A48;
+                border-radius: 5px;
+                padding: 6px 16px;
+                font-size: 12px;
+                font-weight: 600;
+            }
+            QPushButton:hover {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #383846, stop:1 #2A2A34);
+                border-color: #55556C;
+                color: #FFFFFF;
+            }
+            QPushButton:pressed {
+                background: #181820;
+                padding-top: 7px;
+                padding-left: 17px;
+            }
+            QPushButton#OkBtn {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #0A84FF, stop:1 #0066CC);
+                border: 1px solid #0A84FF;
+                color: #FFFFFF;
+            }
+            QPushButton#OkBtn:hover {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #2492FF, stop:1 #0A7AE5);
+                border-color: #66B2FF;
+            }
+        """)
+
+        layout = QtWidgets.QVBoxLayout(self)
+        layout.setContentsMargins(18, 16, 18, 16)
+        layout.setSpacing(12)
+
+        info_label = QtWidgets.QLabel(tr("key_capture_instruction"), self)
+        info_label.setWordWrap(True)
+        layout.addWidget(info_label)
+
+        self.key_edit = QtWidgets.QLineEdit(self)
+        self.key_edit.setReadOnly(True)
+        self.key_edit.setAlignment(QtCore.Qt.AlignCenter)
+        self.key_edit.setPlaceholderText(tr("key_capture_input_placeholder"))
+        self.key_edit.setText(initial_key)
+        layout.addWidget(self.key_edit)
+
+        btn_layout = QtWidgets.QHBoxLayout()
+        btn_layout.setSpacing(10)
+
+        self.clear_btn = QtWidgets.QPushButton(tr("btn_clear"), self)
+        self.clear_btn.setAutoDefault(False)
+        self.clear_btn.setDefault(False)
+        self.clear_btn.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.clear_btn.clicked.connect(self._clear_key)
+        btn_layout.addWidget(self.clear_btn)
+
+        btn_layout.addStretch()
+
+        self.cancel_btn = QtWidgets.QPushButton(tr("btn_cancel_settings"), self)
+        self.cancel_btn.setAutoDefault(False)
+        self.cancel_btn.setDefault(False)
+        self.cancel_btn.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.cancel_btn.clicked.connect(self.reject)
+        btn_layout.addWidget(self.cancel_btn)
+
+        self.ok_btn = QtWidgets.QPushButton(tr("btn_ok"), self)
+        self.ok_btn.setObjectName("OkBtn")
+        self.ok_btn.setAutoDefault(False)
+        self.ok_btn.setDefault(False)
+        self.ok_btn.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.ok_btn.clicked.connect(self._on_ok_clicked)
+        btn_layout.addWidget(self.ok_btn)
+
+        layout.addLayout(btn_layout)
+        self.setFocusPolicy(QtCore.Qt.StrongFocus)
+        self.setFocus()
+
+    def _clear_key(self):
+        self.key_edit.clear()
+
+    def _on_ok_clicked(self):
+        if not self.key_edit.text().strip():
+            QtWidgets.QMessageBox.warning(self, "提示", "请先在上方按下需要录制的按键或组合快捷键。")
+            return
+        self.accept()
+
+    def get_captured_key(self) -> str:
+        return self.key_edit.text().strip().upper()
+
+    def keyPressEvent(self, event: QtGui.QKeyEvent):
+        key = event.key()
+
+        # Pure modifier key pressed alone: do not treat as final key
+        if key in (QtCore.Qt.Key_Control, QtCore.Qt.Key_Shift, QtCore.Qt.Key_Alt, QtCore.Qt.Key_Meta):
+            event.accept()
+            return
+
+        mods = []
+        modifiers = event.modifiers()
+        if modifiers & QtCore.Qt.ControlModifier:
+            mods.append("CTRL")
+        if modifiers & QtCore.Qt.AltModifier:
+            mods.append("ALT")
+        if modifiers & QtCore.Qt.ShiftModifier:
+            mods.append("SHIFT")
+        if modifiers & QtCore.Qt.MetaModifier:
+            mods.append("WIN")
+
+        special_map = {
+            QtCore.Qt.Key_Return: "ENTER",
+            QtCore.Qt.Key_Enter: "ENTER",
+            QtCore.Qt.Key_Tab: "TAB",
+            QtCore.Qt.Key_Backtab: "TAB",
+            QtCore.Qt.Key_Escape: "ESC",
+            QtCore.Qt.Key_Space: "SPACE",
+            QtCore.Qt.Key_Backspace: "BACKSPACE",
+            QtCore.Qt.Key_Delete: "DELETE",
+            QtCore.Qt.Key_Insert: "INSERT",
+            QtCore.Qt.Key_Home: "HOME",
+            QtCore.Qt.Key_End: "END",
+            QtCore.Qt.Key_PageUp: "PAGEUP",
+            QtCore.Qt.Key_PageDown: "PAGEDOWN",
+            QtCore.Qt.Key_Left: "LEFT",
+            QtCore.Qt.Key_Right: "RIGHT",
+            QtCore.Qt.Key_Up: "UP",
+            QtCore.Qt.Key_Down: "DOWN",
+            QtCore.Qt.Key_F1: "F1", QtCore.Qt.Key_F2: "F2", QtCore.Qt.Key_F3: "F3", QtCore.Qt.Key_F4: "F4",
+            QtCore.Qt.Key_F5: "F5", QtCore.Qt.Key_F6: "F6", QtCore.Qt.Key_F7: "F7", QtCore.Qt.Key_F8: "F8",
+            QtCore.Qt.Key_F9: "F9", QtCore.Qt.Key_F10: "F10", QtCore.Qt.Key_F11: "F11", QtCore.Qt.Key_F12: "F12",
+            QtCore.Qt.Key_Plus: "=",
+            QtCore.Qt.Key_Equal: "=",
+            QtCore.Qt.Key_Minus: "-",
+            QtCore.Qt.Key_Asterisk: "*",
+            QtCore.Qt.Key_Slash: "/",
+        }
+
+        key_name = ""
+        if key in special_map:
+            key_name = special_map[key]
+        elif 0x20 <= key <= 0x7E:
+            key_name = chr(key).upper()
+        else:
+            text = event.text().strip().upper()
+            if text:
+                key_name = text
+            else:
+                key_name = QtGui.QKeySequence(key).toString().upper()
+
+        if not key_name:
+            event.accept()
+            return
+
+        if key_name in mods:
+            event.accept()
+            return
+
+        if mods:
+            combo = "+".join(mods + [key_name])
+        else:
+            combo = key_name
+
+        self.key_edit.setText(combo)
+        event.accept()
 
 
 class NewLayoutDialog(QtWidgets.QDialog):
@@ -213,126 +411,135 @@ class SettingsDialog(QtWidgets.QDialog):
 
         self.setStyleSheet("""
             QDialog, QScrollArea, QScrollArea > QWidget > QWidget {
-                background-color: #1E1E20;
-                color: #F5F5F7;
+                background-color: #1A1A20;
+                color: #F0F0F5;
                 font-family: "Segoe UI Variable Text", "Segoe UI", "PingFang SC", "Microsoft YaHei UI", sans-serif;
             }
             QWidget {
                 font-family: "Segoe UI Variable Text", "Segoe UI", "PingFang SC", "Microsoft YaHei UI", sans-serif;
-                color: #F5F5F7;
+                color: #F0F0F5;
             }
             QGroupBox {
-                background-color: #252528;
-                border: 1px solid rgba(255, 255, 255, 0.08);
-                border-radius: 10px;
+                background-color: #202028;
+                border: 1px solid #32323E;
+                border-radius: 8px;
                 margin-top: 14px;
                 padding-top: 16px;
                 padding-bottom: 12px;
                 padding-left: 12px;
                 padding-right: 12px;
-                color: #F5F5F7;
+                color: #F0F0F5;
+                font-weight: 600;
             }
             QGroupBox::title {
                 subcontrol-origin: margin;
                 subcontrol-position: top left;
-                left: 12px;
-                top: 2px;
-                padding: 1px 6px;
-                background-color: #1E1E20;
+                left: 10px;
+                top: 1px;
+                padding: 1px 8px;
+                background-color: #1A1A20;
+                border: 1px solid #32323E;
                 border-radius: 4px;
-                color: #F5F5F7;
+                color: #D8D8E5;
                 font-weight: 600;
-                font-size: 12px;
+                font-size: 11px;
             }
             QLabel {
-                color: #F5F5F7;
-                font-size: 12px;
+                color: #D8D8E5;
+                font-size: 11px;
             }
             QLineEdit, QComboBox, QSpinBox, QTextEdit {
-                background-color: #1C1C1E;
-                color: #FFFFFF;
-                border: 1px solid rgba(255, 255, 255, 0.12);
-                border-radius: 6px;
-                padding: 5px 8px;
-                font-size: 12px;
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #141418, stop:1 #1C1C22);
+                color: #F0F0F5;
+                border: 1px solid #383846;
+                border-radius: 5px;
+                padding: 4px 8px;
+                font-size: 11px;
             }
             QLineEdit:hover, QComboBox:hover, QSpinBox:hover, QTextEdit:hover {
-                border-color: rgba(255, 255, 255, 0.22);
+                border-color: #55556C;
             }
             QLineEdit:focus, QComboBox:focus, QSpinBox:focus, QTextEdit:focus {
                 border: 1.5px solid #0A84FF;
-                background-color: #202023;
+                background-color: #1E1E28;
             }
             QComboBox::drop-down {
                 subcontrol-origin: padding;
                 subcontrol-position: top right;
                 width: 18px;
-                border-left-width: 0px;
+                border: none;
+                background: transparent;
             }
             QComboBox QAbstractItemView {
-                background-color: #252528;
-                color: #F5F5F7;
-                border: 1px solid rgba(255, 255, 255, 0.14);
-                border-radius: 8px;
+                background-color: #202028;
+                color: #F0F0F5;
+                border: 1px solid #3E3E50;
+                border-radius: 6px;
                 padding: 4px;
                 selection-background-color: #0A84FF;
                 selection-color: #FFFFFF;
                 outline: none;
+                font-size: 11px;
             }
             QTableWidget {
-                background-color: #18181A;
-                color: #F5F5F7;
-                border: 1px solid rgba(255, 255, 255, 0.08);
-                border-radius: 8px;
-                gridline-color: rgba(255, 255, 255, 0.04);
+                background-color: #141418;
+                color: #F0F0F5;
+                border: 1px solid #32323E;
+                border-radius: 6px;
+                gridline-color: #22222A;
                 outline: none;
+                font-size: 11px;
             }
             QTableWidget::item {
-                padding: 4px 6px;
-                border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+                padding: 3px 6px;
+                border-bottom: 1px solid #1C1C24;
             }
             QTableWidget::item:selected {
                 background-color: #0A84FF;
                 color: #FFFFFF;
             }
             QHeaderView::section {
-                background-color: #222225;
-                color: #8E8E93;
+                background-color: #1E1E26;
+                color: #9A9AB0;
                 border: none;
-                border-bottom: 1px solid rgba(255, 255, 255, 0.10);
-                padding: 6px;
+                border-bottom: 1px solid #32323E;
+                padding: 5px;
                 font-size: 11px;
                 font-weight: 600;
             }
             QTableCornerButton::section {
-                background-color: #222225;
+                background-color: #1E1E26;
                 border: none;
-                border-bottom: 1px solid rgba(255, 255, 255, 0.10);
+                border-bottom: 1px solid #32323E;
             }
             QPushButton {
-                background-color: rgba(255, 255, 255, 0.08);
-                color: #F5F5F7;
-                border: 1px solid rgba(255, 255, 255, 0.10);
-                border-radius: 6px;
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #2C2C36, stop:1 #22222A);
+                color: #F0F0F5;
+                border: 1px solid #3A3A48;
+                border-radius: 5px;
                 padding: 5px 12px;
-                font-size: 12px;
+                font-size: 11px;
                 font-weight: 500;
             }
             QPushButton:hover {
-                background-color: rgba(255, 255, 255, 0.14);
-                border-color: rgba(255, 255, 255, 0.20);
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #383846, stop:1 #2A2A34);
+                border-color: #55556C;
+                color: #FFFFFF;
             }
             QPushButton:pressed {
-                background-color: rgba(255, 255, 255, 0.05);
+                background: #181820;
+                border-color: #282834;
+                padding-top: 6px;
+                padding-left: 13px;
             }
             QPushButton:disabled {
-                background-color: rgba(255, 255, 255, 0.03);
-                color: #636366;
-                border-color: rgba(255, 255, 255, 0.05);
+                background: #181820;
+                color: #585868;
+                border-color: #282832;
             }
             QCheckBox {
-                color: #F5F5F7;
-                font-size: 12px;
+                color: #F0F0F5;
+                font-size: 11px;
                 spacing: 6px;
             }
             QScrollBar:vertical {
@@ -341,12 +548,12 @@ class SettingsDialog(QtWidgets.QDialog):
                 margin: 0px;
             }
             QScrollBar::handle:vertical {
-                background: rgba(255, 255, 255, 0.18);
+                background: #383846;
                 border-radius: 3px;
                 min-height: 20px;
             }
             QScrollBar::handle:vertical:hover {
-                background: rgba(255, 255, 255, 0.32);
+                background: #55556C;
             }
             QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical,
             QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
@@ -359,12 +566,12 @@ class SettingsDialog(QtWidgets.QDialog):
                 margin: 0px;
             }
             QScrollBar::handle:horizontal {
-                background: rgba(255, 255, 255, 0.18);
+                background: #383846;
                 border-radius: 3px;
                 min-width: 20px;
             }
             QScrollBar::handle:horizontal:hover {
-                background: rgba(255, 255, 255, 0.32);
+                background: #55556C;
             }
             QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal,
             QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {
@@ -407,30 +614,30 @@ class SettingsDialog(QtWidgets.QDialog):
         self.tabs = QtWidgets.QTabWidget(self)
         self.tabs.setStyleSheet("""
             QTabWidget::pane {
-                border: 1px solid rgba(255, 255, 255, 0.08);
-                border-radius: 10px;
-                background-color: #202023;
+                border: 1px solid #32323E;
+                background-color: #1A1A20;
+                border-radius: 6px;
             }
             QTabBar::tab {
-                background-color: rgba(255, 255, 255, 0.05);
-                color: #8E8E93;
-                padding: 7px 20px;
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #25252E, stop:1 #1C1C22);
+                color: #A0A0B2;
+                border: 1px solid #32323E;
+                border-bottom: none;
                 border-top-left-radius: 6px;
                 border-top-right-radius: 6px;
-                margin-right: 4px;
-                font-size: 12px;
-                font-weight: 500;
-            }
-            QTabBar::tab:selected {
-                background-color: #202023;
-                color: #FFFFFF;
-                border: 1px solid rgba(255, 255, 255, 0.08);
-                border-bottom: none;
+                padding: 6px 18px;
+                margin-right: 3px;
+                font-size: 11px;
                 font-weight: 600;
             }
+            QTabBar::tab:selected {
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #2C2C38, stop:1 #202028);
+                color: #FFFFFF;
+                border-bottom: 2px solid #0A84FF;
+            }
             QTabBar::tab:hover:!selected {
-                background-color: rgba(255, 255, 255, 0.09);
-                color: #F5F5F7;
+                background: #282832;
+                color: #D8D8E5;
             }
         """)
         root.addWidget(self.tabs, 1)
@@ -444,44 +651,54 @@ class SettingsDialog(QtWidgets.QDialog):
         # Bottom actions
         bottom = QtWidgets.QHBoxLayout()
         bottom.addStretch()
-        save = QtWidgets.QPushButton("保存并应用", self)
-        save.setStyleSheet("""
+        self.save_btn = QtWidgets.QPushButton(tr("btn_save_settings"), self)
+        self.save_btn.setStyleSheet("""
             QPushButton {
-                background-color: #0A84FF;
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #0A84FF, stop:1 #0066CC);
                 color: #FFFFFF;
                 font-weight: 600;
-                padding: 8px 24px;
-                border-radius: 6px;
-                border: none;
-                font-size: 13px;
+                padding: 6px 22px;
+                border-radius: 5px;
+                border: 1px solid #0A84FF;
+                font-size: 12px;
             }
             QPushButton:hover {
-                background-color: #0071E3;
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #2492FF, stop:1 #0A7AE5);
+                border-color: #66B2FF;
             }
             QPushButton:pressed {
-                background-color: #005BB5;
+                background: #005BB5;
+                padding-top: 7px;
+                padding-left: 23px;
             }
         """)
-        save.clicked.connect(self.save_and_close)
-        bottom.addWidget(save)
+        self.save_btn.clicked.connect(self.save_and_close)
+        bottom.addWidget(self.save_btn)
 
-        cancel = QtWidgets.QPushButton("关闭", self)
-        cancel.setStyleSheet("""
+        self.cancel_btn = QtWidgets.QPushButton(tr("btn_cancel_settings"), self)
+        self.cancel_btn.setStyleSheet("""
             QPushButton {
-                background-color: rgba(255, 255, 255, 0.08);
-                color: #F5F5F7;
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #2C2C36, stop:1 #22222A);
+                color: #F0F0F5;
                 font-weight: 500;
-                padding: 8px 20px;
-                border-radius: 6px;
-                border: 1px solid rgba(255, 255, 255, 0.10);
-                font-size: 13px;
+                padding: 6px 18px;
+                border-radius: 5px;
+                border: 1px solid #3A3A48;
+                font-size: 12px;
             }
             QPushButton:hover {
-                background-color: rgba(255, 255, 255, 0.14);
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #383846, stop:1 #2A2A34);
+                border-color: #55556C;
+                color: #FFFFFF;
+            }
+            QPushButton:pressed {
+                background: #181820;
+                padding-top: 7px;
+                padding-left: 19px;
             }
         """)
-        cancel.clicked.connect(self.reject)
-        bottom.addWidget(cancel)
+        self.cancel_btn.clicked.connect(self.reject)
+        bottom.addWidget(self.cancel_btn)
         root.addLayout(bottom)
 
     def _build_layout_and_buttons_tab(self):
@@ -689,76 +906,68 @@ class SettingsDialog(QtWidgets.QDialog):
         right_layout.addWidget(btn_prop_box)
 
         # Macro steps box
-        steps_box = QtWidgets.QGroupBox("宏步骤", right_widget)
-        steps_layout = QtWidgets.QVBoxLayout(steps_box)
+        self.steps_box = QtWidgets.QGroupBox(tr("action_steps_title"), right_widget)
+        steps_layout = QtWidgets.QVBoxLayout(self.steps_box)
         steps_layout.setSpacing(6)
 
-        self.steps_table = QtWidgets.QTableWidget(steps_box)
-        self.steps_table.setMinimumHeight(110)
+        self.steps_table = QtWidgets.QTableWidget(self.steps_box)
+        self.steps_table.setMinimumHeight(190)
         self.steps_table.setColumnCount(3)
-        self.steps_table.setHorizontalHeaderLabels(["步骤", "参数", "说明"])
+        self.steps_table.setHorizontalHeaderLabels([tr("step_col_type"), tr("step_col_param"), tr("step_col_desc")])
         self.steps_table.horizontalHeader().setSectionResizeMode(0, QtWidgets.QHeaderView.ResizeToContents)
         self.steps_table.horizontalHeader().setSectionResizeMode(1, QtWidgets.QHeaderView.Stretch)
         self.steps_table.horizontalHeader().setSectionResizeMode(2, QtWidgets.QHeaderView.ResizeToContents)
         self.steps_table.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
         self.steps_table.doubleClicked.connect(self._edit_step)
-        steps_layout.addWidget(self.steps_table, 1)
+        steps_layout.addWidget(self.steps_table, 2)
 
-        # Step toolbars - compact 2-row grid to prevent horizontal overflow
+        # Step toolbars - clean 2x4 grid
         step_grid = QtWidgets.QGridLayout()
-        step_grid.setSpacing(4)
+        step_grid.setSpacing(5)
 
-        self.record_macro_btn = QtWidgets.QPushButton("⏺ 录制宏…", steps_box)
+        self.record_macro_btn = QtWidgets.QPushButton(tr("btn_record_macro"), self.steps_box)
         self.record_macro_btn.setStyleSheet(
-            "QPushButton { background-color: #FF453A; color: #FFFFFF; font-weight: 600; border-radius: 6px; border: none; padding: 5px 12px; } QPushButton:hover { background-color: #D70015; }"
+            "QPushButton { background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #FF453A, stop:1 #D70015); color: #FFFFFF; font-weight: 600; border-radius: 5px; border: 1px solid #B00010; padding: 5px 10px; } QPushButton:hover { background: #FF5B52; }"
         )
         self.record_macro_btn.setToolTip("实时录制键盘与鼠标操作")
         self.record_macro_btn.clicked.connect(self._record_macro)
         step_grid.addWidget(self.record_macro_btn, 0, 0)
 
-        for col_idx, (label, kind, tip) in enumerate([
-            ("＋ 文本", "text", "添加文本输入步骤"),
-            ("＋ 粘贴", "paste", "添加剪贴板粘贴步骤"),
-            ("＋ 按键", "key", "添加单个按键动作"),
-        ], start=1):
-            b = QtWidgets.QPushButton(label, steps_box)
-            b.setToolTip(tip)
-            b.clicked.connect(lambda ch=False, k=kind: self._add_step(k))
-            step_grid.addWidget(b, 0, col_idx)
+        self.add_text_btn = QtWidgets.QPushButton(tr("btn_add_text"), self.steps_box)
+        self.add_text_btn.setToolTip(tr("btn_add_text_tip"))
+        self.add_text_btn.clicked.connect(lambda: self._add_step("paste"))
+        step_grid.addWidget(self.add_text_btn, 0, 1)
 
-        for col_idx, (label, kind, tip) in enumerate([
-            ("＋ 组合键", "hotkey", "添加快捷键组合步骤"),
-            ("＋ 等待", "delay", "添加延时等待毫秒步骤"),
-        ], start=0):
-            b = QtWidgets.QPushButton(label, steps_box)
-            b.setToolTip(tip)
-            b.clicked.connect(lambda ch=False, k=kind: self._add_step(k))
-            step_grid.addWidget(b, 1, col_idx)
+        self.add_key_btn = QtWidgets.QPushButton(tr("btn_add_key"), self.steps_box)
+        self.add_key_btn.setToolTip(tr("btn_add_key_tip"))
+        self.add_key_btn.clicked.connect(lambda: self._add_step("key_capture"))
+        step_grid.addWidget(self.add_key_btn, 0, 2)
 
-        edit_s = QtWidgets.QPushButton("编辑步骤", steps_box)
-        edit_s.clicked.connect(self._edit_step)
-        step_grid.addWidget(edit_s, 1, 2)
+        self.add_delay_btn = QtWidgets.QPushButton(tr("btn_add_delay"), self.steps_box)
+        self.add_delay_btn.setToolTip(tr("btn_add_delay_tip"))
+        self.add_delay_btn.clicked.connect(lambda: self._add_step("delay"))
+        step_grid.addWidget(self.add_delay_btn, 0, 3)
 
-        del_s = QtWidgets.QPushButton("删除步骤", steps_box)
-        del_s.clicked.connect(self._delete_step)
-        step_grid.addWidget(del_s, 1, 3)
+        self.edit_step_btn = QtWidgets.QPushButton(tr("btn_edit_step"), self.steps_box)
+        self.edit_step_btn.clicked.connect(self._edit_step)
+        step_grid.addWidget(self.edit_step_btn, 1, 0)
+
+        self.del_step_btn = QtWidgets.QPushButton(tr("btn_del_step"), self.steps_box)
+        self.del_step_btn.clicked.connect(self._delete_step)
+        step_grid.addWidget(self.del_step_btn, 1, 1)
+
+        self.move_up_btn = QtWidgets.QPushButton(tr("btn_move_up"), self.steps_box)
+        self.move_up_btn.setToolTip("将当前选中的动作步骤上移一位")
+        self.move_up_btn.clicked.connect(lambda: self._move_step(-1))
+        step_grid.addWidget(self.move_up_btn, 1, 2)
+
+        self.move_down_btn = QtWidgets.QPushButton(tr("btn_move_down"), self.steps_box)
+        self.move_down_btn.setToolTip("将当前选中的动作步骤下移一位")
+        self.move_down_btn.clicked.connect(lambda: self._move_step(1))
+        step_grid.addWidget(self.move_down_btn, 1, 3)
 
         steps_layout.addLayout(step_grid)
-
-        step_nav = QtWidgets.QHBoxLayout()
-        up_s = QtWidgets.QPushButton("▲ 上移", steps_box)
-        up_s.setToolTip("将当前选中的宏步骤上移一位")
-        up_s.clicked.connect(lambda: self._move_step(-1))
-        step_nav.addWidget(up_s)
-
-        dn_s = QtWidgets.QPushButton("▼ 下移", steps_box)
-        dn_s.setToolTip("将当前选中的宏步骤下移一位")
-        dn_s.clicked.connect(lambda: self._move_step(1))
-        step_nav.addWidget(dn_s)
-        step_nav.addStretch()
-        steps_layout.addLayout(step_nav)
-
-        right_layout.addWidget(steps_box, 1)
+        right_layout.addWidget(self.steps_box, 2)
 
         # App binding box for current layout
         binding_box = QtWidgets.QGroupBox("应用绑定 (切到指定软件时自动启用当前布局)", right_widget)
@@ -826,8 +1035,24 @@ class SettingsDialog(QtWidgets.QDialog):
         layout.setContentsMargins(14, 14, 14, 14)
         layout.setSpacing(12)
 
-        # 1. Hotkeys & Global Options
-        hotkey_box = QtWidgets.QGroupBox("全局快捷键与自动化", tab)
+        # 1. Interface Language
+        self.lang_box = QtWidgets.QGroupBox(tr("language_group_title"), tab)
+        lang_form = QtWidgets.QFormLayout(self.lang_box)
+        lang_form.setSpacing(10)
+
+        self.language_combo = QtWidgets.QComboBox(self.lang_box)
+        self.language_combo.addItem(tr("lang_zh"), "zh")
+        self.language_combo.addItem(tr("lang_en"), "en")
+        curr_lang = get_current_language()
+        idx = self.language_combo.findData(curr_lang)
+        if idx >= 0:
+            self.language_combo.setCurrentIndex(idx)
+        self.language_combo.currentIndexChanged.connect(self._on_language_changed)
+        lang_form.addRow(tr("language_label"), self.language_combo)
+        layout.addWidget(self.lang_box)
+
+        # 2. Hotkeys & Global Options
+        hotkey_box = QtWidgets.QGroupBox(tr("hotkey_group_title"), tab)
         hk_form = QtWidgets.QFormLayout(hotkey_box)
         hk_form.setSpacing(10)
 
@@ -1306,9 +1531,16 @@ class SettingsDialog(QtWidgets.QDialog):
                 if step.type == "delay"
                 else step.name
             )
-            type_item = QtWidgets.QTableWidgetItem(step.type)
+            type_display = {
+                "paste": tr("btn_add_text"),
+                "text": tr("btn_add_text"),
+                "key": "按键",
+                "hotkey": "组合键",
+                "delay": "延时等待",
+            }.get(step.type, step.type)
+            type_item = QtWidgets.QTableWidgetItem(type_display)
             val_item = QtWidgets.QTableWidgetItem(str(value))
-            desc_item = QtWidgets.QTableWidgetItem("宏步骤")
+            desc_item = QtWidgets.QTableWidgetItem(tr("action_steps_title"))
             self.steps_table.setItem(row, 0, type_item)
             self.steps_table.setItem(row, 1, val_item)
             self.steps_table.setItem(row, 2, desc_item)
@@ -1324,32 +1556,29 @@ class SettingsDialog(QtWidgets.QDialog):
             QtWidgets.QMessageBox.information(self, "提示", "请先在预览中选择一个按钮。")
             return
         step = None
-        if kind == "text":
-            val, ok = QtWidgets.QInputDialog.getText(self, "添加文本步骤", "输入要输入的文本内容:")
+        if kind == "paste":
+            val, ok = QtWidgets.QInputDialog.getMultiLineText(
+                self, tr("btn_add_text"), "输入要输入的文本内容 (将通过剪贴板极速无损粘贴):"
+            )
             if ok and val:
-                step = ActionStep(type="text", value=val)
-        elif kind == "key":
-            common_keys = [
-                "ENTER", "TAB", "ESC", "SPACE", "BACKSPACE", "DELETE",
-                "UP", "DOWN", "LEFT", "RIGHT", "PAGEUP", "PAGEDOWN", "HOME", "END",
-                "F1", "F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9", "F10", "F11", "F12"
-            ]
-            key, ok = QtWidgets.QInputDialog.getItem(self, "添加按键步骤", "选择或输入按键:", common_keys, 0, True)
-            if ok and key:
-                step = ActionStep(type="key", key=key.strip().upper())
-        elif kind == "hotkey":
-            val, ok = QtWidgets.QInputDialog.getText(self, "添加组合键步骤", "输入组合键 (例如 CTRL+S):")
-            if ok and val:
-                val = val.strip().upper()
-                step = ActionStep(type="hotkey", hotkey=val, keys=[k.strip() for k in val.split("+") if k.strip()])
+                step = ActionStep(type="paste", value=val)
+        elif kind == "key_capture":
+            dlg = KeyCaptureDialog(parent=self)
+            if dlg.exec_() == QtWidgets.QDialog.Accepted:
+                val = dlg.get_captured_key()
+                if val:
+                    if "+" in val:
+                        step = ActionStep(
+                            type="hotkey",
+                            hotkey=val,
+                            keys=[k.strip() for k in val.split("+") if k.strip()],
+                        )
+                    else:
+                        step = ActionStep(type="key", key=val)
         elif kind == "delay":
             ms, ok = QtWidgets.QInputDialog.getInt(self, "添加等待步骤", "输入等待毫秒数 (ms):", 200, 10, 30000)
             if ok:
                 step = ActionStep(type="delay", ms=ms)
-        elif kind == "paste":
-            val, ok = QtWidgets.QInputDialog.getMultiLineText(self, "添加粘贴步骤", "输入要通过剪贴板粘贴的文本:")
-            if ok and val:
-                step = ActionStep(type="paste", value=val)
 
         if step:
             action.steps.append(step)
@@ -1361,29 +1590,32 @@ class SettingsDialog(QtWidgets.QDialog):
         if not action or not (0 <= row < len(action.steps)):
             return
         step = action.steps[row]
-        if step.type == "text":
-            val, ok = QtWidgets.QInputDialog.getText(self, "编辑文本步骤", "文本内容:", text=step.value)
+        if step.type in ("key", "hotkey"):
+            curr_str = step.hotkey or (step.key if step.type == "key" else "+".join(step.keys))
+            dlg = KeyCaptureDialog(initial_key=curr_str, parent=self)
+            if dlg.exec_() == QtWidgets.QDialog.Accepted:
+                val = dlg.get_captured_key()
+                if val:
+                    if "+" in val:
+                        step.type = "hotkey"
+                        step.hotkey = val
+                        step.keys = [k.strip() for k in val.split("+") if k.strip()]
+                    else:
+                        step.type = "key"
+                        step.key = val
+                        step.hotkey = ""
+                        step.keys = []
+        elif step.type in ("paste", "text"):
+            val, ok = QtWidgets.QInputDialog.getMultiLineText(
+                self, "编辑文本步骤", "文本内容:", text=step.value
+            )
             if ok:
                 step.value = val
-        elif step.type == "key":
-            val, ok = QtWidgets.QInputDialog.getText(self, "编辑按键步骤", "按键名称:", text=step.key)
-            if ok and val:
-                step.key = val.strip().upper()
-        elif step.type == "hotkey":
-            val, ok = QtWidgets.QInputDialog.getText(
-                self, "编辑组合键步骤", "组合键 (例如 CTRL+S):", text=step.hotkey or "+".join(step.keys)
-            )
-            if ok and val:
-                step.hotkey = val.strip().upper()
-                step.keys = [k.strip() for k in step.hotkey.split("+") if k.strip()]
+                step.type = "paste"
         elif step.type == "delay":
             ms, ok = QtWidgets.QInputDialog.getInt(self, "编辑等待步骤", "毫秒数:", value=step.ms, min=10, max=30000)
             if ok:
                 step.ms = ms
-        elif step.type == "paste":
-            val, ok = QtWidgets.QInputDialog.getMultiLineText(self, "编辑粘贴步骤", "粘贴内容:", text=step.value)
-            if ok:
-                step.value = val
         self._refresh_steps(action)
 
     def _delete_step(self):
@@ -1617,7 +1849,7 @@ class SettingsDialog(QtWidgets.QDialog):
         packs_dir = os.path.join(base_dir, "packs")
         found_data = None
         found_layout = None
-        for p_name in ["chess", "annotation", "customer_service", "programmer"]:
+        for p_name in ["word", "annotation", "customer_service", "programmer"]:
             p_dir = os.path.join(packs_dir, p_name)
             if os.path.isdir(p_dir):
                 ok, _, p_data = PackStore.import_pack(p_dir)
@@ -1666,11 +1898,56 @@ class SettingsDialog(QtWidgets.QDialog):
         else:
             QtWidgets.QMessageBox.warning(self, "备份失败", "无法创建配置备份。")
 
+    
+    def _on_language_changed(self, index):
+        new_lang = self.language_combo.itemData(index)
+        if new_lang and new_lang != get_current_language():
+            set_current_language(new_lang)
+            cfg = self.config_store.load_config()
+            cfg.setdefault("settings", {})["language"] = new_lang
+            self.config_store.save_config(cfg)
+            self.retranslate_ui()
+
+    def retranslate_ui(self):
+        self.setWindowTitle(tr("settings_title"))
+        self.tabs.setTabText(0, tr("tab_layouts"))
+        self.tabs.setTabText(1, tr("tab_general"))
+        if hasattr(self, "lang_box"):
+            self.lang_box.setTitle(tr("language_group_title"))
+        if hasattr(self, "steps_box"):
+            self.steps_box.setTitle(tr("action_steps_title"))
+        if hasattr(self, "steps_table"):
+            self.steps_table.setHorizontalHeaderLabels([tr("step_col_type"), tr("step_col_param"), tr("step_col_desc")])
+        if hasattr(self, "save_btn"):
+            self.save_btn.setText(tr("btn_save_settings"))
+        if hasattr(self, "cancel_btn"):
+            self.cancel_btn.setText(tr("btn_cancel_settings"))
+        if hasattr(self, "record_macro_btn"):
+            self.record_macro_btn.setText(tr("btn_record_macro"))
+        if hasattr(self, "add_text_btn"):
+            self.add_text_btn.setText(tr("btn_add_text"))
+        if hasattr(self, "add_key_btn"):
+            self.add_key_btn.setText(tr("btn_add_key"))
+        if hasattr(self, "add_delay_btn"):
+            self.add_delay_btn.setText(tr("btn_add_delay"))
+        if hasattr(self, "edit_step_btn"):
+            self.edit_step_btn.setText(tr("btn_edit_step"))
+        if hasattr(self, "del_step_btn"):
+            self.del_step_btn.setText(tr("btn_del_step"))
+        if hasattr(self, "move_up_btn"):
+            self.move_up_btn.setText(tr("btn_move_up"))
+        if hasattr(self, "move_down_btn"):
+            self.move_down_btn.setText(tr("btn_move_down"))
+        if hasattr(self, "transpose_btn"):
+            self.transpose_btn.setText(tr("btn_transpose"))
+            self.transpose_btn.setToolTip(tr("btn_transpose_tip"))
+
     def save_and_close(self):
         cfg = self.config_store.load_config()
         cfg.setdefault("hotkeys", {})["toggle_visible"] = self.toggle_hotkey_edit.text().strip()
         cfg["hotkeys"]["emergency_stop"] = self.stop_hotkey_edit.text().strip()
         cfg.setdefault("settings", {})["auto_profile_switch"] = self.auto_profile_switch_chk.isChecked()
+        cfg.setdefault("settings", {})["language"] = get_current_language()
 
         cfg["layouts"] = {lid: layout.to_dict() for lid, layout in self.layout_mgr.layouts.items()}
         cfg["buttons"] = {bid: button.to_dict() for bid, button in self.layout_mgr.buttons.items()}

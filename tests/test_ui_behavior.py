@@ -685,8 +685,8 @@ def test_settings_dialog_layout_switch_clean_preview_and_selection(qapp):
         dlg.close()
 
 
-def test_settings_dialog_chess_layout_no_duplicate_characters(qapp):
-    """Verify that editing Chinese chess layout in SettingsDialog displays no duplicate piece characters (e.g. 车车rc)."""
+def test_settings_dialog_word_layout_clean_display(qapp):
+    """Verify that editing Word layout in SettingsDialog displays clean buttons with correct labels."""
     from ui.settings_dialog import SettingsDialog
     from main import load_default_packs
 
@@ -701,26 +701,22 @@ def test_settings_dialog_chess_layout_no_duplicate_characters(qapp):
         ex = ActionExecutor(injector=inj, clipboard_mgr=clip, target_mgr=tm)
 
         dlg = SettingsDialog(lm, ex, tm, cs)
-        # Select Chinese chess layout
-        idx = dlg.layout_selector.findData("chess")
+        # Select Word layout
+        idx = dlg.layout_selector.findData("word")
         assert idx >= 0
         dlg.layout_selector.setCurrentIndex(idx)
         qapp.processEvents()
 
-        # Find red_che button in preview widgets
-        che_btn = None
+        # Find formula button in preview widgets
+        formula_btn = None
         for (r, c), widget in dlg._preview_widgets.items():
             model = getattr(widget, "button_model", None)
-            if model and model.id == "red_che":
-                che_btn = widget
+            if model and model.id == "btn_word_formula":
+                formula_btn = widget
                 break
 
-        assert che_btn is not None
-        # Verify text is exactly '车\nrc', without two '车'
-        assert che_btn.text().count("车") == 1
-        assert "rc" in che_btn.text()
-        assert "车车" not in che_btn.text()
-        assert "车 车" not in che_btn.text()
+        assert formula_btn is not None
+        assert formula_btn.text() == "公式"
         dlg.close()
 
 

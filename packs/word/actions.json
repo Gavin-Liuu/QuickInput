@@ -1,0 +1,140 @@
+[
+  {
+    "id": "word_formula",
+    "label": "插入公式",
+    "description": "插入公式 (Alt+=)",
+    "steps": [
+      { "type": "hotkey", "hotkey": "ALT+=", "keys": ["ALT", "="] }
+    ],
+    "auto_enter": false,
+    "on_error": "stop"
+  },
+  {
+    "id": "word_date_time",
+    "label": "插入日期与时间",
+    "description": "插入日期与时间 (Alt+Shift+D + Alt+Shift+T)",
+    "steps": [
+      { "type": "hotkey", "hotkey": "ALT+SHIFT+D", "keys": ["ALT", "SHIFT", "D"] },
+      { "type": "delay", "ms": 50 },
+      { "type": "key", "key": "SPACE" },
+      { "type": "delay", "ms": 50 },
+      { "type": "hotkey", "hotkey": "ALT+SHIFT+T", "keys": ["ALT", "SHIFT", "T"] }
+    ],
+    "auto_enter": false,
+    "on_error": "stop"
+  },
+  {
+    "id": "word_line_spacing",
+    "label": "设置行距",
+    "description": "段落与行距设置 (Alt->H->P->G->Alt+N->Alt+A)",
+    "steps": [
+      { "type": "key", "key": "ALT" },
+      { "type": "delay", "ms": 80 },
+      { "type": "key", "key": "H" },
+      { "type": "delay", "ms": 80 },
+      { "type": "key", "key": "P" },
+      { "type": "delay", "ms": 80 },
+      { "type": "key", "key": "G" },
+      { "type": "delay", "ms": 150 },
+      { "type": "hotkey", "hotkey": "ALT+N", "keys": ["ALT", "N"] },
+      { "type": "delay", "ms": 80 },
+      { "type": "hotkey", "hotkey": "ALT+A", "keys": ["ALT", "A"] }
+    ],
+    "auto_enter": false,
+    "on_error": "stop"
+  },
+  {
+    "id": "word_fangsong_gb2312",
+    "label": "仿宋_GB2312",
+    "description": "公文标准字体仿宋_GB2312",
+    "steps": [
+      { "type": "hotkey", "hotkey": "CTRL+D", "keys": ["CTRL", "D"] },
+      { "type": "delay", "ms": 200 },
+      { "type": "paste", "value": "仿宋_GB2312" },
+      { "type": "delay", "ms": 100 },
+      { "type": "key", "key": "ENTER" }
+    ],
+    "auto_enter": false,
+    "on_error": "stop"
+  },
+  {
+    "id": "word_format_copy",
+    "label": "复制格式",
+    "description": "复制格式 (Ctrl+Shift+C)",
+    "steps": [
+      { "type": "hotkey", "hotkey": "CTRL+SHIFT+C", "keys": ["CTRL", "SHIFT", "C"] }
+    ],
+    "auto_enter": false,
+    "on_error": "stop"
+  },
+  {
+    "id": "word_format_paste",
+    "label": "粘贴格式",
+    "description": "粘贴格式 (Ctrl+Shift+V)",
+    "steps": [
+      { "type": "hotkey", "hotkey": "CTRL+SHIFT+V", "keys": ["CTRL", "SHIFT", "V"] }
+    ],
+    "auto_enter": false,
+    "on_error": "stop"
+  },
+  {
+    "id": "word_save",
+    "label": "快速保存",
+    "description": "快速保存文档 (Ctrl+S)",
+    "steps": [
+      { "type": "hotkey", "hotkey": "CTRL+S", "keys": ["CTRL", "S"] }
+    ],
+    "auto_enter": false,
+    "on_error": "stop"
+  },
+  {
+    "id": "word_center",
+    "label": "居中对齐",
+    "description": "居中对齐 (Ctrl+E)",
+    "steps": [
+      { "type": "hotkey", "hotkey": "CTRL+E", "keys": ["CTRL", "E"] }
+    ],
+    "auto_enter": false,
+    "on_error": "stop"
+  },
+  {
+    "id": "word_justify",
+    "label": "两端对齐",
+    "description": "两端对齐 (Ctrl+J)",
+    "steps": [
+      { "type": "hotkey", "hotkey": "CTRL+J", "keys": ["CTRL", "J"] }
+    ],
+    "auto_enter": false,
+    "on_error": "stop"
+  },
+  {
+    "id": "word_heading_1",
+    "label": "一级标题",
+    "description": "设为一级标题 (Ctrl+Alt+1)",
+    "steps": [
+      { "type": "hotkey", "hotkey": "CTRL+ALT+1", "keys": ["CTRL", "ALT", "1"] }
+    ],
+    "auto_enter": false,
+    "on_error": "stop"
+  },
+  {
+    "id": "word_page_break",
+    "label": "插入分页符",
+    "description": "插入分页符 (Ctrl+Enter)",
+    "steps": [
+      { "type": "hotkey", "hotkey": "CTRL+ENTER", "keys": ["CTRL", "ENTER"] }
+    ],
+    "auto_enter": false,
+    "on_error": "stop"
+  },
+  {
+    "id": "word_find_replace",
+    "label": "查找替换",
+    "description": "查找替换 (Ctrl+H)",
+    "steps": [
+      { "type": "hotkey", "hotkey": "CTRL+H", "keys": ["CTRL", "H"] }
+    ],
+    "auto_enter": false,
+    "on_error": "stop"
+  }
+]

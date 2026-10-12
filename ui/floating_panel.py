@@ -15,12 +15,46 @@ from application.layout_manager import LayoutManager
 from application.action_executor import ActionExecutor
 from application.target_manager import TargetManager
 from storage.config_store import ConfigStore
+from domain.i18n import tr
 from .settings_dialog import SettingsDialog
 from .qt_signals import ExecutorSignals
 
 WM_MOUSEACTIVATE = 0x0021
 MA_NOACTIVATE = 3
 WS_EX_NOACTIVATE = 0x08000000
+
+
+def create_gear_icon(size: int = 16, color: QtGui.QColor = QtGui.QColor("#D0D0DC")) -> QtGui.QIcon:
+    """Create a crisp, resolution-independent vector gear icon."""
+    import math
+    pixmap = QtGui.QPixmap(size, size)
+    pixmap.fill(QtCore.Qt.transparent)
+    painter = QtGui.QPainter(pixmap)
+    painter.setRenderHint(QtGui.QPainter.Antialiasing, True)
+    center = QtCore.QPointF(size / 2.0, size / 2.0)
+    outer_r = size * 0.44
+    inner_r = size * 0.32
+    hole_r = size * 0.16
+    teeth = 8
+    path = QtGui.QPainterPath()
+    for i in range(teeth * 2):
+        angle = (i * math.pi) / teeth
+        r = outer_r if (i % 2 == 0) else inner_r
+        x = center.x() + r * math.cos(angle)
+        y = center.y() + r * math.sin(angle)
+        if i == 0:
+            path.moveTo(x, y)
+        else:
+            path.lineTo(x, y)
+    path.closeSubpath()
+    hole = QtGui.QPainterPath()
+    hole.addEllipse(center, hole_r, hole_r)
+    gear_shape = path.subtracted(hole)
+    painter.setBrush(QtGui.QBrush(color))
+    painter.setPen(QtCore.Qt.NoPen)
+    painter.drawPath(gear_shape)
+    painter.end()
+    return QtGui.QIcon(pixmap)
 
 
 def set_window_dark_titlebar(hwnd: int):
@@ -211,7 +245,7 @@ class FloatingPanel(QtWidgets.QWidget):
         self.setWindowFlags(flags)
         self.setAttribute(QtCore.Qt.WA_ShowWithoutActivating, True)
         self.setMinimumSize(220, 60)
-        self.setWindowTitle("快捷输入工作台")
+        self.setWindowTitle(tr("app_title"))
 
     def showEvent(self, event):
         super().showEvent(event)
@@ -263,14 +297,14 @@ class FloatingPanel(QtWidgets.QWidget):
 
     def update_target_pill(self):
         info = self.target_mgr.get_target_info()
-        proc = info.get("process_name") or info.get("title") or "未检测"
+        proc = info.get("process_name") or info.get("title") or tr("target_undetected")
         if len(proc) > 20:
             proc = proc[:19] + "…"
         locked = info.get("is_locked", False)
+        status_text = tr("target_locked") if locked else tr("target_auto")
         self.target_lock_btn.setText(("🔒 " if locked else "🎯 ") + proc)
         self.target_lock_btn.setToolTip(
-            f"目标：{info.get('title', '')} ({info.get('process_name', '')})\n"
-            f"状态：{'已锁定' if locked else '自动跟随'}\n点击切换锁定状态"
+            tr("target_tooltip", title=info.get("title", ""), proc=info.get("process_name", ""), status=status_text)
         )
 
     def init_ui(self):
@@ -318,7 +352,7 @@ class FloatingPanel(QtWidgets.QWidget):
 
         # First control on left: Search button
         self.search_toggle_btn = QtWidgets.QPushButton("🔍", self.header_widget)
-        self.search_toggle_btn.setToolTip("搜索按钮 (点击展开/退出搜索)")
+        self.search_toggle_btn.setToolTip(tr("search_tooltip"))
         self.search_toggle_btn.setFixedSize(26, 24)
         self.search_toggle_btn.setFocusPolicy(QtCore.Qt.NoFocus)
         self.search_toggle_btn.setStyleSheet(self.get_tool_btn_style())
@@ -328,7 +362,7 @@ class FloatingPanel(QtWidgets.QWidget):
         # Inline search input field (expands horizontally inside header, hidden initially)
         self.search_input = QtWidgets.QLineEdit(self.header_widget)
         self.search_input.setFixedHeight(24)
-        self.search_input.setPlaceholderText("全局搜索所有布局按钮… (Esc 退出)")
+        self.search_input.setPlaceholderText(tr("search_placeholder"))
         self.search_input.setClearButtonEnabled(True)
         self.search_input.setStyleSheet("""
             QLineEdit {
@@ -375,7 +409,8 @@ class FloatingPanel(QtWidgets.QWidget):
                 subcontrol-origin: padding;
                 subcontrol-position: center right;
                 width: 18px;
-                border-left-width: 0px;
+                border: none;
+                background: transparent;
             }
             QComboBox::down-arrow {
                 image: none;
@@ -403,9 +438,12 @@ class FloatingPanel(QtWidgets.QWidget):
         self.layout_combo.currentIndexChanged.connect(self._on_layout_combo_selected)
         layout.addWidget(self.layout_combo, 1)
 
-        # Settings button
-        self.settings_btn = QtWidgets.QPushButton("⚙️", self.header_widget)
-        self.settings_btn.setToolTip("打开设置中心")
+        # Settings button with crisp drawn vector gear icon (prevents font emoji square glyph artifact)
+        self.settings_btn = QtWidgets.QPushButton(self.header_widget)
+        self.settings_btn.setIcon(create_gear_icon(16))
+        self.settings_btn.setIconSize(QtCore.QSize(14, 14))
+        self.settings_btn.setText("")
+        self.settings_btn.setToolTip(tr("settings_tooltip"))
         self.settings_btn.setFixedSize(26, 24)
         self.settings_btn.setFocusPolicy(QtCore.Qt.NoFocus)
         self.settings_btn.setStyleSheet(self.get_tool_btn_style())
@@ -420,33 +458,38 @@ class FloatingPanel(QtWidgets.QWidget):
         layout.setContentsMargins(0, 2, 0, 0)
         layout.setSpacing(6)
 
-        # Left: Layout Opacity Slider
-        self.opacity_label = QtWidgets.QLabel("透明度", self.footer_widget)
+        # Left: Compact sleek Opacity Slider with unclipped circular handle
+        self.opacity_label = QtWidgets.QLabel(tr("opacity_label"), self.footer_widget)
         self.opacity_label.setStyleSheet("color: #9A9AB0; font-family: 'Segoe UI Variable Text', 'Segoe UI', 'Microsoft YaHei UI', sans-serif; font-size: 10px; font-weight: 500;")
         layout.addWidget(self.opacity_label)
 
         self.opacity_slider = QtWidgets.QSlider(QtCore.Qt.Horizontal, self.footer_widget)
         self.opacity_slider.setRange(30, 100)
-        self.opacity_slider.setFixedWidth(80)
+        self.opacity_slider.setFixedWidth(68)
+        self.opacity_slider.setFixedHeight(18)
         self.opacity_slider.setFocusPolicy(QtCore.Qt.NoFocus)
         self.opacity_slider.setStyleSheet("""
+            QSlider:horizontal {
+                min-height: 18px;
+                max-height: 18px;
+                background: transparent;
+            }
             QSlider::groove:horizontal {
-                height: 4px;
+                height: 3px;
                 background: #282834;
-                border-radius: 2px;
+                border-radius: 1.5px;
             }
             QSlider::sub-page:horizontal {
                 background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #0066CC, stop:1 #0A84FF);
-                border-radius: 2px;
+                border-radius: 1.5px;
             }
             QSlider::handle:horizontal {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #FFFFFF, stop:1 #D8D8E0);
-                border: 1px solid #808092;
-                width: 12px;
-                height: 12px;
-                margin-top: -4px;
-                margin-bottom: -4px;
-                border-radius: 6px;
+                background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #FFFFFF, stop:1 #D0D0D8);
+                border: 1px solid #707084;
+                width: 9px;
+                height: 9px;
+                margin: -3px 0;
+                border-radius: 4px;
             }
             QSlider::handle:horizontal:hover {
                 background: #FFFFFF;
@@ -893,11 +936,22 @@ class FloatingPanel(QtWidgets.QWidget):
         except Exception:
             pass
 
+    def retranslate_ui(self):
+        self.setWindowTitle(tr("app_title"))
+        self.search_toggle_btn.setToolTip(tr("search_tooltip"))
+        self.search_input.setPlaceholderText(tr("search_placeholder"))
+        self.settings_btn.setToolTip(tr("settings_tooltip"))
+        self.opacity_label.setText(tr("opacity_label"))
+        curr_op = self.opacity_slider.value()
+        self.opacity_slider.setToolTip(f"{tr('opacity_label')}: {curr_op}%")
+        self.update_target_pill()
+
     def _on_settings_closed(self, result):
         if hasattr(self, "_settings_dialog"):
             self._settings_dialog = None
         self._apply_topmost_setting()
         self.config = self.config_store.load_config()
+        self.retranslate_ui()
         self.refresh_layout_combo()
         self.rebuild_buttons()
         self.apply_config(restore_pos=False)

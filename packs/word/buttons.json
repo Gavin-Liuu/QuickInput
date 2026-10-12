@@ -1,0 +1,98 @@
+[
+  {
+    "id": "btn_word_formula",
+    "label": "公式",
+    "display_text": "公式",
+    "action_id": "word_formula",
+    "color": "#1976D2",
+    "tooltip": "插入公式 (Alt+=)"
+  },
+  {
+    "id": "btn_word_date_time",
+    "label": "时间",
+    "display_text": "时间",
+    "action_id": "word_date_time",
+    "color": "#0284C7",
+    "tooltip": "插入日期与时间 (Alt+Shift+D 空格 Alt+Shift+T)"
+  },
+  {
+    "id": "btn_word_line_spacing",
+    "label": "行距",
+    "display_text": "行距",
+    "action_id": "word_line_spacing",
+    "color": "#7B1FA2",
+    "tooltip": "段落与行距设置 (Alt->H->P->G->Alt+N->Alt+A)"
+  },
+  {
+    "id": "btn_word_fangsong",
+    "label": "仿宋",
+    "display_text": "仿宋",
+    "action_id": "word_fangsong_gb2312",
+    "color": "#E53935",
+    "tooltip": "公文标准字体：仿宋_GB2312"
+  },
+  {
+    "id": "btn_word_format_copy",
+    "label": "复制格式",
+    "display_text": "刷格",
+    "action_id": "word_format_copy",
+    "color": "#2E7D32",
+    "tooltip": "复制格式 (Ctrl+Shift+C)"
+  },
+  {
+    "id": "btn_word_format_paste",
+    "label": "粘贴格式",
+    "display_text": "贴格",
+    "action_id": "word_format_paste",
+    "color": "#388E3C",
+    "tooltip": "粘贴格式 (Ctrl+Shift+V)"
+  },
+  {
+    "id": "btn_word_save",
+    "label": "保存",
+    "display_text": "保存",
+    "action_id": "word_save",
+    "color": "#FB8C00",
+    "tooltip": "快速保存文档 (Ctrl+S)"
+  },
+  {
+    "id": "btn_word_center",
+    "label": "居中",
+    "display_text": "居中",
+    "action_id": "word_center",
+    "color": "#37474F",
+    "tooltip": "文本居中对齐 (Ctrl+E)"
+  },
+  {
+    "id": "btn_word_justify",
+    "label": "两端",
+    "display_text": "两端",
+    "action_id": "word_justify",
+    "color": "#455A64",
+    "tooltip": "两端对齐 (Ctrl+J)"
+  },
+  {
+    "id": "btn_word_heading_1",
+    "label": "标题1",
+    "display_text": "标1",
+    "action_id": "word_heading_1",
+    "color": "#4F46E5",
+    "tooltip": "设为一级标题 (Ctrl+Alt+1)"
+  },
+  {
+    "id": "btn_word_page_break",
+    "label": "分页",
+    "display_text": "分页",
+    "action_id": "word_page_break",
+    "color": "#0284C7",
+    "tooltip": "插入分页符 (Ctrl+Enter)"
+  },
+  {
+    "id": "btn_word_find_replace",
+    "label": "替换",
+    "display_text": "替换",
+    "action_id": "word_find_replace",
+    "color": "#D97706",
+    "tooltip": "查找与替换 (Ctrl+H)"
+  }
+]
