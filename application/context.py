@@ -68,7 +68,7 @@ class AppContext:
         if not os.path.exists(packs_dir):
             return
 
-        for pack_name in ["word", "annotation", "customer_service", "programmer"]:
+        for pack_name in ["official_doc", "annotation", "customer_service", "programmer"]:
             p_dir = os.path.join(packs_dir, pack_name)
             if os.path.isdir(p_dir):
                 ok, msg, data = PackStore.import_pack(p_dir)

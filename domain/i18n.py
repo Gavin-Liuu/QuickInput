@@ -599,9 +599,13 @@ TRANSLATIONS: Dict[str, Dict[str, str]] = {
     },
 
     # Preset Layout Names
+    "layout_name_official_doc": {
+        "zh": "公文常用格式",
+        "en": "Official Document Format (GB/T 9704-2012)",
+    },
     "layout_name_word": {
-        "zh": "微软 Word 常用排版",
-        "en": "Microsoft Word Document",
+        "zh": "公文常用格式",
+        "en": "Official Document Format (GB/T 9704-2012)",
     },
     "layout_name_programmer": {
         "zh": "程序员常用命令",

@@ -1,0 +1,270 @@
+[
+  {
+    "id": "doc_page_margins",
+    "label": "公文页边距",
+    "description": "公文页边距 (天头37/地脚35/订口28/切口26mm, GB/T 9704-2012)",
+    "steps": [
+      { "type": "key", "key": "ALT" },
+      { "type": "delay", "ms": 80 },
+      { "type": "key", "key": "P" },
+      { "type": "delay", "ms": 80 },
+      { "type": "key", "key": "M" },
+      { "type": "delay", "ms": 80 },
+      { "type": "key", "key": "A" },
+      { "type": "delay", "ms": 250 },
+      { "type": "hotkey", "hotkey": "ALT+T", "keys": ["ALT", "T"] },
+      { "type": "delay", "ms": 60 },
+      { "type": "paste", "value": "37毫米" },
+      { "type": "delay", "ms": 60 },
+      { "type": "hotkey", "hotkey": "ALT+B", "keys": ["ALT", "B"] },
+      { "type": "delay", "ms": 60 },
+      { "type": "paste", "value": "35毫米" },
+      { "type": "delay", "ms": 60 },
+      { "type": "hotkey", "hotkey": "ALT+L", "keys": ["ALT", "L"] },
+      { "type": "delay", "ms": 60 },
+      { "type": "paste", "value": "28毫米" },
+      { "type": "delay", "ms": 60 },
+      { "type": "hotkey", "hotkey": "ALT+R", "keys": ["ALT", "R"] },
+      { "type": "delay", "ms": 60 },
+      { "type": "paste", "value": "26毫米" },
+      { "type": "delay", "ms": 80 },
+      { "type": "key", "key": "ENTER" }
+    ],
+    "auto_enter": false,
+    "on_error": "stop"
+  },
+  {
+    "id": "doc_body_font",
+    "label": "公文正文",
+    "description": "公文正文：仿宋_GB2312 + Times New Roman 三号 两端对齐",
+    "steps": [
+      { "type": "hotkey", "hotkey": "CTRL+D", "keys": ["CTRL", "D"] },
+      { "type": "delay", "ms": 200 },
+      { "type": "hotkey", "hotkey": "ALT+F", "keys": ["ALT", "F"] },
+      { "type": "delay", "ms": 60 },
+      { "type": "paste", "value": "仿宋_GB2312" },
+      { "type": "delay", "ms": 60 },
+      { "type": "hotkey", "hotkey": "ALT+T", "keys": ["ALT", "T"] },
+      { "type": "delay", "ms": 60 },
+      { "type": "paste", "value": "Times New Roman" },
+      { "type": "delay", "ms": 60 },
+      { "type": "hotkey", "hotkey": "ALT+S", "keys": ["ALT", "S"] },
+      { "type": "delay", "ms": 60 },
+      { "type": "paste", "value": "三号" },
+      { "type": "delay", "ms": 80 },
+      { "type": "key", "key": "ENTER" },
+      { "type": "delay", "ms": 80 },
+      { "type": "hotkey", "hotkey": "CTRL+J", "keys": ["CTRL", "J"] }
+    ],
+    "auto_enter": false,
+    "on_error": "stop"
+  },
+  {
+    "id": "doc_line_spacing",
+    "label": "公文行距",
+    "description": "公文标准行距：固定值 28.9 磅 (对应每面22行)",
+    "steps": [
+      { "type": "key", "key": "ALT" },
+      { "type": "delay", "ms": 80 },
+      { "type": "key", "key": "H" },
+      { "type": "delay", "ms": 80 },
+      { "type": "key", "key": "P" },
+      { "type": "delay", "ms": 80 },
+      { "type": "key", "key": "G" },
+      { "type": "delay", "ms": 200 },
+      { "type": "hotkey", "hotkey": "ALT+N", "keys": ["ALT", "N"] },
+      { "type": "delay", "ms": 60 },
+      { "type": "paste", "value": "固定值" },
+      { "type": "delay", "ms": 60 },
+      { "type": "hotkey", "hotkey": "ALT+A", "keys": ["ALT", "A"] },
+      { "type": "delay", "ms": 60 },
+      { "type": "paste", "value": "28.9磅" },
+      { "type": "delay", "ms": 80 },
+      { "type": "key", "key": "ENTER" }
+    ],
+    "auto_enter": false,
+    "on_error": "stop"
+  },
+  {
+    "id": "doc_indent_first_line",
+    "label": "首行缩进",
+    "description": "首行缩进 2 字符 (GB/T 9704-2012)",
+    "steps": [
+      { "type": "key", "key": "ALT" },
+      { "type": "delay", "ms": 80 },
+      { "type": "key", "key": "H" },
+      { "type": "delay", "ms": 80 },
+      { "type": "key", "key": "P" },
+      { "type": "delay", "ms": 80 },
+      { "type": "key", "key": "G" },
+      { "type": "delay", "ms": 200 },
+      { "type": "hotkey", "hotkey": "ALT+S", "keys": ["ALT", "S"] },
+      { "type": "delay", "ms": 60 },
+      { "type": "paste", "value": "首行缩进" },
+      { "type": "delay", "ms": 60 },
+      { "type": "hotkey", "hotkey": "ALT+Y", "keys": ["ALT", "Y"] },
+      { "type": "delay", "ms": 60 },
+      { "type": "paste", "value": "2 字符" },
+      { "type": "delay", "ms": 80 },
+      { "type": "key", "key": "ENTER" }
+    ],
+    "auto_enter": false,
+    "on_error": "stop"
+  },
+  {
+    "id": "doc_bracket",
+    "label": "六角括号",
+    "description": "发文字号六角括号〔 〕(光标居中便于填入年份)",
+    "steps": [
+      { "type": "paste", "value": "〔 〕" },
+      { "type": "delay", "ms": 50 },
+      { "type": "key", "key": "LEFT" }
+    ],
+    "auto_enter": false,
+    "on_error": "stop"
+  },
+  {
+    "id": "doc_title_font",
+    "label": "公文标题",
+    "description": "公文大标题：方正小标宋简体 二号 居中 (GB/T 9704-2012)",
+    "steps": [
+      { "type": "hotkey", "hotkey": "CTRL+D", "keys": ["CTRL", "D"] },
+      { "type": "delay", "ms": 200 },
+      { "type": "hotkey", "hotkey": "ALT+F", "keys": ["ALT", "F"] },
+      { "type": "delay", "ms": 60 },
+      { "type": "paste", "value": "方正小标宋简体" },
+      { "type": "delay", "ms": 60 },
+      { "type": "hotkey", "hotkey": "ALT+T", "keys": ["ALT", "T"] },
+      { "type": "delay", "ms": 60 },
+      { "type": "paste", "value": "Times New Roman" },
+      { "type": "delay", "ms": 60 },
+      { "type": "hotkey", "hotkey": "ALT+S", "keys": ["ALT", "S"] },
+      { "type": "delay", "ms": 60 },
+      { "type": "paste", "value": "二号" },
+      { "type": "delay", "ms": 80 },
+      { "type": "key", "key": "ENTER" },
+      { "type": "delay", "ms": 80 },
+      { "type": "hotkey", "hotkey": "CTRL+E", "keys": ["CTRL", "E"] }
+    ],
+    "auto_enter": false,
+    "on_error": "stop"
+  },
+  {
+    "id": "doc_heading_1",
+    "label": "一级标题",
+    "description": "一级标题：黑体 三号 (序号用“一、”)",
+    "steps": [
+      { "type": "hotkey", "hotkey": "CTRL+D", "keys": ["CTRL", "D"] },
+      { "type": "delay", "ms": 200 },
+      { "type": "hotkey", "hotkey": "ALT+F", "keys": ["ALT", "F"] },
+      { "type": "delay", "ms": 60 },
+      { "type": "paste", "value": "黑体" },
+      { "type": "delay", "ms": 60 },
+      { "type": "hotkey", "hotkey": "ALT+T", "keys": ["ALT", "T"] },
+      { "type": "delay", "ms": 60 },
+      { "type": "paste", "value": "Times New Roman" },
+      { "type": "delay", "ms": 60 },
+      { "type": "hotkey", "hotkey": "ALT+S", "keys": ["ALT", "S"] },
+      { "type": "delay", "ms": 60 },
+      { "type": "paste", "value": "三号" },
+      { "type": "delay", "ms": 80 },
+      { "type": "key", "key": "ENTER" },
+      { "type": "delay", "ms": 80 },
+      { "type": "hotkey", "hotkey": "CTRL+J", "keys": ["CTRL", "J"] }
+    ],
+    "auto_enter": false,
+    "on_error": "stop"
+  },
+  {
+    "id": "doc_heading_2",
+    "label": "二级标题",
+    "description": "二级标题：楷体_GB2312 三号 (序号用“（一）”)",
+    "steps": [
+      { "type": "hotkey", "hotkey": "CTRL+D", "keys": ["CTRL", "D"] },
+      { "type": "delay", "ms": 200 },
+      { "type": "hotkey", "hotkey": "ALT+F", "keys": ["ALT", "F"] },
+      { "type": "delay", "ms": 60 },
+      { "type": "paste", "value": "楷体_GB2312" },
+      { "type": "delay", "ms": 60 },
+      { "type": "hotkey", "hotkey": "ALT+T", "keys": ["ALT", "T"] },
+      { "type": "delay", "ms": 60 },
+      { "type": "paste", "value": "Times New Roman" },
+      { "type": "delay", "ms": 60 },
+      { "type": "hotkey", "hotkey": "ALT+S", "keys": ["ALT", "S"] },
+      { "type": "delay", "ms": 60 },
+      { "type": "paste", "value": "三号" },
+      { "type": "delay", "ms": 80 },
+      { "type": "key", "key": "ENTER" },
+      { "type": "delay", "ms": 80 },
+      { "type": "hotkey", "hotkey": "CTRL+J", "keys": ["CTRL", "J"] }
+    ],
+    "auto_enter": false,
+    "on_error": "stop"
+  },
+  {
+    "id": "doc_heading_3",
+    "label": "三级标题",
+    "description": "三级标题：仿宋_GB2312 加粗 三号 (序号用“1.”)",
+    "steps": [
+      { "type": "hotkey", "hotkey": "CTRL+D", "keys": ["CTRL", "D"] },
+      { "type": "delay", "ms": 200 },
+      { "type": "hotkey", "hotkey": "ALT+F", "keys": ["ALT", "F"] },
+      { "type": "delay", "ms": 60 },
+      { "type": "paste", "value": "仿宋_GB2312" },
+      { "type": "delay", "ms": 60 },
+      { "type": "hotkey", "hotkey": "ALT+T", "keys": ["ALT", "T"] },
+      { "type": "delay", "ms": 60 },
+      { "type": "paste", "value": "Times New Roman" },
+      { "type": "delay", "ms": 60 },
+      { "type": "hotkey", "hotkey": "ALT+S", "keys": ["ALT", "S"] },
+      { "type": "delay", "ms": 60 },
+      { "type": "paste", "value": "三号" },
+      { "type": "delay", "ms": 80 },
+      { "type": "key", "key": "ENTER" },
+      { "type": "delay", "ms": 80 },
+      { "type": "hotkey", "hotkey": "CTRL+B", "keys": ["CTRL", "B"] }
+    ],
+    "auto_enter": false,
+    "on_error": "stop"
+  },
+  {
+    "id": "doc_page_number",
+    "label": "公文页码",
+    "description": "插入公文标准页码一字线：— 1 —",
+    "steps": [
+      { "type": "paste", "value": "— 1 —" }
+    ],
+    "auto_enter": false,
+    "on_error": "stop"
+  },
+  {
+    "id": "doc_format_copy",
+    "label": "复制格式",
+    "description": "复制格式 (Ctrl+Shift+C)",
+    "steps": [
+      { "type": "hotkey", "hotkey": "CTRL+SHIFT+C", "keys": ["CTRL", "SHIFT", "C"] }
+    ],
+    "auto_enter": false,
+    "on_error": "stop"
+  },
+  {
+    "id": "doc_format_paste",
+    "label": "粘贴格式",
+    "description": "粘贴格式 (Ctrl+Shift+V)",
+    "steps": [
+      { "type": "hotkey", "hotkey": "CTRL+SHIFT+V", "keys": ["CTRL", "SHIFT", "V"] }
+    ],
+    "auto_enter": false,
+    "on_error": "stop"
+  },
+  {
+    "id": "doc_save",
+    "label": "快速保存",
+    "description": "快速保存文档 (Ctrl+S)",
+    "steps": [
+      { "type": "hotkey", "hotkey": "CTRL+S", "keys": ["CTRL", "S"] }
+    ],
+    "auto_enter": false,
+    "on_error": "stop"
+  }
+]

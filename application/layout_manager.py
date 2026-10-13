@@ -39,8 +39,10 @@ class LayoutManager:
         self.profiles.append(profile)
 
     def get_active_layout(self) -> Optional[Layout]:
-        if not self.active_layout_id:
-            if self.layouts:
+        if not self.active_layout_id or self.active_layout_id not in self.layouts:
+            if "official_doc" in self.layouts:
+                self.active_layout_id = "official_doc"
+            elif self.layouts:
                 self.active_layout_id = next(iter(self.layouts))
             else:
                 return None

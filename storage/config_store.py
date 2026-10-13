@@ -54,7 +54,7 @@ class ConfigStore:
                 "button_size": "compact",
                 "collapsed": False,
             },
-            "active_layout_id": "word",
+            "active_layout_id": "official_doc",
             "hotkeys": {
                 "toggle_visible": "ALT+Q",
                 "emergency_stop": "ESC",

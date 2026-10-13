@@ -1,8 +1,0 @@
-{
-  "id": "word_pack",
-  "name": "微软 Word 常用排版与工具",
-  "version": "1.0.0",
-  "schema_version": 1,
-  "author": "QuickInput",
-  "description": "Microsoft Word 办公常用快捷键与排版动作，涵盖插入公式、插入时间、行距设置、仿宋GB2312字体等高频操作"
-}

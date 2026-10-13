@@ -685,8 +685,8 @@ def test_settings_dialog_layout_switch_clean_preview_and_selection(qapp):
         dlg.close()
 
 
-def test_settings_dialog_word_layout_clean_display(qapp):
-    """Verify that editing Word layout in SettingsDialog displays clean buttons with correct labels."""
+def test_settings_dialog_official_doc_layout_clean_display(qapp):
+    """Verify that editing official document layout in SettingsDialog displays clean buttons with correct labels."""
     from ui.settings_dialog import SettingsDialog
     from main import load_default_packs
 
@@ -701,22 +701,22 @@ def test_settings_dialog_word_layout_clean_display(qapp):
         ex = ActionExecutor(injector=inj, clipboard_mgr=clip, target_mgr=tm)
 
         dlg = SettingsDialog(lm, ex, tm, cs)
-        # Select Word layout
-        idx = dlg.layout_selector.findData("word")
+        # Select official doc layout
+        idx = dlg.layout_selector.findData("official_doc")
         assert idx >= 0
         dlg.layout_selector.setCurrentIndex(idx)
         qapp.processEvents()
 
-        # Find formula button in preview widgets
-        formula_btn = None
+        # Find margin button in preview widgets
+        margin_btn = None
         for (r, c), widget in dlg._preview_widgets.items():
             model = getattr(widget, "button_model", None)
-            if model and model.id == "btn_word_formula":
-                formula_btn = widget
+            if model and model.id == "btn_doc_margin":
+                margin_btn = widget
                 break
 
-        assert formula_btn is not None
-        assert formula_btn.text() == "公式"
+        assert margin_btn is not None
+        assert margin_btn.text() == "边距"
         dlg.close()
 
 

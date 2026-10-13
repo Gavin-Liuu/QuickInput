@@ -67,7 +67,7 @@ def test_builtin_packs_valid():
     base_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
     packs_dir = os.path.join(base_dir, "packs")
 
-    for p in ["word", "annotation", "customer_service", "programmer"]:
+    for p in ["official_doc", "annotation", "customer_service", "programmer"]:
         p_path = os.path.join(packs_dir, p)
         assert os.path.isdir(p_path), f"Builtin pack {p} missing"
         ok, msg, data = PackStore.import_pack(p_path)

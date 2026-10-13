@@ -168,7 +168,7 @@ def test_app_context_lifecycle_and_binding(qapp):
 
         assert cfg is not None
         assert len(ctx.layout_mgr.layouts) >= 4
-        assert "word" in ctx.layout_mgr.layouts
+        assert "official_doc" in ctx.layout_mgr.layouts
         assert ctx.layout_mgr.active_layout_id is not None
 
         # Test panel binding

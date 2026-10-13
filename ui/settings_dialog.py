@@ -1541,7 +1541,7 @@ class SettingsDialog(QtWidgets.QDialog):
         packs_dir = os.path.join(base_dir, "packs")
         found_data = None
         found_layout = None
-        for p_name in ["word", "annotation", "customer_service", "programmer"]:
+        for p_name in ["official_doc", "annotation", "customer_service", "programmer"]:
             p_dir = os.path.join(packs_dir, p_name)
             if os.path.isdir(p_dir):
                 ok, _, p_data = PackStore.import_pack(p_dir)

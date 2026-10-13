@@ -1,0 +1,106 @@
+[
+  {
+    "id": "btn_doc_margin",
+    "label": "边距",
+    "display_text": "边距",
+    "action_id": "doc_page_margins",
+    "color": "#1E88E5",
+    "tooltip": "公文页边距：天头37mm、地脚35mm、订口28mm、切口26mm (GB/T 9704-2012 5.2.2)"
+  },
+  {
+    "id": "btn_doc_body",
+    "label": "正文",
+    "display_text": "正文",
+    "action_id": "doc_body_font",
+    "color": "#E53935",
+    "tooltip": "公文正文：仿宋_GB2312 + Times New Roman 三号 两端对齐 (GB/T 9704-2012 7.3.3)"
+  },
+  {
+    "id": "btn_doc_spacing",
+    "label": "行距",
+    "display_text": "行距",
+    "action_id": "doc_line_spacing",
+    "color": "#7B1FA2",
+    "tooltip": "公文行距：固定值 28.9 磅 (对应每面22行标准版心, GB/T 9704-2012 5.2.3)"
+  },
+  {
+    "id": "btn_doc_indent",
+    "label": "缩进",
+    "display_text": "缩进",
+    "action_id": "doc_indent_first_line",
+    "color": "#546E7A",
+    "tooltip": "首行缩进：首行空 2 字符 (GB/T 9704-2012 7.3.3)"
+  },
+  {
+    "id": "btn_doc_bracket",
+    "label": "六角",
+    "display_text": "六角",
+    "action_id": "doc_bracket",
+    "color": "#0284C7",
+    "tooltip": "发文字号六角括号〔 〕(光标居中便于填入年份, GB/T 9704-2012 7.2.5)"
+  },
+  {
+    "id": "btn_doc_title",
+    "label": "大标",
+    "display_text": "大标",
+    "action_id": "doc_title_font",
+    "color": "#C62828",
+    "tooltip": "公文大标题：方正小标宋简体 二号 居中 (GB/T 9704-2012 7.3.1)"
+  },
+  {
+    "id": "btn_doc_heading1",
+    "label": "标1",
+    "display_text": "标1",
+    "action_id": "doc_heading_1",
+    "color": "#2E7D32",
+    "tooltip": "一级标题：黑体 三号 (序号用“一、”, GB/T 9704-2012 7.3.2)"
+  },
+  {
+    "id": "btn_doc_heading2",
+    "label": "标2",
+    "display_text": "标2",
+    "action_id": "doc_heading_2",
+    "color": "#00897B",
+    "tooltip": "二级标题：楷体_GB2312 三号 (序号用“（一）”, GB/T 9704-2012 7.3.2)"
+  },
+  {
+    "id": "btn_doc_heading3",
+    "label": "标3",
+    "display_text": "标3",
+    "action_id": "doc_heading_3",
+    "color": "#D97706",
+    "tooltip": "三级标题：仿宋_GB2312 加粗 三号 (序号用“1.”, GB/T 9704-2012 7.3.2)"
+  },
+  {
+    "id": "btn_doc_page_number",
+    "label": "页码",
+    "display_text": "页码",
+    "action_id": "doc_page_number",
+    "color": "#4E342E",
+    "tooltip": "公文页码：— 1 — (GB/T 9704-2012 7.5)"
+  },
+  {
+    "id": "btn_doc_format_copy",
+    "label": "刷格",
+    "display_text": "刷格",
+    "action_id": "doc_format_copy",
+    "color": "#2E7D32",
+    "tooltip": "复制格式 (Ctrl+Shift+C)"
+  },
+  {
+    "id": "btn_doc_format_paste",
+    "label": "贴格",
+    "display_text": "贴格",
+    "action_id": "doc_format_paste",
+    "color": "#388E3C",
+    "tooltip": "粘贴格式 (Ctrl+Shift+V)"
+  },
+  {
+    "id": "btn_doc_save",
+    "label": "保存",
+    "display_text": "保存",
+    "action_id": "doc_save",
+    "color": "#FB8C00",
+    "tooltip": "快速保存文档 (Ctrl+S)"
+  }
+]

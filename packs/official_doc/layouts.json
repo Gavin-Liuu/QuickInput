@@ -1,0 +1,29 @@
+[
+  {
+    "id": "official_doc",
+    "name": "公文常用格式",
+    "orientation": "horizontal",
+    "rows": 2,
+    "columns": 5,
+    "description": "党政机关公文格式国家标准 (GB/T 9704-2012)：包含页边距、中西文正文字号、标准22行行距、首行缩进、大标题、层级标题、六角括号与页码",
+    "buttons": [
+      { "button_id": "btn_doc_margin", "row": 0, "column": 0 },
+      { "button_id": "btn_doc_body", "row": 0, "column": 1 },
+      { "button_id": "btn_doc_spacing", "row": 0, "column": 2 },
+      { "button_id": "btn_doc_indent", "row": 0, "column": 3 },
+      { "button_id": "btn_doc_bracket", "row": 0, "column": 4 },
+      { "button_id": "btn_doc_title", "row": 1, "column": 0 },
+      { "button_id": "btn_doc_heading1", "row": 1, "column": 1 },
+      { "button_id": "btn_doc_heading2", "row": 1, "column": 2 },
+      { "button_id": "btn_doc_heading3", "row": 1, "column": 3 },
+      { "button_id": "btn_doc_page_number", "row": 1, "column": 4 }
+    ],
+    "settings": {
+      "opacity": 0.95,
+      "show_labels": true,
+      "button_size": "compact",
+      "always_on_top": true,
+      "auto_enter_default": false
+    }
+  }
+]
