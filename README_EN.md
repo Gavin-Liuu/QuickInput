@@ -181,7 +181,7 @@ python build_portable.py
 ```
 Output artifacts in `dist/`:
 - Portable Folder: `dist/QuickInput/` (~61.9 MB)
-- Portable ZIP Archive: `dist/QuickInput_v1.0.0_Windows_x64.zip` (~24.7 MB)
+- Portable ZIP Archive: `dist/QuickInput_v2.0.0_Windows_x64.zip` (~24.7 MB)
 
 ---
 

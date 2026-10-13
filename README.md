@@ -181,7 +181,7 @@ python build_portable.py
 ```
 打包完成后将在 `dist/` 目录下生成：
 - 解压即用文件夹：`dist/QuickInput/` (约 61.9 MB)
-- 便携发布压缩包：`dist/QuickInput_v1.0.0_Windows_x64.zip` (约 24.7 MB)
+- 便携发布压缩包：`dist/QuickInput_v2.0.0_Windows_x64.zip` (约 24.7 MB)
 
 ---
 

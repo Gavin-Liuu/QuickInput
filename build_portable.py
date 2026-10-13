@@ -176,7 +176,7 @@ pause
         f.write(debug_bat)
 
     # Create ZIP archive with maximum DEFLATED compression
-    zip_path = os.path.join(DIST_DIR, "QuickInput_v1.0.0_Windows_x64.zip")
+    zip_path = os.path.join(DIST_DIR, "QuickInput_v2.0.0_Windows_x64.zip")
     print(f"[5/5] Compressing portable distribution to {zip_path}...")
     with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED, compresslevel=9) as zipf:
         for root, dirs, files in os.walk(output_dir):
